@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Profile{% endblock %}
+
+{% block body %}
+    {% for flashError in app.flashes('verify_email_error') %}
+        <div class="alert alert-danger" role="alert">{{ flashError }}</div>
+    {% endfor %}
+
+    {{ form_start(profileForm) }}
+        {{ form_row(profileForm.email) }}
+        {{ form_row(profileForm.lastname) }}
+        {{ form_row(profileForm.firstname) }}
+        {{ form_row(profileForm.oldPassword, {
+            label: 'Current password'
+        }) }}
+        {{ form_row(profileForm.plainPassword, {
+            label: 'Password'
+        }) }}
+
+    <button class="btn btn-lg btn-primary" type="submit">Save</button>
+    {{ form_end(profileForm) }}
+{% endblock %}
