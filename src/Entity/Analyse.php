@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\AnalyseRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass=AnalyseRepository::class)
+ */
+class Analyse
+{
+    /**
+     * @ORM\Id
+     * @ORM\GeneratedValue
+     * @ORM\Column(type="integer")
+     */
+    private $id;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $date;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isRunning;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $state;
+
+    /**
+     * @ORM\OneToMany(targetEntity=AnalyseItem::class, mappedBy="analyse", orphanRemoval=true)
+     */
+    private $analyseItems;
+
+    public function __construct()
+    {
+        $this->analyseItems = new ArrayCollection();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getDate(): ?\DateTimeInterface
+    {
+        return $this->date;
+    }
+
+    public function setDate(\DateTimeInterface $date): self
+    {
+        $this->date = $date;
+
+        return $this;
+    }
+
+    public function getIsRunning(): ?bool
+    {
+        return $this->isRunning;
+    }
+
+    public function setIsRunning(bool $isRunning): self
+    {
+        $this->isRunning = $isRunning;
+
+        return $this;
+    }
+
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(?string $state): self
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|AnalyseItem[]
+     */
+    public function getAnalyseItems(): Collection
+    {
+        return $this->analyseItems;
+    }
+
+    public function addAnalyseItem(AnalyseItem $analyseItem): self
+    {
+        if (!$this->analyseItems->contains($analyseItem)) {
+            $this->analyseItems[] = $analyseItem;
+            $analyseItem->setAnalyse($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnalyseItem(AnalyseItem $analyseItem): self
+    {
+        if ($this->analyseItems->removeElement($analyseItem)) {
+            // set the owning side to null (unless already changed)
+            if ($analyseItem->getAnalyse() === $this) {
+                $analyseItem->setAnalyse(null);
+            }
+        }
+
+        return $this;
+    }
+}

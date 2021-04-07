@@ -25,7 +25,11 @@ class MenuBuilder
 
         $menu->addChild('Home', ['route' => 'app_home']);
 
-        if($user = $this->security->getUser()) {
+        if($this->security->isGranted('ROLE_USER')) {
+            $user = $this->security->getUser();
+
+            $menu->addChild('Project', ['route' => 'project_index']);
+
             // administration
             if($this->security->isGranted('ROLE_ADMIN')) {
                 $adminMenu = $menu->addChild('Administration', ['attributes' => ['dropdown' => true]]);

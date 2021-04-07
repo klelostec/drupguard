@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -56,6 +58,16 @@ class User implements UserInterface
      * @ORM\Column(type="boolean")
      */
     private $isVerified = false;
+
+    /**
+     * @ORM\ManyToMany(targetEntity=Project::class, mappedBy="allowedUsers")
+     */
+    private $allowedProjects;
+
+    public function __construct()
+    {
+        $this->allowedProjects = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -179,5 +191,36 @@ class User implements UserInterface
         $this->isVerified = $isVerified;
 
         return $this;
+    }
+
+    /**
+     * @return Collection|Project[]
+     */
+    public function getAllowedProjects(): Collection
+    {
+        return $this->allowedProjects;
+    }
+
+    public function addAllowedProject(Project $allowedProject): self
+    {
+        if (!$this->allowedProjects->contains($allowedProject)) {
+            $this->allowedProjects[] = $allowedProject;
+            $allowedProject->addAllowedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAllowedProject(Project $allowedProject): self
+    {
+        if ($this->allowedProjects->removeElement($allowedProject)) {
+            $allowedProject->removeAllowedUser($this);
+        }
+
+        return $this;
+    }
+
+    public function __toString(){
+        return $this->getFirstname() . ' ' . $this->getLastname();
     }
 }
