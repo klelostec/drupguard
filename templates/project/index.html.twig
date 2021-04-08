@@ -10,10 +10,7 @@
             <tr>
                 <th>Id</th>
                 <th>Name</th>
-                <th>GitRemoteRepository</th>
-                <th>HasCron</th>
-                <th>CronFrequency</th>
-                <th>IsPublic</th>
+                <th>State</th>
                 <th>actions</th>
             </tr>
         </thead>
@@ -22,10 +19,7 @@
             <tr>
                 <td>{{ project.id }}</td>
                 <td>{{ project.name }}</td>
-                <td>{{ project.gitRemoteRepository }}</td>
-                <td>{{ project.hasCron ? 'Yes' : 'No' }}</td>
-                <td>{{ project.cronFrequency }}</td>
-                <td>{{ project.isPublic ? 'Yes' : 'No' }}</td>
+                <td>{{ project.lastAnalyse ? project.lastAnalyse.state : 'No value' }}</td>
                 <td>
                     <a href="{{ path('project_show', {'id': project.id}) }}">show</a>
                     <a href="{{ path('project_edit', {'id': project.id}) }}">edit</a>

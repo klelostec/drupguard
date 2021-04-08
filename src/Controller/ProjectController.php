@@ -5,8 +5,10 @@ namespace App\Controller;
 use App\Entity\Project;
 use App\Form\ProjectType;
 use App\Repository\ProjectRepository;
+use App\Service\GitHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -37,6 +39,9 @@ class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if(empty($project->getOwner())) {
+                $project->setOwner($this->getUser());
+            }
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($project);
             $entityManager->flush();
@@ -92,5 +97,16 @@ class ProjectController extends AbstractController
         }
 
         return $this->redirectToRoute('project_index');
+    }
+
+    /**
+     * @Route("/ajax/git-branches", name="project_ajax_git_branches", methods={"POST"})
+     */
+    public function ajaxGitBranches(Request $request): Response {
+        $branches = [];
+        if($gitRemoteRepository = $request->request->get('gitRemoteRepository')) {
+            $branches = GitHelper::getRemoteBranchesWithoutCheckout($gitRemoteRepository);
+        }
+        return new JsonResponse($branches);
     }
 }

@@ -52,8 +52,19 @@ class Project
 
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="allowedProjects")
+     * @ORM\OrderBy({"firstname" = "ASC", "lastname" = "ASC"})
      */
     private $allowedUsers;
+
+    /**
+     * @ORM\ManyToOne(targetEntity=Analyse::class)
+     */
+    private $lastAnalyse;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $gitBranch;
 
     public function __construct()
     {
@@ -157,6 +168,30 @@ class Project
     public function removeAllowedUser(User $allowedUser): self
     {
         $this->allowedUsers->removeElement($allowedUser);
+
+        return $this;
+    }
+
+    public function getLastAnalyse(): ?Analyse
+    {
+        return $this->lastAnalyse;
+    }
+
+    public function setLastAnalyse(?Analyse $lastAnalyse): self
+    {
+        $this->lastAnalyse = $lastAnalyse;
+
+        return $this;
+    }
+
+    public function getGitBranch(): ?string
+    {
+        return $this->gitBranch;
+    }
+
+    public function setGitBranch(string $gitBranch): self
+    {
+        $this->gitBranch = $gitBranch;
 
         return $this;
     }
