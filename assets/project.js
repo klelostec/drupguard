@@ -2,12 +2,15 @@ $(document).ready(function () {
     var $hasCron = $('#project_hasCron');
     $hasCron.change(function() {
         var $form = $(this).closest('form'),
-            $cronFreq = $('.hasCron-group', $form);
+            $cronFreq = $('.hasCron-group', $form),
+            $cronFreqLabel = $('.hasCron-group label', $form);
         if($(this).prop('checked')) {
             $cronFreq.removeClass('d-none');
+            $cronFreqLabel.addClass('required');
         }
         else {
             $cronFreq.addClass('d-none');
+            $cronFreqLabel.removeClass('required');
         }
     });
 

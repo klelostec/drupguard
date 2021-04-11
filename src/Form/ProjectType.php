@@ -35,12 +35,14 @@ class ProjectType extends AbstractType
 
         $builder
             ->add('name')
+            ->add('machineName')
             ->add('gitRemoteRepository', TextType::class, [
               'constraints' => [
                 new GitRemote()
               ]
             ])
             ->add('gitBranch', ChoiceType::class)
+            ->add('drupalDirectory', TextType::class)
             ->add('hasCron')
             ->add('cronFrequency', TextType::class, $cronFreqOption)
             ->add('isPublic')
@@ -51,6 +53,7 @@ class ProjectType extends AbstractType
             if(!$hasCron) {
                 $cronFreqOption['row_attr']['class'] .=' d-none';
             }
+            $cronFreqOption['required'] = boolval($hasCron);
 
             $form->add('cronFrequency', TextType::class, $cronFreqOption);
         };
@@ -70,8 +73,13 @@ class ProjectType extends AbstractType
           FormEvents::POST_SET_DATA,
           function (FormEvent $event) use ($formModifierHasCron, $formModifierGitBranch) {
               $data = $event->getData();
-              $formModifierHasCron($event->getForm(), $data->hasCron());
-              $formModifierGitBranch($event->getForm(), $data->getGitRemoteRepository());
+              $form = $event->getForm();
+              $formModifierHasCron($form, $data->hasCron());
+              $formModifierGitBranch($form, $data->getGitRemoteRepository());
+
+              if($data->getId()) {
+                  $form->remove('machineName');
+              }
           }
         );
         $builder->get('hasCron')->addEventListener(

@@ -3,12 +3,15 @@
 namespace App\Entity;
 
 use App\Repository\ProjectRepository;
+use Cron\CronExpression;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=ProjectRepository::class)
+ * @UniqueEntity(fields="machineName", message="Machine name is already taken.")
  */
 class Project
 {
@@ -25,9 +28,24 @@ class Project
     private $name;
 
     /**
+     * @ORM\Column(type="string", length=255, unique=true)
+     */
+    private $machineName;
+
+    /**
      * @ORM\Column(type="string", length=255)
      */
     private $gitRemoteRepository;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $gitBranch;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $drupalDirectory;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class)
@@ -61,11 +79,6 @@ class Project
      */
     private $lastAnalyse;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $gitBranch;
-
     public function __construct()
     {
         $this->allowedUsers = new ArrayCollection();
@@ -88,6 +101,19 @@ class Project
         return $this;
     }
 
+    public function getMachineName(): ?string
+    {
+        return $this->machineName;
+    }
+
+    public function setMachineName(string $machineName): self
+    {
+
+        $this->machineName = $machineName;
+
+        return $this;
+    }
+
     public function getGitRemoteRepository(): ?string
     {
         return $this->gitRemoteRepository;
@@ -96,6 +122,30 @@ class Project
     public function setGitRemoteRepository(string $gitRemoteRepository): self
     {
         $this->gitRemoteRepository = $gitRemoteRepository;
+
+        return $this;
+    }
+
+    public function getGitBranch(): ?string
+    {
+        return $this->gitBranch;
+    }
+
+    public function setGitBranch(string $gitBranch): self
+    {
+        $this->gitBranch = $gitBranch;
+
+        return $this;
+    }
+
+    public function getDrupalDirectory(): ?string
+    {
+        return $this->drupalDirectory;
+    }
+
+    public function setDrupalDirectory(?string $drupalDirectory): self
+    {
+        $this->drupalDirectory = $drupalDirectory;
 
         return $this;
     }
@@ -180,18 +230,6 @@ class Project
     public function setLastAnalyse(?Analyse $lastAnalyse): self
     {
         $this->lastAnalyse = $lastAnalyse;
-
-        return $this;
-    }
-
-    public function getGitBranch(): ?string
-    {
-        return $this->gitBranch;
-    }
-
-    public function setGitBranch(string $gitBranch): self
-    {
-        $this->gitBranch = $gitBranch;
 
         return $this;
     }

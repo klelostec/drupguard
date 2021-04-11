@@ -6,6 +6,8 @@ use App\Entity\Project;
 use App\Form\ProjectType;
 use App\Repository\ProjectRepository;
 use App\Service\GitHelper;
+use App\Service\MachineName;
+use App\Service\MachineNameHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -32,7 +34,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/new", name="project_new", methods={"GET","POST"})
      */
-    public function new(Request $request): Response
+    public function new(Request $request, MachineNameHelper $machineNameHelper): Response
     {
         $project = new Project();
         $form = $this->createForm(ProjectType::class, $project);
@@ -41,6 +43,10 @@ class ProjectController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             if(empty($project->getOwner())) {
                 $project->setOwner($this->getUser());
+            }
+            if(empty($project->getMachineName())) {
+                $machineName = $machineNameHelper->getMachineName($project->getMachineName());
+                $project->setMachineName($machineName);
             }
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($project);

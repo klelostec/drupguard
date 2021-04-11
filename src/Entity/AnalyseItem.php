@@ -30,23 +30,28 @@ class AnalyseItem
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $projectVersion;
+    private $currentVersion;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $lastAvailableVersion;
+    private $latestVersion;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $lastAvailableSecurityVersion;
+    private $recommandedVersion;
 
     /**
      * @ORM\ManyToOne(targetEntity=Analyse::class, inversedBy="analyseItems")
      * @ORM\JoinColumn(nullable=false)
      */
     private $analyse;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $state;
 
     public function getId(): ?int
     {
@@ -77,38 +82,38 @@ class AnalyseItem
         return $this;
     }
 
-    public function getProjectVersion(): ?string
+    public function getCurrentVersion(): ?string
     {
-        return $this->projectVersion;
+        return $this->currentVersion;
     }
 
-    public function setProjectVersion(string $projectVersion): self
+    public function setCurrentVersion(string $currentVersion): self
     {
-        $this->projectVersion = $projectVersion;
+        $this->currentVersion = $currentVersion;
 
         return $this;
     }
 
-    public function getLastAvailableVersion(): ?string
+    public function getLatestVersion(): ?string
     {
-        return $this->lastAvailableVersion;
+        return $this->latestVersion;
     }
 
-    public function setLastAvailableVersion(string $lastAvailableVersion): self
+    public function setLatestVersion(string $latestVersion): self
     {
-        $this->lastAvailableVersion = $lastAvailableVersion;
+        $this->latestVersion = $latestVersion;
 
         return $this;
     }
 
-    public function getLastAvailableSecurityVersion(): ?string
+    public function getRecommandedVersion(): ?string
     {
-        return $this->lastAvailableSecurityVersion;
+        return $this->recommandedVersion;
     }
 
-    public function setLastAvailableSecurityVersion(?string $lastAvailableSecurityVersion): self
+    public function setRecommandedVersion(?string $recommandedVersion): self
     {
-        $this->lastAvailableSecurityVersion = $lastAvailableSecurityVersion;
+        $this->recommandedVersion = $recommandedVersion;
 
         return $this;
     }
@@ -121,6 +126,18 @@ class AnalyseItem
     public function setAnalyse(?Analyse $analyse): self
     {
         $this->analyse = $analyse;
+
+        return $this;
+    }
+
+    public function getState(): ?string
+    {
+        return $this->state;
+    }
+
+    public function setState(string $state): self
+    {
+        $this->state = $state;
 
         return $this;
     }
