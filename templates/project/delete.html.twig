@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Delete Project{% endblock %}
+
+{% block body %}
+    <h1>Delete Project {{ project.name }}</h1>
+
+    <form method="post" action="{{ path('project_delete', {'id': project.id}) }}">
+        <p>'Are you sure you want to delete this item ?</p>
+        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ project.id) }}">
+        <button class="btn btn-danger">Delete</button>
+    </form>
+
+    <a href="{{ path('project_index') }}">back to list</a>
+{% endblock %}

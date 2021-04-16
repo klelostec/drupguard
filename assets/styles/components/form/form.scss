@@ -1,6 +1,7 @@
-form label.required {
-  &::after {
-    color: red;
-    content: " *";
-  }
+.badge-danger{
+  background-color: #dc3545;
+}
+
+form span.required {
+  color: red;
 }

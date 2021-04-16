@@ -41,4 +41,12 @@ class GitHelper extends GitRepository
         }
         return $branches;
     }
+
+    public function reset($hard = false)
+    {
+        return $this->begin()
+          ->run('git reset' . ($hard ? ' --hard' : ''))
+          ->run('git clean -d -f')
+          ->end();
+    }
 }

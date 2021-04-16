@@ -2,7 +2,13 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}DrupGuard{% endblock %}</title>
+        {% set _blockTitle = block('title') %}
+        {% if _blockTitle is not empty %}
+            {% set _blockTitle = 'DrupGuard | ' ~ block('title') %}
+        {% else %}
+            {% set _blockTitle = 'DrupGuard' %}
+        {% endif %}
+        <title>{{ _blockTitle }}</title>
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
         {% endblock %}
@@ -12,14 +18,18 @@
         {% endblock %}
     </head>
     <body>
-        {{ knp_menu_render('main', {'currentClass': 'active'}) }}
-        {% for label, messages in app.flashes(['warning', 'error', 'success']) %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label }}">
-                    {{ message }}
-                </div>
+        <div class="container-fluid">
+            {{ knp_menu_render('main', {'currentClass': 'active'}) }}
+        </div>
+        <div class="container">
+            {% for label, messages in app.flashes(['warning', 'error', 'success']) %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ label }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
             {% endfor %}
-        {% endfor %}
-        {% block body %}{% endblock %}
+            {% block body %}{% endblock %}
+        </div>
     </body>
 </html>

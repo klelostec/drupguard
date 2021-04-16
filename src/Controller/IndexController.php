@@ -17,6 +17,6 @@ class IndexController extends AbstractController
             return $this->forward('App\Controller\SecurityController::login');
         }
 
-        return $this->render('index/index.html.twig');
+        return $this->forward('App\Controller\ProjectController::index');
     }
 }

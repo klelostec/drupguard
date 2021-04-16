@@ -1,37 +1,58 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Project index{% endblock %}
+{% block title %}Project list{% endblock %}
 
 {% block body %}
-    <h1>Project index</h1>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Name</th>
-                <th>State</th>
-                <th>actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for project in projects %}
-            <tr>
-                <td>{{ project.id }}</td>
-                <td>{{ project.name }}</td>
-                <td>{{ project.lastAnalyse ? project.lastAnalyse.state : 'No value' }}</td>
-                <td>
-                    <a href="{{ path('project_show', {'id': project.id}) }}">show</a>
-                    <a href="{{ path('project_edit', {'id': project.id}) }}">edit</a>
-                </td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="7">no records found</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
-
+    <h1>Project list</h1>
     <a href="{{ path('project_new') }}">Create new</a>
+
+    <div class="p-3 container-fluid">
+        {% if projects is not empty %}
+            <div class="row display-flex row-cols-1 row-cols-md-2 row-cols-sd-1 row-cols-lg-4">
+                {% for project in projects %}
+                    <div class="p-3 col align-self-stretch">
+                        <div class="border h-100 project-item project-{{ project.lastAnalyse ? project.lastAnalyse.stateClass : 'other' }}" style="position:relative;">
+                            <a class="btn h-100 w-100 align-middle" href="{{ path('project_show', {'id': project.id}) }}">
+                                <h2>{{ project.name }}</h2>
+                                <p>{{ project.lastAnalyse ? project.lastAnalyse.date|date('d/m/Y h:i:s') : 'No analyse available' }}</p>
+                            </a>
+                            {% if project.isWritable(user) %}
+                                <a class="btn project-action-btn edit" href="{{ path('project_edit', {'id': project.id}) }}"><i class="fas fa-edit"></i></a>
+                                <a class="btn project-action-btn delete" href="{{ path('project_delete', {'id': project.id}) }}"><i class="fas fa-trash"></i></a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card w-100">
+                No records found.
+            </div>
+        {% endif %}
+    </div>
+    {% if nbPages > 1 %}
+        <div class="container">
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                    {% if currentPage+1 != 1 -%}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('project_index', {'page': currentPage-1}) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for i in 0..nbPages-1 %}
+                        <li class="page-item{{ i==currentPage ? ' active' : '' }}"><a class="page-link" href="{{ path('project_index', {'page': i}) }}">{{ i+1 }}</a></li>
+                    {% endfor %}
+                    {% if currentPage+1 != nbPages -%}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('project_index', {'page': currentPage+1}) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
 {% endblock %}

@@ -8,12 +8,16 @@ use App\Repository\ProjectRepository;
 use App\Service\GitHelper;
 use App\Service\MachineName;
 use App\Service\MachineNameHelper;
+use App\Service\StatsHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * @Route("/project")
@@ -24,10 +28,16 @@ class ProjectController extends AbstractController
     /**
      * @Route("/", name="project_index", methods={"GET"})
      */
-    public function index(ProjectRepository $projectRepository): Response
+    public function index(Request $request, ProjectRepository $projectRepository): Response
     {
+        $page = $request->query->get('page', 0);
+        $nbItems = $projectRepository->countByAllowedUser($this->getUser());
+        $limit = 10;
         return $this->render('project/index.html.twig', [
-            'projects' => $projectRepository->findByAllowedUser($this->getUser()),
+            'currentPage' => $page,
+            'nbPages' => ceil($nbItems/$limit),
+            'projects' => $projectRepository->findByAllowedUser($this->getUser(), $page, $limit),
+            'user' => $this->getUser()
         ]);
     }
 
@@ -64,10 +74,17 @@ class ProjectController extends AbstractController
     /**
      * @Route("/{id}", name="project_show", methods={"GET"})
      */
-    public function show(Project $project): Response
+    public function show(Project $project, StatsHelper $statsHelper): Response
     {
+        if(!$project->isReadable($this->getUser())) {
+            throw new AccessDeniedException('Cannot edit project.');
+        }
+
         return $this->render('project/show.html.twig', [
             'project' => $project,
+            'statsDonut' => $statsHelper->buildProjectDonut($project),
+            'statsHistory' => $statsHelper->buildProjectHistory($project),
+            'user' => $this->getUser()
         ]);
     }
 
@@ -76,6 +93,10 @@ class ProjectController extends AbstractController
      */
     public function edit(Request $request, Project $project): Response
     {
+        if(!$project->isWritable($this->getUser())) {
+            throw new AccessDeniedException('Cannot edit project.');
+        }
+
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
 
@@ -92,15 +113,43 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="project_delete", methods={"POST"})
+     * @Route("/{id}/delete", name="project_delete", methods={"GET","POST"})
      */
     public function delete(Request $request, Project $project): Response
     {
+        if(!$project->isWritable($this->getUser())) {
+            throw new AccessDeniedException('Cannot edit project.');
+        }
+
         if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($project);
             $entityManager->flush();
         }
+
+        return $this->render('project/delete.html.twig', [
+          'project' => $project
+        ]);
+    }
+
+    /**
+     * @Route("/{id}/run", name="project_run", methods={"GET"})
+     */
+    public function run(Request $request, Project $project, KernelInterface $kernel): Response
+    {
+        if(!$project->isWritable($this->getUser())) {
+            throw new AccessDeniedException('Cannot edit project.');
+        }
+
+//        if(!$project->getLastAnalyse() || $project->getLastAnalyse()->isRunning() ) {
+//            $process = new Process('php bin/console drupgard:run ' . $project->getMachineName() . ' --force');
+//            $process->start();
+//        }
+//
+//        return $this->render('project/delete.html.twig', [
+//          'project' => $project
+//        ]);
+
 
         return $this->redirectToRoute('project_index');
     }

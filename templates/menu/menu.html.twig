@@ -9,7 +9,7 @@
                     <ul{{ knp_menu.attributes(listAttributes) }}>
                         {{ block('children') }}
                     </ul>
-                    <ul class="navbar-nav">
+                    <ul class="navbar-nav ms-auto">
                         {% set item = item.getLastChild %}
                         {{ block('item') }}
                     </ul>
@@ -128,10 +128,15 @@
 {% endblock %}
 
 {% block dropdownlinks %}
+    {%- set extraClasse = '' %}
+    {%- if item.actsLikeLast %}
+        {%- set extraClasse = ' dropdown-menu-lg-end' %}
+    {%- endif %}
+
     {% if use_multilevel %}
-        <ul class="dropdown-menu">
+        <ul class="dropdown-menu {{ extraClasse }}">
     {% else %}
-        <div class="dropdown-menu">
+        <div class="dropdown-menu {{ extraClasse }}">
     {% endif %}
     {% for item in item.children %}
         {{ block('renderDropdownlink') }}
@@ -237,7 +242,9 @@
     {%- set classes = classes|merge(['dropdown-toggle', 'nav-link']) %}
     {%- set attributes = item.linkAttributes %}
     {%- set attributes = attributes|merge({'class': classes|join(' ')}) %}
-    {%- set attributes = attributes|merge({'data-toggle': 'dropdown'}) %}
+    {%- set attributes = attributes|merge({'data-bs-toggle': 'dropdown'}) %}
+    {%- set attributes = attributes|merge({'role': 'button'}) %}
+    {%- set attributes = attributes|merge({'aria-expanded': 'false'}) %}
     <a href="#"{{ macros.attributes(attributes) }}>
         {% if item.attribute('icon') is not empty  %}
             <i class="{{ item.attribute('icon') }}"></i>

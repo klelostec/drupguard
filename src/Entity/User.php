@@ -105,8 +105,11 @@ class User implements UserInterface
 
     public function setRoles(array $roles): self
     {
+        if(($key = array_search('ROLE_USER', $roles)) !== false) {
+            unset($roles[$key]);
+            $roles = array_values($roles);
+        }
         $this->roles = $roles;
-
         return $this;
     }
 
@@ -218,6 +221,10 @@ class User implements UserInterface
         }
 
         return $this;
+    }
+
+    public function isSuperAdmin() {
+        return $this->getId() ===1;
     }
 
     public function __toString(){

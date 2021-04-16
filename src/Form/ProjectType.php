@@ -15,6 +15,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Blank;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class ProjectType extends AbstractType
 {
@@ -34,15 +35,25 @@ class ProjectType extends AbstractType
         ];
 
         $builder
-            ->add('name')
-            ->add('machineName')
+            ->add('name', TextType::class, [
+              'constraints' => [
+                new NotBlank()
+              ]
+            ])
+            ->add('machineName', TextType::class, [
+              'required' => true,
+            ])
             ->add('gitRemoteRepository', TextType::class, [
               'constraints' => [
                 new GitRemote()
               ]
             ])
-            ->add('gitBranch', ChoiceType::class)
-            ->add('drupalDirectory', TextType::class)
+            ->add('gitBranch', ChoiceType::class, [
+              'required' => true,
+            ])
+            ->add('drupalDirectory', TextType::class, [
+              'required' => false,
+            ])
             ->add('hasCron')
             ->add('cronFrequency', TextType::class, $cronFreqOption)
             ->add('isPublic')

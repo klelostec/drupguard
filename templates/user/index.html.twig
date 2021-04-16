@@ -30,7 +30,9 @@
                 <td>{{ user.isVerified ? 'Yes' : 'No' }}</td>
                 <td>
                     <a class="btn btn-primary" role="button" href="{{ path('user_edit', {'id': user.id}) }}">edit</a>
-                    <a class="btn btn-danger" role="button" href="{{ path('user_delete', {'id': user.id}) }}">delete</a>
+                    {% if not user.isSuperAdmin %}
+                        <a class="btn btn-danger" role="button" href="{{ path('user_delete', {'id': user.id}) }}">delete</a>
+                    {% endif %}
                 </td>
             </tr>
         {% else %}

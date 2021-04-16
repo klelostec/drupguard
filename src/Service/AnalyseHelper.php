@@ -7,64 +7,16 @@ use App\Entity\AnalyseItem;
 use App\Entity\Project;
 use App\Exception\AnalyseException;
 use Cron\CronExpression;
-use Cz\Git\GitRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\HandlerStack;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Process\Process;
 
 class AnalyseHelper {
-
-    /**
-     * Project is missing security update(s).
-     */
-    const NOT_SECURE = 1;
-
-    /**
-     * Current release has been unpublished and is no longer available.
-     */
-    const REVOKED = 2;
-
-    /**
-     * Current release is no longer supported by the project maintainer.
-     */
-    const NOT_SUPPORTED = 3;
-
-    /**
-     * Project has a new release available, but it is not a security release.
-     */
-    const NOT_CURRENT = 4;
-
-    /**
-     * Project is up to date.
-     */
-    const CURRENT = 5;
-
-    /**
-     * Project's status cannot be checked.
-     */
-    const NOT_CHECKED = -1;
-
-    /**
-     * No available update data was found for project.
-     */
-    const UNKNOWN = -2;
-
-    /**
-     * There was a failure fetching available update data for this project.
-     */
-    const NOT_FETCHED = -3;
-
-    /**
-     * We need to (re)fetch available update data for this project.
-     */
-    const FETCH_PENDING = -4;
-
-    const SUCCESS = 3;
-    const WARNING = 2;
-    const ERROR = 1;
 
     protected $entityManager;
 
@@ -72,10 +24,13 @@ class AnalyseHelper {
 
     protected $projectDir;
 
-    public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel)
+    protected $params;
+
+    public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel, ContainerBagInterface $params)
     {
         $this->entityManager = $entityManager;
         $this->projectDir = $kernel->getProjectDir();
+        $this->params = $params;
     }
 
     function start(Project $project, bool $force = false) {
@@ -95,22 +50,31 @@ class AnalyseHelper {
             $filesystem = new Filesystem();
             $projectWorkspace = $this->projectDir . '/workspace/' . $project->getMachineName();
             if($filesystem->exists($projectWorkspace)) {
-                $filesystem->remove($projectWorkspace);
+                $gitClient = new GitHelper($projectWorkspace);
+                $gitClient->reset(true); //ensure modified files are restored to prevent errors when checkout
+                $gitClient->checkout($project->getGitBranch());
+                $gitClient->pull();
             }
-            $filesystem->mkdir($projectWorkspace);
-            $gitClient = GitRepository::cloneRepository($project->getGitRemoteRepository(), $projectWorkspace);
-            $gitClient->checkout($project->getGitBranch());
+            else {
+                $filesystem->mkdir($projectWorkspace);
+                $gitClient = GitHelper::cloneRepository($project->getGitRemoteRepository(), $projectWorkspace);
+                $gitClient->checkout($project->getGitBranch());
+            }
 
             $drupalDir = $projectWorkspace . $project->getDrupalDirectory();
             if(!$filesystem->exists($drupalDir . '/composer.json') || !$filesystem->exists($drupalDir . '/composer.lock')) {
-                $this->stopAnalyse($analyse, 'error');
+                $this->stopAnalyse($analyse, Analyse::ERROR);
                 throw new AnalyseException('Project "' . $project->getMachineName() .'" doesn\'t contain composer json or lock file.', AnalyseException::ERROR);
             }
+
+            $composerCmd = explode(' ', $this->params->get('drupguard.composer_bin') .' install --ignore-platform-reqs --no-scripts --no-autoloader --quiet --no-interaction');
+            $composerInstall = new Process($composerCmd, $drupalDir);
+            $composerInstall->run();
 
             $composerJson = file_get_contents($drupalDir . '/composer.json');
             $composerJson = json_decode($composerJson, true);
             if(empty($composerJson['extra']['installer-paths'])) {
-                $this->stopAnalyse($analyse, 'error');
+                $this->stopAnalyse($analyse, Analyse::ERROR);
                 throw new AnalyseException('Project "' . $project->getMachineName() .'" : composer.json doesn\'t contain key "extra/installer-path".', AnalyseException::ERROR);
             }
 
@@ -125,9 +89,8 @@ class AnalyseHelper {
             }
 
             $analyse->setState($status);
-            $this->entityManager->flush();
 
-            $this->stopAnalyse($analyse);
+            $this->stopAnalyse($analyse, $status);
         }
     }
 
@@ -147,7 +110,7 @@ class AnalyseHelper {
                 $this->update_calculate_project_update_status($projectData, $available);
             }
             catch (RequestException $exception) {
-                $projectData['status'] = self::UNKNOWN;
+                $projectData['status'] = AnalyseItem::UNKNOWN;
                 $projectData['reason'] = 'No available releases found';
             }
 
@@ -159,22 +122,38 @@ class AnalyseHelper {
             $analyseItem->setLatestVersion($projectData['latest_version']);
             $analyseItem->setRecommandedVersion($projectData['recommended']);
             $analyseItem->setState($projectData['status']);
+
+            $detail = [];
+            if(!empty($projectData['reason'])) {
+                $detail[] = '<p>' . $projectData['reason'] . '</p>';
+            }
+            if(!empty($projectData['extra'])) {
+                foreach($projectData['extra'] as $extra) {
+                    if(count($detail) > 0) {
+                        $detail[] = '';
+                    }
+                    $detail[] = '<p><strong>' . $extra['label'] . '</strong></p>';
+                    $detail[] = '<p>' . $extra['data'] . '</p>';
+                }
+            }
+            $analyseItem->setDetail(implode('<br>', $detail));
+
             $this->entityManager->persist($analyseItem);
 
             switch ($projectData['status']) {
-                case self::CURRENT :
+                case AnalyseItem::CURRENT :
                     if(is_null($status)) {
-                        $status = self::SUCCESS;
+                        $status = Analyse::SUCCESS;
                     }
                     break;
-                case self::NOT_SECURE:
-                    if(is_null($status) || $status > self::ERROR) {
-                        $status = self::ERROR;
+                case AnalyseItem::NOT_SECURE:
+                    if(is_null($status) || $status > Analyse::ERROR) {
+                        $status = Analyse::ERROR;
                     }
                     break;
                 default:
-                    if(is_null($status) || $status === self::SUCCESS) {
-                        $status = self::WARNING;
+                    if(is_null($status) || $status === AnalyseItem::SUCCESS) {
+                        $status = Analyse::WARNING;
                     }
                     break;
             }
@@ -296,7 +275,7 @@ class AnalyseHelper {
         if (isset($available['project_status'])) {
             switch ($available['project_status']) {
                 case 'insecure':
-                    $project_data['status'] = self::NOT_SECURE;
+                    $project_data['status'] = AnalyseItem::NOT_SECURE;
                     if (empty($project_data['extra'])) {
                         $project_data['extra'] = [];
                     }
@@ -307,7 +286,7 @@ class AnalyseHelper {
                     break;
                 case 'unpublished':
                 case 'revoked':
-                    $project_data['status'] = self::REVOKED;
+                    $project_data['status'] = AnalyseItem::REVOKED;
                     if (empty($project_data['extra'])) {
                         $project_data['extra'] = [];
                     }
@@ -317,7 +296,7 @@ class AnalyseHelper {
                     ];
                     break;
                 case 'unsupported':
-                    $project_data['status'] = self::NOT_SUPPORTED;
+                    $project_data['status'] = AnalyseItem::NOT_SUPPORTED;
                     if (empty($project_data['extra'])) {
                         $project_data['extra'] = [];
                     }
@@ -327,7 +306,7 @@ class AnalyseHelper {
                     ];
                     break;
                 case 'not-fetched':
-                    $project_data['status'] = self::NOT_FETCHED;
+                    $project_data['status'] = AnalyseItem::NOT_FETCHED;
                     $project_data['reason'] ='Failed to get available update data.';
                     break;
 
@@ -366,7 +345,7 @@ class AnalyseHelper {
             // its major version was not in the 'supported_majors' list. We should
             // find the best release from the recommended major version.
             $target_major = $available['recommended_major'];
-            $project_data['status'] = self::NOT_SUPPORTED;
+            $project_data['status'] = AnalyseItem::NOT_SUPPORTED;
         }
         elseif (isset($available['default_major'])) {
             // Older release history XML file without recommended, so recommend
@@ -394,8 +373,8 @@ class AnalyseHelper {
         // data we currently have (if any) is stale, and we've got a task queued
         // up to (re)fetch the data. In that case, we mark it as such, merge in
         // whatever data we have (e.g. project title and link), and move on.
-        if (!empty($available['fetch_status']) && $available['fetch_status'] == self::FETCH_PENDING) {
-            $project_data['status'] = self::FETCH_PENDING;
+        if (!empty($available['fetch_status']) && $available['fetch_status'] == AnalyseItem::FETCH_PENDING) {
+            $project_data['status'] = AnalyseItem::FETCH_PENDING;
             $project_data['reason'] ='No available update data';
             $project_data['fetch_status'] = $available['fetch_status'];
             return;
@@ -403,7 +382,7 @@ class AnalyseHelper {
 
         // Defend ourselves from XML history files that contain no releases.
         if (empty($available['releases'])) {
-            $project_data['status'] = self::UNKNOWN;
+            $project_data['status'] = AnalyseItem::UNKNOWN;
             $project_data['reason'] ='No available releases found';
             return;
         }
@@ -412,10 +391,10 @@ class AnalyseHelper {
             if ($project_data['existing_version'] === $version) {
                 if (isset($release['terms']['Release type']) &&
                   in_array('Insecure', $release['terms']['Release type'])) {
-                    $project_data['status'] = self::NOT_SECURE;
+                    $project_data['status'] = AnalyseItem::NOT_SECURE;
                 }
                 elseif ($release['status'] == 'unpublished') {
-                    $project_data['status'] = self::REVOKED;
+                    $project_data['status'] = AnalyseItem::REVOKED;
                     if (empty($project_data['extra'])) {
                         $project_data['extra'] = [];
                     }
@@ -427,7 +406,7 @@ class AnalyseHelper {
                 }
                 elseif (isset($release['terms']['Release type']) &&
                   in_array('Unsupported', $release['terms']['Release type'])) {
-                    $project_data['status'] = self::NOT_SUPPORTED;
+                    $project_data['status'] = AnalyseItem::NOT_SUPPORTED;
                     if (empty($project_data['extra'])) {
                         $project_data['extra'] = [];
                     }
@@ -547,7 +526,7 @@ class AnalyseHelper {
         // If we don't know what to recommend, there's nothing we can report.
         // Bail out early.
         if (!isset($project_data['recommended'])) {
-            $project_data['status'] = self::UNKNOWN;
+            $project_data['status'] = AnalyseItem::UNKNOWN;
             $project_data['reason'] ='No available releases found';
             return;
         }
@@ -569,34 +548,34 @@ class AnalyseHelper {
         switch ($project_data['install_type']) {
             case 'official':
                 if ($project_data['existing_version'] === $project_data['recommended'] || $project_data['existing_version'] === $project_data['latest_version']) {
-                    $project_data['status'] = self::CURRENT;
+                    $project_data['status'] = AnalyseItem::CURRENT;
                 }
                 else {
-                    $project_data['status'] = self::NOT_CURRENT;
+                    $project_data['status'] = AnalyseItem::NOT_CURRENT;
                 }
                 break;
 
             case 'dev':
                 $latest = $available['releases'][$project_data['latest_dev']];
                 if (empty($project_data['datestamp'])) {
-                    $project_data['status'] = self::NOT_CHECKED;
+                    $project_data['status'] = AnalyseItem::NOT_CHECKED;
                     $project_data['reason'] ='Unknown release date';
                 }
                 elseif (($project_data['datestamp'] + 100 > $latest['date'])) {
-                    $project_data['status'] = self::CURRENT;
+                    $project_data['status'] = AnalyseItem::CURRENT;
                 }
                 else {
-                    $project_data['status'] = self::NOT_CURRENT;
+                    $project_data['status'] = AnalyseItem::NOT_CURRENT;
                 }
                 break;
 
             default:
-                $project_data['status'] = self::UNKNOWN;
+                $project_data['status'] = AnalyseItem::UNKNOWN;
                 $project_data['reason'] ='Invalid info';
         }
     }
 
-    protected function stopAnalyse(Analyse $analyse, $state = 'success') {
+    protected function stopAnalyse(Analyse $analyse, $state = Analyse::SUCCESS) {
         $analyse->setIsRunning(false);
         $analyse->setState($state);
         $this->entityManager->flush();
@@ -609,7 +588,8 @@ class AnalyseHelper {
         }
         $currentDate = new \DateTime();
         $cronHelper = new CronExpression($project->getCronFrequency());
-        return $cronHelper->getNextRunDate() >= $currentDate;
+
+        return $cronHelper->getNextRunDate($project->getLastAnalyse()->getDate()) <= $currentDate;
     }
 
     protected function isRunning(Project $project): ?bool

@@ -1,0 +1,35 @@
+.project-success {
+  background-color: #d1e7dd;
+}
+.project-warning {
+  background-color: #fff3cd;
+}
+.project-danger {
+  background-color: #f8d7da;
+}
+.project-other {
+  background-color: #e2e3e5;
+}
+
+.project-item {
+  position: relative;
+}
+
+.project-action-btn {
+  display: none;
+  position: absolute;
+  right: 0.5rem;
+  padding: 0;
+  &.edit {
+    top: 0.5rem;
+  }
+  &.delete {
+    bottom: 0.5rem;
+    right: 0.75rem;
+  }
+}
+
+.project-item:hover .project-action-btn {
+  display: block;
+}
+

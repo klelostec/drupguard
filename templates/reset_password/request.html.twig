@@ -20,11 +20,9 @@
 
     {{ form_start(requestForm) }}
         {{ form_row(requestForm.email) }}
-        <div>
-            <small>
-                Enter your email address and we we will send you a
-                link to reset your password.
-            </small>
+        <div class="form-group row ps-2 pe-2">
+            <div class="col-sm-2"></div>
+            <div class="col-sm-10">Enter your email address and we we will send you a link to reset your password.</div>
         </div>
 
         <button class="btn btn-primary">Send password reset email</button>

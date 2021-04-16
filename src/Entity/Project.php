@@ -233,4 +233,15 @@ class Project
 
         return $this;
     }
+
+    public function isWritable(User $user) {
+        return $user->isSuperAdmin() ||
+          $this->getOwner()->getId() === $user->getId() ||
+          $this->getAllowedUsers()->contains($user);
+    }
+
+    public function isReadable(User $user) {
+        return $this->isPublic() ||
+          $this->isWritable($user);
+    }
 }

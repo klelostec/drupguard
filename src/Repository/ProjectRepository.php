@@ -6,6 +6,7 @@ use App\Entity\Project;
 use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -22,19 +23,39 @@ class ProjectRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param \App\Entity\User $user
+     *
+     * @return \Doctrine\ORM\Tools\Pagination\Paginator
+     */
+    protected function getQueryByAllowedUser(User $user) {
+        $query = $this->createQueryBuilder('p')
+          ->leftJoin('p.allowedUsers', 'pu', Join::WITH)
+          ->andWhere('p.isPublic = 1 OR p.owner = :user OR (pu.id IS NOT NULL AND pu.id = :user)')
+          ->setParameter('user', $user->getId())
+          ->orderBy('p.name', 'ASC');
+
+        return new Paginator($query);
+    }
+
+    /**
      * @return Project[] Returns an array of Project objects
      */
-    public function findByAllowedUser(User $user)
+    public function findByAllowedUser(User $user, $page = 0, $limit = 10)
     {
-        return $this->createQueryBuilder('p')
-          ->leftJoin('p.allowedUsers', 'pu', Join::WITH)
-          ->andWhere('(pu.id IS NULL AND p.owner = :user) OR pu.id = :user OR p.isPublic = 1')
-          ->setParameter('user', $user->getId())
-          ->orderBy('p.id', 'ASC')
-          ->setMaxResults(10)
+        return $this->getQueryByAllowedUser($user)
           ->getQuery()
+          ->setMaxResults($limit)
+          ->setFirstResult(($page ?: 0)*$limit)
           ->getResult()
           ;
+    }
+
+    /**
+     * @return int Returns the number of Project objects
+     */
+    public function countByAllowedUser(User $user)
+    {
+        return $this->getQueryByAllowedUser($user)->count();
     }
 
     /**

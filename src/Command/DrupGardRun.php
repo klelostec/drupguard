@@ -37,50 +37,36 @@ class DrupGardRun extends Command
         $this
           ->setDescription('Run projects analyses.')
           ->setHelp('This command allows you to run all projects analyses. If cron is enable for project, check frequency to run or not.')
-          ->addArgument('project', InputArgument::OPTIONAL, 'Project machine name.')
+          ->addArgument('project', InputArgument::REQUIRED, 'Project machine name.')
           ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force run analyse, work only on cron project')
-          ->addOption('cron-only', 'co', InputOption::VALUE_NONE, 'Run only project which has cron setting')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $repo = $this->entityManager->getRepository("App:Project");
-        if($machineName = $input->getArgument('project')) {
-            $project = $repo->findOneBy(['machineName' => $machineName]);
-            if(!$project) {
-                $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
-                return Command::FAILURE;
-            }
+        $machineName = $input->getArgument('project');
+        $project = $repo->findOneBy(['machineName' => $machineName]);
+        if(!$project) {
+            $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
+            return Command::FAILURE;
+        }
 
-            $output->writeln('<info>Project "' . $machineName .'"\'s analyse start.</info>');
-            try {
-                $this->analyseHelper->start($project, boolval($input->getOption('force')));
-            }
-            catch (AnalyseException $e) {
-                switch ($e->getCode()) {
-                    case AnalyseException::WARNING:
-                        $output->writeln('<warning>' . $e->getMessage() . '</warning>');
-                        return Command::SUCCESS;
-                    default:
-                        $output->writeln('<error>' . $e->getMessage() . '</error>');
-                        return Command::FAILURE;
-                }
+        $output->writeln('<info>Project "' . $machineName .'"\'s analyse start.</info>');
+        try {
+            $this->analyseHelper->start($project, boolval($input->getOption('force')));
+        }
+        catch (AnalyseException $e) {
+            switch ($e->getCode()) {
+                case AnalyseException::WARNING:
+                    $output->writeln('<warning>' . $e->getMessage() . '</warning>');
+                    return Command::SUCCESS;
+                default:
+                    $output->writeln('<error>' . $e->getMessage() . '</error>');
+                    return Command::FAILURE;
             }
         }
-        else {
-            $projects = $repo->findByCronNeeded(boolval($input->getOption('cron-only')));
-            foreach($projects as $project) {
-                $command = $this->getApplication()->find($this->getName());
-                $arguments = [
-                  'project' => $project->getMachineName(),
-                  '--force' => $input->getOption('force'),
-                ];
 
-                $input = new ArrayInput($arguments);
-                $command->run($input, $output);
-            }
-        }
         return Command::SUCCESS;
     }
 }

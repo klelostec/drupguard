@@ -12,6 +12,10 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Analyse
 {
+    const SUCCESS = 3;
+    const WARNING = 2;
+    const ERROR = 1;
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -89,6 +93,20 @@ class Analyse
         $this->state = $state;
 
         return $this;
+    }
+
+    public function getStateClass(): string
+    {
+        switch ($this->state) {
+            case self::ERROR:
+                return 'danger';
+            case self::WARNING:
+                return 'warning';
+            case self::SUCCESS:
+                return 'success';
+            default:
+                return 'secondary';
+        }
     }
 
     /**

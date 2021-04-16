@@ -28,7 +28,7 @@ class MenuBuilder
         if($this->security->isGranted('ROLE_USER')) {
             $user = $this->security->getUser();
 
-            $menu->addChild('Project', ['route' => 'project_index']);
+//            $menu->addChild('Project', ['route' => 'project_index']);
 
             // administration
             if($this->security->isGranted('ROLE_ADMIN')) {
@@ -38,6 +38,9 @@ class MenuBuilder
             $userMenu = $menu->addChild($user->getUsername(), ['attributes' => ['dropdown' => true, 'icon' => 'fas fa-user fa-lg']]);
             $userMenu->addChild('Profile', ['route' => 'app_profile']);
             $userMenu->addChild('Logout', ['route' => 'app_logout']);
+        }
+        else {
+            $menu->addChild('Login', ['route' => 'app_login']);
         }
         return $menu;
     }

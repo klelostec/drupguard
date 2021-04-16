@@ -8,6 +8,8 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\AtLeastOneOf;
 use Symfony\Component\Validator\Constraints\Blank;
@@ -56,12 +58,22 @@ class UserType extends AbstractType
                 'multiple' => true,
                 'expanded' => true, // render check-boxes
                 'choices' => [
-                    'admin' => 'ROLE_ADMIN',
-                    'user' => 'ROLE_USER',
+                    'admin' => 'ROLE_ADMIN'
                 ]
             ])
             ->add('isVerified')
         ;
+
+        $builder->addEventListener(
+          FormEvents::POST_SET_DATA,
+          function (FormEvent $event) {
+              $data = $event->getData();
+              $form = $event->getForm();
+              if($data->isSuperAdmin()) {
+                  $form->remove('roles');
+              }
+          }
+        );
     }
 
     public function configureOptions(OptionsResolver $resolver)
