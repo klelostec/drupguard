@@ -5,6 +5,9 @@
         {% if item.isRoot %}
             <nav class="navbar navbar-expand-lg navbar-light bg-light">
                 <a class="navbar-brand" href="{{ path('app_home') }}"><i class="fab fa-drupal fa-2x"></i></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul{{ knp_menu.attributes(listAttributes) }}>
                         {{ block('children') }}

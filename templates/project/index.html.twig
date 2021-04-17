@@ -14,7 +14,7 @@
                         <div class="border h-100 project-item project-{{ project.lastAnalyse ? project.lastAnalyse.stateClass : 'other' }}" style="position:relative;">
                             <a class="btn h-100 w-100 align-middle" href="{{ path('project_show', {'id': project.id}) }}">
                                 <h2>{{ project.name }}</h2>
-                                <p>{{ project.lastAnalyse ? project.lastAnalyse.date|date('d/m/Y h:i:s') : 'No analyse available' }}</p>
+                                <p>{{ project.lastAnalyse ? project.lastAnalyse.date|date('d/m/Y H:i:s') : 'No analyse available' }}</p>
                             </a>
                             {% if project.isWritable(user) %}
                                 <a class="btn project-action-btn edit" href="{{ path('project_edit', {'id': project.id}) }}"><i class="fas fa-edit"></i></a>

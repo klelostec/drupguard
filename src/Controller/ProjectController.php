@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Project;
 use App\Form\ProjectType;
 use App\Repository\ProjectRepository;
+use App\Service\AnalyseHelper;
 use App\Service\GitHelper;
 use App\Service\MachineName;
 use App\Service\MachineNameHelper;
@@ -135,23 +136,15 @@ class ProjectController extends AbstractController
     /**
      * @Route("/{id}/run", name="project_run", methods={"GET"})
      */
-    public function run(Request $request, Project $project, KernelInterface $kernel): Response
+    public function run(Project $project, AnalyseHelper $analyseHelper): Response
     {
         if(!$project->isWritable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
         }
 
-//        if(!$project->getLastAnalyse() || $project->getLastAnalyse()->isRunning() ) {
-//            $process = new Process('php bin/console drupgard:run ' . $project->getMachineName() . ' --force');
-//            $process->start();
-//        }
-//
-//        return $this->render('project/delete.html.twig', [
-//          'project' => $project
-//        ]);
+        $analyseHelper->start($project, true);
 
-
-        return $this->redirectToRoute('project_index');
+        return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
     }
 
     /**

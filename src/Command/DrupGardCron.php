@@ -2,16 +2,12 @@
 
 namespace App\Command;
 
-use App\Exception\AnalyseException;
-use App\Service\AnalyseHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 class DrupGardCron extends Command
 {
@@ -20,16 +16,10 @@ class DrupGardCron extends Command
 
     protected $entityManager;
 
-    protected $projectDir;
-
-    protected $analyseHelper;
-
-    public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel, AnalyseHelper $analyseHelper)
+    public function __construct(EntityManagerInterface $entityManager)
     {
         parent::__construct();
         $this->entityManager = $entityManager;
-        $this->projectDir = $kernel->getProjectDir();
-        $this->analyseHelper = $analyseHelper;
     }
 
     protected function configure()

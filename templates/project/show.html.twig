@@ -4,9 +4,12 @@
 
 {% block body %}
     <div class="container-fluid d-flex align-items-center">
-        <h1 class="d-inline-flex">Project {{ project.name }}{% if project.lastAnalyse %}{{ ' - ' ~ project.lastAnalyse.date|date('d/m/Y h:i:s') }}{% endif %}</h1>
+        <h1 class="d-inline-flex">Project {{ project.name }}{% if project.lastAnalyse %}{{ ' - ' ~ project.lastAnalyse.date|date('d/m/Y H:i:s') }}{% endif %}</h1>
         {% if project.isWritable(user) %}
-            <div class="d-inline-flex ms-auto"><a href="{{ path('project_edit', {'id': project.id}) }}" class="btn"><i class="fas fa-edit"></i></a></div>
+            <div class="d-inline-flex ms-auto">
+                <a href="{{ path('project_edit', {'id': project.id}) }}" class="btn"><i class="fas fa-edit"></i></a>
+                <a href="{{ path('project_run', {'id': project.id}) }}" class="btn"><i class="fas fa-play"></i></a>
+            </div>
         {% endif %}
     </div>
     {% if project.lastAnalyse %}
@@ -101,7 +104,10 @@
                     axis: {
                         x: {
                             type: 'category',
-                            categories: {{ statsHistory.categories|json_encode()|raw }}
+                            categories: {{ statsHistory.categories|json_encode()|raw }},
+                            tick: {
+                                rotate: -75,
+                            }
                         },
                         y: {
                             tick: {

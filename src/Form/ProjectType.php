@@ -89,6 +89,12 @@ class ProjectType extends AbstractType
               $formModifierGitBranch($form, $data->getGitRemoteRepository());
 
               if($data->getId()) {
+                  $form->add('name', TextType::class, [
+                    'help' => 'Machine name : ' . $data->getMachineName(),
+                    'constraints' => [
+                      new NotBlank()
+                    ]
+                  ]);
                   $form->remove('machineName');
               }
           }

@@ -91,7 +91,7 @@ class StatsHelper {
                 $ret['data'][1][] = $current['warning'];
                 $ret['data'][2][] = $current['other'];
                 $ret['data'][3][] = $current['danger'];
-                $ret['categories'][] = $current["date"]->format('d/m/Y H:i:s');
+                $ret['categories'][] = $current["date"]->format('d/m/y H:i:s');
             }
         }
 
