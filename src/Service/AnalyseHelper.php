@@ -14,7 +14,8 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
-class AnalyseHelper {
+class AnalyseHelper
+{
 
     const UPDATE_DEFAULT_URL = 'https://updates.drupal.org/release-history';
 
@@ -28,20 +29,27 @@ class AnalyseHelper {
 
     protected $filesystem;
 
-    public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel, ContainerBagInterface $params)
-    {
+    public function __construct(
+      EntityManagerInterface $entityManager,
+      KernelInterface $kernel,
+      ContainerBagInterface $params
+    ) {
         $this->entityManager = $entityManager;
         $this->projectDir = $kernel->getProjectDir();
         $this->params = $params;
         $this->filesystem = new Filesystem();
     }
 
-    function start(Project $project, bool $force = false) {
-        if($this->isRunning($project)) {
-            throw new AnalyseException('Project "' . $project->getMachineName() .'"\'s analyse is running.', AnalyseException::WARNING);
+    function start(Project $project, bool $force = false)
+    {
+        if ($this->isRunning($project)) {
+            throw new AnalyseException(
+              'Project "'.$project->getMachineName().'"\'s analyse is running.',
+              AnalyseException::WARNING
+            );
         }
 
-        if($this->needRunAnalyse($project) || $force) {
+        if ($this->needRunAnalyse($project) || $force) {
             $analyse = new Analyse();
             $analyse->setDate(new \DateTime());
             $analyse->setProject($project);
@@ -51,24 +59,43 @@ class AnalyseHelper {
             $this->entityManager->flush();
 
 
-            $projectWorkspace = $this->projectDir . '/workspace/' . $project->getMachineName();
-            $drupalDir = $projectWorkspace . $project->getDrupalDirectory();
+            $projectWorkspace = $this->projectDir.'/workspace/'.$project->getMachineName(
+              );
+            $drupalDir = $projectWorkspace.$project->getDrupalDirectory();
 
 //            $this->gitCheckout($project, $projectWorkspace);
 //            $this->build($drupalDir);
             $drupalInfo = $this->getDrupalInfo($drupalDir);
 
-            if(empty($drupalInfo['version'])) {
-                throw new AnalyseException('Project "' . $project->getMachineName() .'" directory "' . $project->getDrupalDirectory() . '" isn\'t a Drupal directory.', AnalyseException::ERROR);
+            if (empty($drupalInfo['version'])) {
+                throw new AnalyseException(
+                  'Project "'.$project->getMachineName(
+                  ).'" directory "'.$project->getDrupalDirectory(
+                  ).'" isn\'t a Drupal directory.', AnalyseException::ERROR
+                );
             }
 
             $drupalCompare = new DrupalUpdateCompare();
-            $drupalProcessor = new DrupalUpdateProcessor();
+            $drupalProcessor = new DrupalUpdateProcessor($drupalInfo['compat']);
+            switch ($drupalInfo['compat']) {
+                case '7.x':
+                case '8.x':
+                    $compareFunction = 'update_calculate_project_update_status_branches';
+                    break;
+                default:
+                    $compareFunction = 'update_calculate_project_update_status_current';
+            }
+
+
             $status = null;
-            foreach($this->getItems($drupalInfo) as $currentItem) {
+            foreach ($this->getItems($drupalInfo) as $currentItem) {
                 $drupalCompare->update_process_project_info($currentItem);
                 $available = $drupalProcessor->processFetchTask($currentItem);
-                $drupalCompare->update_calculate_project_update_status($currentItem, $available);
+
+                $drupalCompare->{$compareFunction}(
+                  $currentItem,
+                  $available
+                );
 
                 $analyseItem = new AnalyseItem();
                 $analyseItem->setAnalyse($analyse)
@@ -77,31 +104,30 @@ class AnalyseHelper {
                   ->setCurrentVersion($currentItem['existing_version'])
                   ->setLatestVersion($currentItem['latest_version'] ?: '')
                   ->setRecommandedVersion($currentItem['recommended'] ?: '')
-                  ->setState($currentItem['status'])
-                ;
+                  ->setState($currentItem['status']);
 
                 $detail = '';
-                if(!empty($currentItem['also'])) {
+                if (!empty($currentItem['also'])) {
                     $detail .= '<div>Major version available : <br><ul>';
-                    foreach($currentItem['also'] as $also) {
-                        $detail .= '<li><a href="' . $currentItem['releases'][$also]['release_link'] . '" target="_blank">' . $currentItem['releases'][$also]['version'] . '</a></li>';
+                    foreach ($currentItem['also'] as $also) {
+                        $detail .= '<li><a href="'.$currentItem['releases'][$also]['release_link'].'" target="_blank">'.$currentItem['releases'][$also]['version'].'</a></li>';
                     }
                     $detail .= '</ul></div>';
                 }
-                if(!empty($currentItem['security updates'])) {
+                if (!empty($currentItem['security updates'])) {
                     $detail .= '<div>Security update available : <br><ul>';
-                    foreach($currentItem['security updates'] as $securityUpdate) {
-                        $detail .= '<li><a href="' . $securityUpdate['release_link'] . '" target="_blank">' . $securityUpdate['version'] . '</a></li>';
+                    foreach ($currentItem['security updates'] as $securityUpdate) {
+                        $detail .= '<li><a href="'.$securityUpdate['release_link'].'" target="_blank">'.$securityUpdate['version'].'</a></li>';
                     }
                     $detail .= '</ul></div>';
                 }
 
-                if(!empty($currentItem['reason'])) {
-                    $detail .= '<div>' . $currentItem['reason'] . '</div>';
+                if (!empty($currentItem['reason'])) {
+                    $detail .= '<div>'.$currentItem['reason'].'</div>';
                 }
-                if(!empty($currentItem['extra'])) {
-                    foreach($currentItem['extra'] as $extra) {
-                        $detail .= '<div><strong>' . $extra['label'] . '</strong><br>' . $extra['data'] . '</div>';
+                if (!empty($currentItem['extra'])) {
+                    foreach ($currentItem['extra'] as $extra) {
+                        $detail .= '<div><strong>'.$extra['label'].'</strong><br>'.$extra['data'].'</div>';
                     }
                 }
                 $analyseItem->setDetail($detail);
@@ -110,17 +136,17 @@ class AnalyseHelper {
 
                 switch ($currentItem['status']) {
                     case AnalyseItem::CURRENT :
-                        if(is_null($status)) {
+                        if (is_null($status)) {
                             $status = Analyse::SUCCESS;
                         }
                         break;
                     case AnalyseItem::NOT_SECURE:
-                        if(is_null($status) || $status > Analyse::ERROR) {
+                        if (is_null($status) || $status > Analyse::ERROR) {
                             $status = Analyse::ERROR;
                         }
                         break;
                     default:
-                        if(is_null($status) || $status === Analyse::SUCCESS) {
+                        if (is_null($status) || $status === Analyse::SUCCESS) {
                             $status = Analyse::WARNING;
                         }
                         break;
@@ -132,22 +158,30 @@ class AnalyseHelper {
         }
     }
 
-    protected function gitCheckout(Project $project, $projectWorkspace) {
-        if($this->filesystem->exists($projectWorkspace)) {
+    protected function gitCheckout(Project $project, $projectWorkspace)
+    {
+        if ($this->filesystem->exists($projectWorkspace)) {
             $gitClient = new GitHelper($projectWorkspace);
-            $gitClient->reset(true); //ensure modified files are restored to prevent errors when checkout
+            $gitClient->reset(
+              true
+            ); //ensure modified files are restored to prevent errors when checkout
             $gitClient->checkout($project->getGitBranch());
             $gitClient->pull();
-        }
-        else {
+        } else {
             $this->filesystem->mkdir($projectWorkspace);
-            $gitClient = GitHelper::cloneRepository($project->getGitRemoteRepository(), $projectWorkspace);
+            $gitClient = GitHelper::cloneRepository(
+              $project->getGitRemoteRepository(),
+              $projectWorkspace
+            );
             $gitClient->checkout($project->getGitBranch());
         }
     }
 
-    protected function build($drupalDir) {
-        if($this->filesystem->exists($drupalDir . '/composer.json') && $this->filesystem->exists($drupalDir . '/composer.lock')) {
+    protected function build($drupalDir)
+    {
+        if ($this->filesystem->exists(
+            $drupalDir.'/composer.json'
+          ) && $this->filesystem->exists($drupalDir.'/composer.lock')) {
             $composerCmd = explode(
               ' ',
               $this->params->get(
@@ -159,62 +193,95 @@ class AnalyseHelper {
         }
     }
 
-    protected function getDrupalInfo($drupalDir) {
+    protected function getDrupalInfo($drupalDir)
+    {
         $info = [
           'version' => '',
           'compat' => '',
-          'directories' => []
+          'directories' => [],
         ];
-        if($this->filesystem->exists($drupalDir . '/composer.json')) {
-            $composerJson = file_get_contents($drupalDir . '/composer.json');
+        if ($this->filesystem->exists($drupalDir.'/composer.json')) {
+            $composerJson = file_get_contents($drupalDir.'/composer.json');
             $composerJson = json_decode($composerJson, true);
 
-            if(!empty($composerJson['extra']['installer-paths'])) {
-                foreach($composerJson['extra']['installer-paths'] as $dir => $types) {
-                    if(in_array('type:drupal-core', $types)) {
-                        $info['directories']['core'] = $drupalDir . '/' . str_replace('/{$name}', '', $dir);
-                    }
-                    else if(in_array('type:drupal-module', $types)) {
-                        $info['directories']['module'] = $drupalDir . '/' . str_replace('/{$name}', '', $dir);
-                    }
-                    else if(in_array('type:drupal-theme', $types)) {
-                        $info['directories']['theme'] = $drupalDir . '/' . str_replace('/{$name}', '', $dir);
+            if (!empty($composerJson['extra']['installer-paths'])) {
+                foreach ($composerJson['extra']['installer-paths'] as $dir => $types) {
+                    if (in_array('type:drupal-core', $types)) {
+                        $info['directories']['core'] = $drupalDir.'/'.str_replace(
+                            '/{$name}',
+                            '',
+                            $dir
+                          );
+                    } else {
+                        if (in_array('type:drupal-module', $types)) {
+                            $info['directories']['module'] = $drupalDir.'/'.str_replace(
+                                '/{$name}',
+                                '',
+                                $dir
+                              );
+                        } else {
+                            if (in_array('type:drupal-theme', $types)) {
+                                $info['directories']['theme'] = $drupalDir.'/'.str_replace(
+                                    '/{$name}',
+                                    '',
+                                    $dir
+                                  );
+                            }
+                        }
                     }
                 };
             }
         }
 
-        if(empty($info['directories']['core'])) {
-            if($this->filesystem->exists($drupalDir . '/core/lib/Drupal.php')) {
-                $info['directories']['core'] = $drupalDir . '/core';
-                $info['directories']['module'] = $drupalDir . '/modules' . ($this->filesystem->exists($drupalDir . '/modules/contrib') ? '/contrib' : '');
-                $info['directories']['theme'] = $drupalDir . '/themes' . ($this->filesystem->exists($drupalDir . '/themes/contrib') ? '/contrib' : '');
-            }
-            else if($this->filesystem->exists($drupalDir . '/includes/bootstrap.inc')) {
-                $info['directories']['core'] = $drupalDir;
-                $info['directories']['module'] = $drupalDir . '/sites/all/modules' . ($this->filesystem->exists($drupalDir . '/sites/all/modules/contrib') ? '/contrib' : '');
-                $info['directories']['theme'] = $drupalDir . '/sites/all/themes' . ($this->filesystem->exists($drupalDir . '/sites/all/themes/contrib') ? '/contrib' : '');
+        if (empty($info['directories']['core'])) {
+            if ($this->filesystem->exists($drupalDir.'/core/lib/Drupal.php')) {
+                $info['directories']['core'] = $drupalDir.'/core';
+                $info['directories']['module'] = $drupalDir.'/modules'.($this->filesystem->exists(
+                    $drupalDir.'/modules/contrib'
+                  ) ? '/contrib' : '');
+                $info['directories']['theme'] = $drupalDir.'/themes'.($this->filesystem->exists(
+                    $drupalDir.'/themes/contrib'
+                  ) ? '/contrib' : '');
+            } else {
+                if ($this->filesystem->exists(
+                  $drupalDir.'/includes/bootstrap.inc'
+                )) {
+                    $info['directories']['core'] = $drupalDir;
+                    $info['directories']['module'] = $drupalDir.'/sites/all/modules'.($this->filesystem->exists(
+                        $drupalDir.'/sites/all/modules/contrib'
+                      ) ? '/contrib' : '');
+                    $info['directories']['theme'] = $drupalDir.'/sites/all/themes'.($this->filesystem->exists(
+                        $drupalDir.'/sites/all/themes/contrib'
+                      ) ? '/contrib' : '');
+                }
             }
         }
 
-        if(!empty($info['directories']['core'])) {
-            if($this->filesystem->exists($info['directories']['core'] . '/lib/Drupal.php')) {
-                include $info['directories']['core'] . '/lib/Drupal.php';
+        if (!empty($info['directories']['core'])) {
+            if ($this->filesystem->exists(
+              $info['directories']['core'].'/lib/Drupal.php'
+            )) {
+                include $info['directories']['core'].'/lib/Drupal.php';
                 $info['compat'] = \Drupal::CORE_COMPATIBILITY;
                 $info['version'] = \Drupal::VERSION;
                 $info['extension'] = '.info.yml';
-            }
-            else if($this->filesystem->exists($info['directories']['core'] . '/includes/bootstrap.inc')) {
-                include $info['directories']['core'] . '/includes/bootstrap.inc';
-                $info['compat'] = DRUPAL_CORE_COMPATIBILITY;
-                $info['version'] = VERSION;
-                $info['extension'] = '.info';
+            } else {
+                if ($this->filesystem->exists(
+                  $info['directories']['core'].'/includes/bootstrap.inc'
+                )) {
+                    include $info['directories']['core'].'/includes/bootstrap.inc';
+                    $info['compat'] = DRUPAL_CORE_COMPATIBILITY;
+                    $info['version'] = VERSION;
+                    $info['extension'] = '.info';
+                }
             }
         }
+
         return $info;
     }
 
-    protected function getItems($drupalInfo) {
+    protected function getItems($drupalInfo)
+    {
         $items = [];
 
         //core
@@ -230,43 +297,68 @@ class AnalyseHelper {
         ];
 
         //modules
-        $this->searchItem($drupalInfo['directories']['module'], 'module', $drupalInfo['extension'], $items);
+        $this->searchItem(
+          $drupalInfo['directories']['module'],
+          'module',
+          $drupalInfo['extension'],
+          $items
+        );
 
         //themes
-        $this->searchItem($drupalInfo['directories']['theme'], 'theme', $drupalInfo['extension'], $items);
+        $this->searchItem(
+          $drupalInfo['directories']['theme'],
+          'theme',
+          $drupalInfo['extension'],
+          $items
+        );
 
         return $items;
     }
 
-    protected function searchItem($directory, $type, $extension, &$items) {
-        if(is_dir($directory)) {
+    protected function searchItem($directory, $type, $extension, &$items)
+    {
+        if (is_dir($directory)) {
             $handle = opendir($directory);
-            while(FALSE !== ($entry = readdir($handle))) {
-                if($entry == '.' || $entry == '..') {
+            while (false !== ($entry = readdir($handle))) {
+                if ($entry == '.' || $entry == '..') {
                     continue;
                 }
-                if(is_dir("$directory/$entry")) {
-                    if($this->filesystem->exists("$directory/$entry/$entry$extension")) {
-                        switch($extension) {
+                if (is_dir("$directory/$entry")) {
+                    if ($this->filesystem->exists(
+                      "$directory/$entry/$entry$extension"
+                    )) {
+                        switch ($extension) {
                             case '.info.yml':
                                 $items[$entry] = [
                                   'name' => $entry,
-                                  'info' => Yaml::parse(file_get_contents("$directory/$entry/$entry$extension")),
+                                  'info' => Yaml::parse(
+                                    file_get_contents(
+                                      "$directory/$entry/$entry$extension"
+                                    )
+                                  ),
                                   'project_type' => $type,
                                 ];
                                 break;
                             case '.info':
-                                $data = file_get_contents("$directory/$entry/$entry$extension");
+                                $data = file_get_contents(
+                                  "$directory/$entry/$entry$extension"
+                                );
                                 $items[$entry] = [
                                   'name' => $entry,
-                                  'info' => $this->drupal_parse_info_format($data),
+                                  'info' => $this->drupal_parse_info_format(
+                                    $data
+                                  ),
                                   'project_type' => $type,
                                 ];
                                 break;
                         }
-                    }
-                    else {
-                        $this->searchItem("$directory/$entry", $type, $extension, $items);
+                    } else {
+                        $this->searchItem(
+                          "$directory/$entry",
+                          $type,
+                          $extension,
+                          $items
+                        );
                     }
                 }
             }
@@ -279,6 +371,7 @@ class AnalyseHelper {
      *
      * Data should be in an .ini-like format to specify values. White-space
      * generally doesn't matter, except inside values:
+     *
      * @code
      *   key = value
      *   key = "value"
@@ -311,10 +404,12 @@ class AnalyseHelper {
      *
      * @see drupal_parse_info_file()
      */
-    function drupal_parse_info_format($data) {
-        $info = array();
+    function drupal_parse_info_format($data)
+    {
+        $info = [];
 
-        if (preg_match_all('
+        if (preg_match_all(
+          '
     @^\s*                           # Start at the beginning of a line, ignoring leading whitespace
     ((?:
       [^=;\[\]]|                    # Key names cannot contain equal signs, semi-colons or square brackets,
@@ -326,14 +421,20 @@ class AnalyseHelper {
       (\'(?:[^\']|(?<=\\\\)\')*\')| # Single-quoted string, which may contain slash-escaped quotes/slashes
       ([^\r\n]*?)                   # Non-quoted string
     )\s*$                           # Stop at the next end of a line, ignoring trailing whitespace
-    @msx', $data, $matches, PREG_SET_ORDER)) {
+    @msx',
+          $data,
+          $matches,
+          PREG_SET_ORDER
+        )) {
             foreach ($matches as $match) {
                 // Fetch the key and value string.
                 $i = 0;
-                foreach (array('key', 'value1', 'value2', 'value3') as $var) {
+                foreach (['key', 'value1', 'value2', 'value3'] as $var) {
                     $$var = isset($match[++$i]) ? $match[$i] : '';
                 }
-                $value = stripslashes(substr($value1, 1, -1)) . stripslashes(substr($value2, 1, -1)) . $value3;
+                $value = stripslashes(substr($value1, 1, -1)).stripslashes(
+                    substr($value2, 1, -1)
+                  ).$value3;
 
                 // Parse array syntax.
                 $keys = preg_split('/\]?\[/', rtrim($key, ']'));
@@ -346,7 +447,7 @@ class AnalyseHelper {
                         $key = count($parent);
                     }
                     if (!isset($parent[$key]) || !is_array($parent[$key])) {
-                        $parent[$key] = array();
+                        $parent[$key] = [];
                     }
                     $parent = &$parent[$key];
                 }
@@ -370,16 +471,20 @@ class AnalyseHelper {
     /**
      * {@inheritdoc}
      */
-    public function buildFetchUrl(array $project) {
+    public function buildFetchUrl(array $project)
+    {
         $name = $project['name'];
         $url = $this->getFetchBaseUrl($project);
-        $url .= '/' . $name . '/current';
+        $url .= '/'.$name.'/current';
 
         // Only append usage information if we have a site key and the project is
         // enabled. We do not want to record usage statistics for disabled projects.
-        if (!empty($site_key) && (strpos($project['project_type'], 'disabled') === FALSE)) {
+        if (!empty($site_key) && (strpos(
+              $project['project_type'],
+              'disabled'
+            ) === false)) {
             // Append the site key.
-            $url .= (strpos($url, '?') !== FALSE) ? '&' : '?';
+            $url .= (strpos($url, '?') !== false) ? '&' : '?';
             $url .= 'site_key=';
             $url .= rawurlencode($site_key);
 
@@ -394,23 +499,26 @@ class AnalyseHelper {
             $url .= '&list=';
             $url .= rawurlencode(implode(',', $list));
         }
+
         return $url;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getFetchBaseUrl($project) {
+    public function getFetchBaseUrl($project)
+    {
         if (isset($project['info']['project status url'])) {
             $url = $project['info']['project status url'];
-        }
-        else {
+        } else {
             $url = self::UPDATE_DEFAULT_URL;
         }
+
         return $url;
     }
 
-    protected function stopAnalyse(Analyse $analyse, $state = Analyse::SUCCESS) {
+    protected function stopAnalyse(Analyse $analyse, $state = Analyse::SUCCESS)
+    {
         $analyse->setIsRunning(false);
         $analyse->setState($state);
         $this->entityManager->flush();
@@ -418,18 +526,21 @@ class AnalyseHelper {
 
     protected function needRunAnalyse(Project $project): bool
     {
-        if(!$project->hasCron() || (!$project->getLastAnalyse())) {
+        if (!$project->hasCron() || (!$project->getLastAnalyse())) {
             return true;
         }
         $currentDate = new \DateTime();
         $cronHelper = new CronExpression($project->getCronFrequency());
 
-        return $cronHelper->getNextRunDate($project->getLastAnalyse()->getDate()) <= $currentDate;
+        return $cronHelper->getNextRunDate(
+            $project->getLastAnalyse()->getDate()
+          ) <= $currentDate;
     }
 
     protected function isRunning(Project $project): ?bool
     {
-        return $project->getLastAnalyse() && $project->getLastAnalyse()->isRunning();
+        return $project->getLastAnalyse() && $project->getLastAnalyse()
+            ->isRunning();
     }
 
 }

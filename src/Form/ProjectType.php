@@ -16,6 +16,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Blank;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class ProjectType extends AbstractType
 {
@@ -53,6 +54,9 @@ class ProjectType extends AbstractType
             ])
             ->add('drupalDirectory', TextType::class, [
               'required' => false,
+              'constraints' => [
+                new Regex('/^(\/[\w-]+)*$/i')
+              ]
             ])
             ->add('hasCron')
             ->add('cronFrequency', TextType::class, $cronFreqOption)

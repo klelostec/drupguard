@@ -12,6 +12,7 @@ use App\Service\MachineNameHelper;
 use App\Service\StatsHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -123,6 +124,12 @@ class ProjectController extends AbstractController
         }
 
         if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
+            $fileSystem = new Filesystem();
+            $workspaceDir = $this->get('kernel')->getProjectDir() . '/workspace/' . $project->getMachineName();
+            if($fileSystem->exists($workspaceDir)) {
+                $fileSystem->remove($workspaceDir);
+            }
+
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($project);
             $entityManager->flush();
