@@ -63,8 +63,8 @@ class AnalyseHelper
               );
             $drupalDir = $projectWorkspace.$project->getDrupalDirectory();
 
-//            $this->gitCheckout($project, $projectWorkspace);
-//            $this->build($drupalDir);
+            $this->gitCheckout($project, $projectWorkspace);
+            $this->build($drupalDir);
             $drupalInfo = $this->getDrupalInfo($drupalDir);
 
             if (empty($drupalInfo['version'])) {
