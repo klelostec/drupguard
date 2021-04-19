@@ -1,7 +1,7 @@
 # DrupGuard
-DrupGuard is a tool which analyse your Drupal projects. It use git to checkout the project, composer to build it.
-After that, it search for drupal core, modules and themes installed version and check updates using Drupal's update status infrastructure (see [https://www.drupal.org/drupalorg/docs/apis/update-status-xml](https://www.drupal.org/drupalorg/docs/apis/update-status-xml) for details).
-The dashboard created after each analyses allow you to keep an eye on all your projects and be warned when security fix is available for one of your component.
+DrupGuard is a tool which analyse your Drupal projects. It use git to checkout the project, composer to build it.  
+After that, it search for drupal core, modules and themes installed version and check updates using Drupal's update status infrastructure (see [https://www.drupal.org/drupalorg/docs/apis/update-status-xml](https://www.drupal.org/drupalorg/docs/apis/update-status-xml) for details).  
+The dashboard created after each analyses allow you to keep an eye on all your projects and be warned when security fix is available for one of your component.  
 Each project's analysis can be execute periodically and a report can be sent by email.
 
 ![Screenshot](./screen.png?raw=true "Screenshot")
