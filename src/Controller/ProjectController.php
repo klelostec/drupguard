@@ -117,7 +117,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/{id}/delete", name="project_delete", methods={"GET","POST"})
      */
-    public function delete(Request $request, Project $project): Response
+    public function delete(Request $request, Project $project, KernelInterface $kernel): Response
     {
         if(!$project->isWritable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
@@ -125,7 +125,7 @@ class ProjectController extends AbstractController
 
         if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
             $fileSystem = new Filesystem();
-            $workspaceDir = $this->get('kernel')->getProjectDir() . '/workspace/' . $project->getMachineName();
+            $workspaceDir = $kernel->getProjectDir() . '/workspace/' . $project->getMachineName();
             if($fileSystem->exists($workspaceDir)) {
                 $fileSystem->remove($workspaceDir);
             }
@@ -133,6 +133,8 @@ class ProjectController extends AbstractController
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($project);
             $entityManager->flush();
+
+            return $this->redirectToRoute('project_index');
         }
 
         return $this->render('project/delete.html.twig', [

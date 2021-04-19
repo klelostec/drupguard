@@ -75,13 +75,35 @@ class Project
     private $allowedUsers;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Analyse::class)
+     * @ORM\OneToOne(targetEntity=Analyse::class)
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     private $lastAnalyse;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Analyse::class, mappedBy="project", orphanRemoval=true)
+     */
+    private $analyses;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $needEmail;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $emailLevel;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $emailExtra;
 
     public function __construct()
     {
         $this->allowedUsers = new ArrayCollection();
+        $this->analyses = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -234,6 +256,36 @@ class Project
         return $this;
     }
 
+    /**
+     * @return Collection|Analyse[]
+     */
+    public function getAnalyses(): Collection
+    {
+        return $this->analyses;
+    }
+
+    public function addAnalyse(Analyse $analyse): self
+    {
+        if (!$this->analyses->contains($analyse)) {
+            $this->analyses[] = $analyse;
+            $analyse->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnalyse(Analyse $analyse): self
+    {
+        if ($this->analyses->removeElement($analyse)) {
+            // set the owning side to null (unless already changed)
+            if ($analyse->getProject() === $this) {
+                $analyse->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
     public function isWritable(User $user) {
         return $user->isSuperAdmin() ||
           $this->getOwner()->getId() === $user->getId() ||
@@ -243,5 +295,41 @@ class Project
     public function isReadable(User $user) {
         return $this->isPublic() ||
           $this->isWritable($user);
+    }
+
+    public function needEmail(): ?bool
+    {
+        return $this->needEmail;
+    }
+
+    public function setNeedEmail(bool $needEmail): self
+    {
+        $this->needEmail = $needEmail;
+
+        return $this;
+    }
+
+    public function getEmailLevel(): ?string
+    {
+        return $this->emailLevel;
+    }
+
+    public function setEmailLevel(?string $emailLevel): self
+    {
+        $this->emailLevel = $emailLevel;
+
+        return $this;
+    }
+
+    public function getEmailExtra(): ?string
+    {
+        return $this->emailExtra;
+    }
+
+    public function setEmailExtra(?string $emailExtra): self
+    {
+        $this->emailExtra = $emailExtra;
+
+        return $this;
     }
 }

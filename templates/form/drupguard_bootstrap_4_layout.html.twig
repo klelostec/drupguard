@@ -47,3 +47,8 @@
         {%- endif -%}
     {%- endif -%}
 {%- endblock form_label %}
+
+{% block choice_widget_collapsed -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' form-control form-select')|trim}) -%}
+    {{- parent() -}}
+{%- endblock choice_widget_collapsed %}

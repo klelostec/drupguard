@@ -9,6 +9,7 @@
             <div class="d-inline-flex ms-auto">
                 <a href="{{ path('project_edit', {'id': project.id}) }}" class="btn"><i class="fas fa-edit"></i></a>
                 <a href="{{ path('project_run', {'id': project.id}) }}" class="btn"><i class="fas fa-play"></i></a>
+                <a href="{{ path('project_delete', {'id': project.id}) }}" class="btn"><i class="fas fa-trash"></i></a>
             </div>
         {% endif %}
     </div>
@@ -67,7 +68,7 @@
 {% endblock %}
 {% block javascripts %}
     {{ parent() }}
-    {% if project.lastAnalyse is not empty %}
+    {% if project.lastAnalyse is not empty and not project.lastAnalyse.isRunning %}
         {{ encore_entry_script_tags('c3') }}
         <script>
             $(document).ready(function() {

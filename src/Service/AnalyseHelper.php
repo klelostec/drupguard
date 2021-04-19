@@ -8,9 +8,11 @@ use App\Entity\Project;
 use App\Exception\AnalyseException;
 use Cron\CronExpression;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Process\Process;
 use Symfony\Component\Yaml\Yaml;
 
@@ -29,15 +31,19 @@ class AnalyseHelper
 
     protected $filesystem;
 
+    protected $mailer;
+
     public function __construct(
       EntityManagerInterface $entityManager,
       KernelInterface $kernel,
-      ContainerBagInterface $params
+      ContainerBagInterface $params,
+      MailerInterface $mailer
     ) {
         $this->entityManager = $entityManager;
         $this->projectDir = $kernel->getProjectDir();
         $this->params = $params;
         $this->filesystem = new Filesystem();
+        $this->mailer = $mailer;
     }
 
     function start(Project $project, bool $force = false)
@@ -58,13 +64,30 @@ class AnalyseHelper
             $project->setLastAnalyse($analyse);
             $this->entityManager->flush();
 
-
             $projectWorkspace = $this->projectDir.'/workspace/'.$project->getMachineName(
               );
             $drupalDir = $projectWorkspace.$project->getDrupalDirectory();
 
-            $this->gitCheckout($project, $projectWorkspace);
-            $this->build($drupalDir);
+            try {
+                $this->gitCheckout($project, $projectWorkspace);
+            }
+            catch (\Exception $e) {
+                $this->stopAnalyse($analyse, Analyse::ERROR);
+                throw new AnalyseException(
+                  'Cannot checkout project "'.$project->getMachineName().'".',
+                  AnalyseException::ERROR
+                );
+            }
+            try {
+                $this->build($drupalDir);
+            }
+            catch (\Exception $e) {
+                $this->stopAnalyse($analyse, Analyse::ERROR);
+                throw new AnalyseException(
+                  'Cannot build project "'.$project->getMachineName().'".' . PHP_EOL . $e->getMessage(),
+                  AnalyseException::ERROR
+                );
+            }
             $drupalInfo = $this->getDrupalInfo($drupalDir);
 
             if (empty($drupalInfo['version'])) {
@@ -105,6 +128,8 @@ class AnalyseHelper
                   ->setLatestVersion($currentItem['latest_version'] ?: '')
                   ->setRecommandedVersion($currentItem['recommended'] ?: '')
                   ->setState($currentItem['status']);
+
+                $analyse->addAnalyseItem($analyseItem);
 
                 $detail = '';
                 if (!empty($currentItem['also'])) {
@@ -189,7 +214,9 @@ class AnalyseHelper
               ).' install --ignore-platform-reqs --no-scripts --no-autoloader --quiet --no-interaction'
             );
             $composerInstall = new Process($composerCmd, $drupalDir);
-            $composerInstall->run();
+            if($composerInstall->run() !== 0) {
+                throw new \Exception($composerInstall->getErrorOutput());
+            }
         }
     }
 
@@ -522,6 +549,28 @@ class AnalyseHelper
         $analyse->setIsRunning(false);
         $analyse->setState($state);
         $this->entityManager->flush();
+
+        $project = $analyse->getProject();
+        if($project->needEmail()) {
+            $email = (new TemplatedEmail())
+              ->subject('Project ' . $analyse->getProject()->getName())
+              ->from('no-reply@drupguard.com');
+            $emailsAddress = [$project->getOwner()->getEmail()];
+            foreach($project->getAllowedUsers() as $user) {
+                $emailsAddress[] = $user->getEmail();
+            }
+
+            $extraEmails = $project->getEmailExtra();
+            $extraEmails = str_replace("\r\n", "\n", $extraEmails);
+            $extraEmails = explode("\n", $extraEmails);
+            $emailsAddress = $emailsAddress + $extraEmails;
+
+            $emailsAddress = array_unique($emailsAddress);
+            $email->to(...$emailsAddress);
+            $email->htmlTemplate('project/email.html.twig')
+                ->context(['project' => $project]);
+            $this->mailer->send($email);
+        }
     }
 
     protected function needRunAnalyse(Project $project): bool

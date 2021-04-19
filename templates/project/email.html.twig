@@ -1,0 +1,35 @@
+{% apply inline_css(encore_entry_css_source('app')) %}
+    <h1>Project {{ project.name }}{% if project.lastAnalyse %}{{ ' - ' ~ project.lastAnalyse.date|date('d/m/Y H:i:s') }}{% endif %}</h1>
+    <div class="container">
+        <table class="table">
+            <thead>
+            <tr>
+                <th scope="col">Type</th>
+                <th scope="col">Name</th>
+                <th scope="col">Current version</th>
+                <th scope="col">Latest version</th>
+                <th scope="col">Recommanded version</th>
+                <th scope="col">Detail</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if project.lastAnalyse %}
+                {% for item in project.lastAnalyse.analyseItems %}
+                    <tr class="table-{{ item.stateClass }}">
+                        <td>{{ item.type }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.currentVersion }}</td>
+                        <td>{{ item.latestVersion }}</td>
+                        <td>{{ item.recommandedVersion }}</td>
+                        <td>{{ item.detail|raw }}</td>
+                    </tr>
+                {% endfor %}
+            {% else %}
+                <tr class="table-secondary text-center">
+                    <td colspan="6">No analyse available.</td>
+                </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+{% endapply %}

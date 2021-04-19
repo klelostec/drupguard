@@ -5,6 +5,25 @@
 
 <script>
     $(document).ready(function () {
+        var $needEmail = $('#project_needEmail');
+        $needEmail.change(function() {
+            var $form = $(this).closest('form'),
+                $email = $('.needEmail-group', $form),
+                $emailLevelLabel = $('.emailLevel-group label', $form),
+                $emailLevelValue = $('#project_emailLevel', $form);
+            if($(this).prop('checked')) {
+                $email.removeClass('d-none');
+                $emailLevelLabel.append('<span class="required"> *</span>');
+                $emailLevelValue.attr('required', 'required');
+            }
+            else {
+                $email.addClass('d-none');
+                $('span.required', $emailLevelLabel).remove();
+                $emailLevelValue.val('');
+                $emailLevelValue.removeAttr('required');
+            }
+        });
+
         var $hasCron = $('#project_hasCron');
         $hasCron.change(function() {
             var $form = $(this).closest('form'),
@@ -13,12 +32,12 @@
                 $cronFrequencyValue = $('#project_cronFrequency', $form);
             if($(this).prop('checked')) {
                 $cronFreq.removeClass('d-none');
-                $cronFreqLabel.addClass('required');
+                $cronFreqLabel.append('<span class="required"> *</span>');
                 $cronFrequencyValue.attr('required', 'required');
             }
             else {
                 $cronFreq.addClass('d-none');
-                $cronFreqLabel.removeClass('required');
+                $('span.required', $cronFreqLabel).remove();
                 $cronFrequencyValue.val('');
                 $cronFrequencyValue.removeAttr('required');
             }

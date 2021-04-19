@@ -2,12 +2,16 @@
 
 namespace App\Form;
 
+use App\Entity\Analyse;
 use App\Entity\Project;
 use App\Service\GitHelper;
 use App\Validator\Constraints\CronExpression;
 use App\Validator\Constraints\GitRemote;
+use App\Validator\Constraints\MultipleEmail;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -22,6 +26,23 @@ class ProjectType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        $emailLevelOption = [
+          'required' => false,
+          'row_attr' => ['class' => 'needEmail-group emailLevel-group'],
+          'choices' => [
+            'Error' => Analyse::ERROR,
+            'Warning' => Analyse::WARNING,
+            'Success' => Analyse::SUCCESS,
+          ]
+        ];
+        $emailExtraOption = [
+          'required' => false,
+          'row_attr' => ['class' => 'needEmail-group'],
+          'constraints' => [
+            new MultipleEmail(),
+          ],
+          'help' => 'By default, email are sent to allowed users. If you need extra users email, fill this field with emails, one per line.',
+        ];
         $cronFreqOption = [
           'required' => false,
           'constraints' => [
@@ -58,11 +79,25 @@ class ProjectType extends AbstractType
                 new Regex('/^(\/[\w-]+)*$/i')
               ]
             ])
+            ->add('needEmail')
+            ->add('emailLevel', ChoiceType::class, $emailLevelOption)
+            ->add('emailExtra', TextareaType::class, $emailExtraOption)
             ->add('hasCron')
             ->add('cronFrequency', TextType::class, $cronFreqOption)
             ->add('isPublic')
             ->add('allowedUsers')
         ;
+
+        $formModifierNeedEmail = function (FormInterface $form, $needEmail = false) use ($emailLevelOption, $emailExtraOption) {
+            if(!$needEmail) {
+                $emailLevelOption['row_attr']['class'] .=' d-none';
+                $emailExtraOption['row_attr']['class'] .=' d-none';
+            }
+            $emailLevelOption['required'] = boolval($needEmail);
+
+            $form->add('emailLevel', ChoiceType::class, $emailLevelOption);
+            $form->add('emailExtra', TextareaType::class, $emailExtraOption);
+        };
 
         $formModifierHasCron = function (FormInterface $form, $hasCron = false) use ($cronFreqOption) {
             if(!$hasCron) {
@@ -86,9 +121,10 @@ class ProjectType extends AbstractType
 
         $builder->addEventListener(
           FormEvents::POST_SET_DATA,
-          function (FormEvent $event) use ($formModifierHasCron, $formModifierGitBranch) {
+          function (FormEvent $event) use ($formModifierHasCron, $formModifierGitBranch, $formModifierNeedEmail) {
               $data = $event->getData();
               $form = $event->getForm();
+              $formModifierNeedEmail($form, $data->needEmail());
               $formModifierHasCron($form, $data->hasCron());
               $formModifierGitBranch($form, $data->getGitRemoteRepository());
 
@@ -101,6 +137,13 @@ class ProjectType extends AbstractType
                   ]);
                   $form->remove('machineName');
               }
+          }
+        );
+        $builder->get('needEmail')->addEventListener(
+          FormEvents::POST_SUBMIT,
+          function (FormEvent $event) use ($formModifierNeedEmail) {
+              $needEmail = $event->getForm()->getData();
+              $formModifierNeedEmail($event->getForm()->getParent(), $needEmail);
           }
         );
         $builder->get('hasCron')->addEventListener(
