@@ -195,7 +195,8 @@ class ProjectController extends AbstractController
     {
         $analyse = $project->getLastAnalyse();
         $response = new JsonResponse([
-          'running' => ($analyse && $analyse->isRunning()) || $project->isPending()
+          'running' => $analyse && $analyse->isRunning(),
+          'pending' => $project->isPending()
         ]);
         return $response;
     }

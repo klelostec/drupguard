@@ -133,7 +133,7 @@
                 $.ajax({
                     url: '{{ path('project_check', {'id': project.id}) }}'
                 }).done(function(data) {
-                    if(!data.running) {
+                    if(!data.running && !data.pending) {
                         stopCheck();
                         document.location.reload();
                     }
