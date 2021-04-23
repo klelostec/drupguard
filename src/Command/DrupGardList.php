@@ -37,7 +37,7 @@ class DrupGardList extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $table = new Table($output);
-        $table->setHeaders(['Project name', 'Machine name', 'Cron frequency', 'Last analyse', 'Last analyse state', 'Last analyse is running']);
+        $table->setHeaders(['Project name', 'Machine name', 'Cron frequency', 'Last analyse', 'Last analyse state', 'Is running', 'Pending']);
         $repo = $this->entityManager->getRepository("App:Project");
         if($filter = $input->getOption('filter')) {
             // Add a not equals parameter to your criteria
@@ -60,6 +60,7 @@ class DrupGardList extends Command
               $analyse ? $analyse->getDate()->format('d/m/Y H:i:s') : '',
               $analyse ? $analyse->getState() : '',
               $analyse ? $analyse->isRunning() : '',
+              $p->isPending(),
             ]);
         }
         $table->render();

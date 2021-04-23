@@ -31,11 +31,7 @@ class StatsHelper {
         return $query->getQuery()->getOneOrNullResult();
     }
 
-    function buildProjectDonut(Project $project) {
-        if(!($analyse = $this->getLastFinishedAnalyse($project))) {
-            return [];
-        }
-
+    function buildProjectDonut(Analyse $analyse) {
         $query = $this->entityManager->createQueryBuilder()
           ->select([
             "CASE WHEN ai.state = 1 THEN 'danger' WHEN ai.state IN (2, 3, 4) THEN 'warning' WHEN ai.state = 5 THEN 'success' ELSE 'other' END as state",
@@ -51,10 +47,6 @@ class StatsHelper {
     }
 
     function buildProjectHistory(Project $project) {
-        if(!($analyse = $this->getLastFinishedAnalyse($project))) {
-            return [];
-        }
-
         $query = $this->entityManager->createQueryBuilder()
           ->select([
             "a.id",
@@ -73,7 +65,6 @@ class StatsHelper {
           ->setFirstResult(0)
           ->orderBy('a.date', 'DESC')
         ;
-
 
         $ret = [
           'data' => [

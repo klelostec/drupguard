@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\AnalyseQueue;
 use App\Entity\Project;
 use App\Form\ProjectType;
 use App\Repository\ProjectRepository;
@@ -82,9 +83,15 @@ class ProjectController extends AbstractController
             throw new AccessDeniedException('Cannot edit project.');
         }
 
+        $analyse = $project->getLastAnalyse();
+        if($analyse && $analyse->isRunning() && ($count = $project->getAnalyses()->count()) > 1) {
+            $analyse = $project->getAnalyses()->offsetGet($count-2);
+        }
+
         return $this->render('project/show.html.twig', [
             'project' => $project,
-            'statsDonut' => $statsHelper->buildProjectDonut($project),
+            'analyse' => $analyse,
+            'statsDonut' => $statsHelper->buildProjectDonut($analyse),
             'statsHistory' => $statsHelper->buildProjectHistory($project),
             'user' => $this->getUser()
         ]);
@@ -151,9 +158,23 @@ class ProjectController extends AbstractController
             throw new AccessDeniedException('Cannot edit project.');
         }
 
+        if($project->isPending() || ($project->getLastAnalyse() && $project->getLastAnalyse()->isRunning())) {
+            return new JsonResponse(['return' => false]);
+        }
+
+        if(!$project->isPending()) {
+            $queue = new AnalyseQueue();
+            $queue->addProject($project);
+
+            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager->persist($queue);
+            $entityManager->flush();
+        }
+
+
         $analyseHelper->start($project, true);
 
-        return $this->redirectToRoute('project_show', ['id' => $project->getId()]);
+        return new JsonResponse(['return' => true]);
     }
 
     /**
@@ -165,5 +186,17 @@ class ProjectController extends AbstractController
             $branches = GitHelper::getRemoteBranchesWithoutCheckout($gitRemoteRepository);
         }
         return new JsonResponse($branches);
+    }
+
+    /**
+     * @Route("/{id}/check", name="project_check", methods={"GET"})
+     */
+    public function check(Request $request, Project $project): Response
+    {
+        $analyse = $project->getLastAnalyse();
+        $response = new JsonResponse([
+          'running' => ($analyse && $analyse->isRunning()) || $project->isPending()
+        ]);
+        return $response;
     }
 }

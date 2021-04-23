@@ -6,7 +6,6 @@ use App\Entity\Analyse;
 use App\Entity\AnalyseItem;
 use App\Entity\Project;
 use App\Exception\AnalyseException;
-use Cron\CronExpression;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
@@ -46,141 +45,132 @@ class AnalyseHelper
         $this->mailer = $mailer;
     }
 
-    function start(Project $project, bool $force = false)
+    function start(Project $project)
     {
-        if ($this->isRunning($project)) {
+        $analyse = new Analyse();
+        $analyse->setDate(new \DateTime());
+        $analyse->setProject($project);
+        $analyse->setIsRunning(true);
+        $this->entityManager->persist($analyse);
+        $project->setLastAnalyse($analyse);
+        $this->entityManager->flush();
+
+        $projectWorkspace = $this->projectDir.'/workspace/'.$project->getMachineName(
+          );
+        $drupalDir = $projectWorkspace.$project->getDrupalDirectory();
+
+        try {
+            $this->gitCheckout($project, $projectWorkspace);
+        }
+        catch (\Exception $e) {
+            $this->stopAnalyse($analyse, Analyse::ERROR);
             throw new AnalyseException(
-              'Project "'.$project->getMachineName().'"\'s analyse is running.',
-              AnalyseException::WARNING
+              'Cannot checkout project "'.$project->getMachineName().'".',
+              AnalyseException::ERROR
+            );
+        }
+        try {
+            $this->build($drupalDir);
+        }
+        catch (\Exception $e) {
+            $this->stopAnalyse($analyse, Analyse::ERROR);
+            throw new AnalyseException(
+              'Cannot build project "'.$project->getMachineName().'".' . PHP_EOL . $e->getMessage(),
+              AnalyseException::ERROR
+            );
+        }
+        $drupalInfo = $this->getDrupalInfo($drupalDir);
+
+        if (empty($drupalInfo['version'])) {
+            throw new AnalyseException(
+              'Project "'.$project->getMachineName(
+              ).'" directory "'.$project->getDrupalDirectory(
+              ).'" isn\'t a Drupal directory.', AnalyseException::ERROR
             );
         }
 
-        if ($this->needRunAnalyse($project) || $force) {
-            $analyse = new Analyse();
-            $analyse->setDate(new \DateTime());
-            $analyse->setProject($project);
-            $analyse->setIsRunning(true);
-            $this->entityManager->persist($analyse);
-            $project->setLastAnalyse($analyse);
-            $this->entityManager->flush();
+        $drupalCompare = new DrupalUpdateCompare();
+        $drupalProcessor = new DrupalUpdateProcessor($drupalInfo['compat']);
+        switch ($drupalInfo['compat']) {
+            case '7.x':
+            case '8.x':
+                $compareFunction = 'update_calculate_project_update_status_branches';
+                break;
+            default:
+                $compareFunction = 'update_calculate_project_update_status_current';
+        }
 
-            $projectWorkspace = $this->projectDir.'/workspace/'.$project->getMachineName(
-              );
-            $drupalDir = $projectWorkspace.$project->getDrupalDirectory();
 
-            try {
-                $this->gitCheckout($project, $projectWorkspace);
-            }
-            catch (\Exception $e) {
-                $this->stopAnalyse($analyse, Analyse::ERROR);
-                throw new AnalyseException(
-                  'Cannot checkout project "'.$project->getMachineName().'".',
-                  AnalyseException::ERROR
-                );
-            }
-            try {
-                $this->build($drupalDir);
-            }
-            catch (\Exception $e) {
-                $this->stopAnalyse($analyse, Analyse::ERROR);
-                throw new AnalyseException(
-                  'Cannot build project "'.$project->getMachineName().'".' . PHP_EOL . $e->getMessage(),
-                  AnalyseException::ERROR
-                );
-            }
-            $drupalInfo = $this->getDrupalInfo($drupalDir);
+        $status = null;
+        foreach ($this->getItems($drupalInfo) as $currentItem) {
+            $drupalCompare->update_process_project_info($currentItem);
+            $available = $drupalProcessor->processFetchTask($currentItem);
 
-            if (empty($drupalInfo['version'])) {
-                throw new AnalyseException(
-                  'Project "'.$project->getMachineName(
-                  ).'" directory "'.$project->getDrupalDirectory(
-                  ).'" isn\'t a Drupal directory.', AnalyseException::ERROR
-                );
+            $drupalCompare->{$compareFunction}(
+              $currentItem,
+              $available
+            );
+
+            $analyseItem = new AnalyseItem();
+            $analyseItem->setAnalyse($analyse)
+              ->setType($currentItem['project_type'])
+              ->setName($currentItem['info']['name'])
+              ->setCurrentVersion($currentItem['existing_version'])
+              ->setLatestVersion($currentItem['latest_version'] ?: '')
+              ->setRecommandedVersion($currentItem['recommended'] ?: '')
+              ->setState($currentItem['status']);
+
+            $analyse->addAnalyseItem($analyseItem);
+
+            $detail = '';
+            if (!empty($currentItem['also'])) {
+                $detail .= '<div>Major version available : <br><ul>';
+                foreach ($currentItem['also'] as $also) {
+                    $detail .= '<li><a href="'.$currentItem['releases'][$also]['release_link'].'" target="_blank">'.$currentItem['releases'][$also]['version'].'</a></li>';
+                }
+                $detail .= '</ul></div>';
+            }
+            if (!empty($currentItem['security updates'])) {
+                $detail .= '<div>Security update available : <br><ul>';
+                foreach ($currentItem['security updates'] as $securityUpdate) {
+                    $detail .= '<li><a href="'.$securityUpdate['release_link'].'" target="_blank">'.$securityUpdate['version'].'</a></li>';
+                }
+                $detail .= '</ul></div>';
             }
 
-            $drupalCompare = new DrupalUpdateCompare();
-            $drupalProcessor = new DrupalUpdateProcessor($drupalInfo['compat']);
-            switch ($drupalInfo['compat']) {
-                case '7.x':
-                case '8.x':
-                    $compareFunction = 'update_calculate_project_update_status_branches';
+            if (!empty($currentItem['reason'])) {
+                $detail .= '<div>'.$currentItem['reason'].'</div>';
+            }
+            if (!empty($currentItem['extra'])) {
+                foreach ($currentItem['extra'] as $extra) {
+                    $detail .= '<div><strong>'.$extra['label'].'</strong><br>'.$extra['data'].'</div>';
+                }
+            }
+            $analyseItem->setDetail($detail);
+
+            $this->entityManager->persist($analyseItem);
+
+            switch ($currentItem['status']) {
+                case AnalyseItem::CURRENT :
+                    if (is_null($status)) {
+                        $status = Analyse::SUCCESS;
+                    }
+                    break;
+                case AnalyseItem::NOT_SECURE:
+                    if (is_null($status) || $status > Analyse::ERROR) {
+                        $status = Analyse::ERROR;
+                    }
                     break;
                 default:
-                    $compareFunction = 'update_calculate_project_update_status_current';
+                    if (is_null($status) || $status === Analyse::SUCCESS) {
+                        $status = Analyse::WARNING;
+                    }
+                    break;
             }
-
-
-            $status = null;
-            foreach ($this->getItems($drupalInfo) as $currentItem) {
-                $drupalCompare->update_process_project_info($currentItem);
-                $available = $drupalProcessor->processFetchTask($currentItem);
-
-                $drupalCompare->{$compareFunction}(
-                  $currentItem,
-                  $available
-                );
-
-                $analyseItem = new AnalyseItem();
-                $analyseItem->setAnalyse($analyse)
-                  ->setType($currentItem['project_type'])
-                  ->setName($currentItem['info']['name'])
-                  ->setCurrentVersion($currentItem['existing_version'])
-                  ->setLatestVersion($currentItem['latest_version'] ?: '')
-                  ->setRecommandedVersion($currentItem['recommended'] ?: '')
-                  ->setState($currentItem['status']);
-
-                $analyse->addAnalyseItem($analyseItem);
-
-                $detail = '';
-                if (!empty($currentItem['also'])) {
-                    $detail .= '<div>Major version available : <br><ul>';
-                    foreach ($currentItem['also'] as $also) {
-                        $detail .= '<li><a href="'.$currentItem['releases'][$also]['release_link'].'" target="_blank">'.$currentItem['releases'][$also]['version'].'</a></li>';
-                    }
-                    $detail .= '</ul></div>';
-                }
-                if (!empty($currentItem['security updates'])) {
-                    $detail .= '<div>Security update available : <br><ul>';
-                    foreach ($currentItem['security updates'] as $securityUpdate) {
-                        $detail .= '<li><a href="'.$securityUpdate['release_link'].'" target="_blank">'.$securityUpdate['version'].'</a></li>';
-                    }
-                    $detail .= '</ul></div>';
-                }
-
-                if (!empty($currentItem['reason'])) {
-                    $detail .= '<div>'.$currentItem['reason'].'</div>';
-                }
-                if (!empty($currentItem['extra'])) {
-                    foreach ($currentItem['extra'] as $extra) {
-                        $detail .= '<div><strong>'.$extra['label'].'</strong><br>'.$extra['data'].'</div>';
-                    }
-                }
-                $analyseItem->setDetail($detail);
-
-                $this->entityManager->persist($analyseItem);
-
-                switch ($currentItem['status']) {
-                    case AnalyseItem::CURRENT :
-                        if (is_null($status)) {
-                            $status = Analyse::SUCCESS;
-                        }
-                        break;
-                    case AnalyseItem::NOT_SECURE:
-                        if (is_null($status) || $status > Analyse::ERROR) {
-                            $status = Analyse::ERROR;
-                        }
-                        break;
-                    default:
-                        if (is_null($status) || $status === Analyse::SUCCESS) {
-                            $status = Analyse::WARNING;
-                        }
-                        break;
-                }
-            }
-
-            $analyse->setState($status);
-            $this->stopAnalyse($analyse, $status);
         }
+
+        $analyse->setState($status);
+        $this->stopAnalyse($analyse, $status);
     }
 
     protected function gitCheckout(Project $project, $projectWorkspace)
@@ -210,7 +200,9 @@ class AnalyseHelper
             $composerCmd = explode(
               ' ',
               $this->params->get(
-                'drupguard.composer_bin'
+                'drupguard.php_binary'
+              ) . ' ' . $this->params->get(
+                'drupguard.composer_binary'
               ).' install --ignore-platform-reqs --no-scripts --no-autoloader --quiet --no-interaction'
             );
             $composerInstall = new Process($composerCmd, $drupalDir);
@@ -553,7 +545,7 @@ class AnalyseHelper
         $project = $analyse->getProject();
         if($project->needEmail()) {
             $email = (new TemplatedEmail())
-              ->subject('Project ' . $analyse->getProject()->getName())
+              ->subject('Project ' . $analyse->getProject()->getName() . ' - ' . $analyse->getDate()->format('d/m/Y H:i:s'))
               ->from('no-reply@drupguard.com');
             $emailsAddress = [$project->getOwner()->getEmail()];
             foreach($project->getAllowedUsers() as $user) {
@@ -568,28 +560,12 @@ class AnalyseHelper
             $emailsAddress = array_unique($emailsAddress);
             $email->to(...$emailsAddress);
             $email->htmlTemplate('project/email.html.twig')
-                ->context(['project' => $project]);
+                ->context([
+                  'project' => $project,
+                  'analyse' => $analyse,
+                ]);
             $this->mailer->send($email);
         }
-    }
-
-    protected function needRunAnalyse(Project $project): bool
-    {
-        if (!$project->hasCron() || (!$project->getLastAnalyse())) {
-            return true;
-        }
-        $currentDate = new \DateTime();
-        $cronHelper = new CronExpression($project->getCronFrequency());
-
-        return $cronHelper->getNextRunDate(
-            $project->getLastAnalyse()->getDate()
-          ) <= $currentDate;
-    }
-
-    protected function isRunning(Project $project): ?bool
-    {
-        return $project->getLastAnalyse() && $project->getLastAnalyse()
-            ->isRunning();
     }
 
 }

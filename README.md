@@ -29,7 +29,7 @@ Add the cron job to cron tab
 ##Note
 In case of multiple php versions installed, you can specify which binary will be used by adding those lines to .env.local :
 ```
-PHP_BIN=php74
-COMPOSER_BIN="php74 /usr/local/bin/composer"
-CONSOLE_BIN="php74 bin/console"
+PHP_BINARY=/usr/local/bin/php74
+COMPOSER_BINARY="/usr/local/bin/composer"
+CONSOLE_BINARY="bin/console"
 ```

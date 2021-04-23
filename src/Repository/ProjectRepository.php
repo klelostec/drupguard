@@ -71,6 +71,18 @@ class ProjectRepository extends ServiceEntityRepository
         return $query->getQuery()->getResult();
     }
 
+    /**
+     * @return Project[] Returns an array of Project objects
+     */
+    public function findByQueue($numberItems = 10)
+    {
+        $query = $this->createQueryBuilder('p')
+          ->orderBy('p.analyseQueue', 'ASC')
+          ->andWhere('p.analyseQueue IS NOT NULL')
+          ->setMaxResults($numberItems);
+        return $query->getQuery()->getResult();
+    }
+
 
 
 }

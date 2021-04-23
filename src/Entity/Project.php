@@ -100,6 +100,11 @@ class Project
      */
     private $emailExtra;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=AnalyseQueue::class, inversedBy="project")
+     */
+    private $analyseQueue;
+
     public function __construct()
     {
         $this->allowedUsers = new ArrayCollection();
@@ -329,6 +334,23 @@ class Project
     public function setEmailExtra(?string $emailExtra): self
     {
         $this->emailExtra = $emailExtra;
+
+        return $this;
+    }
+
+    public function isPending(): ?bool
+    {
+        return !is_null($this->getAnalyseQueue());
+    }
+
+    public function getAnalyseQueue(): ?AnalyseQueue
+    {
+        return $this->analyseQueue;
+    }
+
+    public function setAnalyseQueue(?AnalyseQueue $analyseQueue): self
+    {
+        $this->analyseQueue = $analyseQueue;
 
         return $this;
     }

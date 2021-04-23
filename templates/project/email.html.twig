@@ -1,5 +1,5 @@
 {% apply inline_css(encore_entry_css_source('app')) %}
-    <h1>Project {{ project.name }}{% if project.lastAnalyse %}{{ ' - ' ~ project.lastAnalyse.date|date('d/m/Y H:i:s') }}{% endif %}</h1>
+    <h1>Project {{ project.name }}{% if analyse %}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}{% endif %}</h1>
     <div class="container">
         <table class="table">
             <thead>
@@ -13,8 +13,8 @@
             </tr>
             </thead>
             <tbody>
-            {% if project.lastAnalyse %}
-                {% for item in project.lastAnalyse.analyseItems %}
+            {% if analyse %}
+                {% for item in analyse.analyseItems %}
                     <tr class="table-{{ item.stateClass }}">
                         <td>{{ item.type }}</td>
                         <td>{{ item.name }}</td>

@@ -2,8 +2,9 @@
 
 namespace App\Command;
 
-use App\Exception\AnalyseException;
-use App\Service\AnalyseHelper;
+use App\Entity\AnalyseQueue;
+use App\Entity\Project;
+use Cron\CronExpression;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -21,14 +22,11 @@ class DrupGardRun extends Command
 
     protected $projectDir;
 
-    protected $analyseHelper;
-
-    public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel, AnalyseHelper $analyseHelper)
+    public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel)
     {
         parent::__construct();
         $this->entityManager = $entityManager;
         $this->projectDir = $kernel->getProjectDir();
-        $this->analyseHelper = $analyseHelper;
     }
 
     protected function configure()
@@ -51,21 +49,45 @@ class DrupGardRun extends Command
             return Command::FAILURE;
         }
 
-        $output->writeln('<info>Project "' . $machineName .'"\'s analyse start.</info>');
-        try {
-            $this->analyseHelper->start($project, boolval($input->getOption('force')));
-        }
-        catch (AnalyseException $e) {
-            switch ($e->getCode()) {
-                case AnalyseException::WARNING:
-                    $output->writeln('<warning>' . $e->getMessage() . '</warning>');
-                    return Command::SUCCESS;
-                default:
-                    $output->writeln('<error>' . $e->getMessage() . '</error>');
-                    return Command::FAILURE;
-            }
+        if($project->isPending()) {
+            $output->writeln('<warning>Project "'.$project->getMachineName().'"\'s analyse is pending.</warning>');
+            return Command::SUCCESS;
         }
 
+        if ($this->isRunning($project)) {
+            $output->writeln('<warning>Project "'.$project->getMachineName().'"\'s analyse is running.</warning>');
+            return Command::SUCCESS;
+        }
+
+        if ($this->needRunAnalyse($project) || boolval($input->getOption('force'))) {
+            $queue = new AnalyseQueue();
+            $queue->addProject($project);
+
+            $this->entityManager->persist($queue);
+            $this->entityManager->flush();
+        }
+
+        $output->writeln('<info>Project "' . $machineName .'" add to queue.</info>');
+
         return Command::SUCCESS;
+    }
+
+    protected function needRunAnalyse(Project $project): bool
+    {
+        if (!$project->hasCron() || (!$project->getLastAnalyse())) {
+            return true;
+        }
+        $currentDate = new \DateTime();
+        $cronHelper = new CronExpression($project->getCronFrequency());
+
+        return $cronHelper->getNextRunDate(
+            $project->getLastAnalyse()->getDate()
+          ) <= $currentDate;
+    }
+
+    protected function isRunning(Project $project): ?bool
+    {
+        return $project->getLastAnalyse() && $project->getLastAnalyse()
+            ->isRunning();
     }
 }
