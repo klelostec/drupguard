@@ -21,7 +21,7 @@ class GitRemoteValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, GitRemote::class);
         }
 
-        if (empty($value) || !preg_match('#((git|ssh|http(s)?)|(git@[\w\.]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?#', $value)) {
+        if (empty($value) || !preg_match('#((git|ssh|http(s)?)|(git@[\w\.\-\_]+))(:(//)?)([\w\.@\:/\-~]+)(\.git)(/)?#i', $value)) {
             $this->context->buildViolation($constraint->stringMessage)
               ->setParameter('{{ value }}', $this->formatValue($value))
               ->setCode(GitRemote::GIT_STRING_ERROR)

@@ -18,6 +18,7 @@ Each project's analysis can be execute periodically and a report can be sent by 
 git clone git@github.com:klelostec/drupguard.git
 cd drupguard
 composer install
+yarn encore production
 php bin/console drupaguard:install
 ```
 

@@ -2,6 +2,7 @@
 /workspace/*
 
 ###> symfony/framework-bundle ###
+/bin
 /.env.local
 /.env.local.php
 /.env.*.local
