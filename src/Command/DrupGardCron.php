@@ -33,8 +33,8 @@ class DrupGardCron extends Command
           ->setDescription('Run projects analyses.')
           ->setHelp('This command allows you to run all projects analyses. If cron is enable for project, check frequency to run or not.')
           ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force run analyse, work only on cron project')
-          ->addOption('cron-only', 'co', InputOption::VALUE_NONE, 'Run only project which has cron setting')
-          ->addOption('process-queue-items', 'pqi', InputOption::VALUE_OPTIONAL, 'Number of queue items process', 10)
+          ->addOption('cron-only', 'c', InputOption::VALUE_NONE, 'Run only project which has cron setting')
+          ->addOption('queue-items', 'i', InputOption::VALUE_OPTIONAL, 'Number of queue items to process', 10)
         ;
     }
 
@@ -50,11 +50,11 @@ class DrupGardCron extends Command
               '--force' => $input->getOption('force'),
             ];
 
-            $input = new ArrayInput($arguments);
-            $command->run($input, $output);
+            $inputCommand = new ArrayInput($arguments);
+            $command->run($inputCommand, $output);
         }
 
-        $nbITems = 10;//intval($input->getOption('process-queue-items'));
+        $nbITems = intval($input->getOption('queue-items'));
         $projectQueues = $repo->findByQueue($nbITems);
         foreach($projectQueues as $project) {
             try {

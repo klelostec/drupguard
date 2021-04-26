@@ -91,8 +91,8 @@ class ProjectController extends AbstractController
         return $this->render('project/show.html.twig', [
             'project' => $project,
             'analyse' => $analyse,
-            'statsDonut' => $statsHelper->buildProjectDonut($analyse),
-            'statsHistory' => $statsHelper->buildProjectHistory($project),
+            'statsDonut' => $analyse ? $statsHelper->buildProjectDonut($analyse) : [],
+            'statsHistory' => $analyse ? $statsHelper->buildProjectHistory($project) : [],
             'user' => $this->getUser()
         ]);
     }
@@ -169,10 +169,8 @@ class ProjectController extends AbstractController
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($queue);
             $entityManager->flush();
+//            $analyseHelper->start($project);
         }
-
-
-        $analyseHelper->start($project, true);
 
         return new JsonResponse(['return' => true]);
     }

@@ -102,7 +102,8 @@ class AnalyseHelper
 
 
         $status = null;
-        foreach ($this->getItems($drupalInfo) as $currentItem) {
+        $items = $this->getItems($drupalInfo);
+        foreach ($items as $keyItem => $currentItem) {
             $drupalCompare->update_process_project_info($currentItem);
             $available = $drupalProcessor->processFetchTask($currentItem);
 
@@ -115,9 +116,10 @@ class AnalyseHelper
             $analyseItem->setAnalyse($analyse)
               ->setType($currentItem['project_type'])
               ->setName($currentItem['info']['name'])
+              ->setMachineName($keyItem)
               ->setCurrentVersion($currentItem['existing_version'])
-              ->setLatestVersion($currentItem['latest_version'] ?: '')
-              ->setRecommandedVersion($currentItem['recommended'] ?: '')
+              ->setLatestVersion(!empty($currentItem['latest_version']) ? $currentItem['latest_version'] : '')
+              ->setRecommandedVersion(!empty($currentItem['recommended']) ? $currentItem['recommended'] : '')
               ->setState($currentItem['status']);
 
             $analyse->addAnalyseItem($analyseItem);
@@ -206,6 +208,7 @@ class AnalyseHelper
               ).' install --ignore-platform-reqs --no-scripts --no-autoloader --quiet --no-interaction'
             );
             $composerInstall = new Process($composerCmd, $drupalDir);
+            $composerInstall->setTimeout(60*60);
             if($composerInstall->run() !== 0) {
                 throw new \Exception($composerInstall->getErrorOutput());
             }
@@ -275,8 +278,7 @@ class AnalyseHelper
                 }
             }
         }
-
-        if (!empty($info['directories']['core'])) {
+        else {
             if ($this->filesystem->exists(
               $info['directories']['core'].'/lib/Drupal.php'
             )) {
@@ -293,6 +295,10 @@ class AnalyseHelper
                     $info['version'] = VERSION;
                     $info['extension'] = '.info';
                 }
+            }
+
+            if(substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
+                $info['compat'] = 'current';
             }
         }
 
@@ -334,55 +340,64 @@ class AnalyseHelper
         return $items;
     }
 
+    protected function scanItem($directory, $extension) {
+        if (!is_dir($directory)) {
+            return FALSE;
+        }
+        $handle = opendir($directory);
+        while (false !== ($entry = readdir($handle))) {
+            if ($entry == '.' || $entry == '..') {
+                continue;
+            }
+            if(substr($entry, -1*strlen($extension)) === $extension) {
+                return "$directory/$entry";
+            }
+        }
+        return FALSE;
+    }
+
     protected function searchItem($directory, $type, $extension, &$items)
     {
-        if (is_dir($directory)) {
-            $handle = opendir($directory);
-            while (false !== ($entry = readdir($handle))) {
-                if ($entry == '.' || $entry == '..') {
-                    continue;
-                }
-                if (is_dir("$directory/$entry")) {
-                    if ($this->filesystem->exists(
-                      "$directory/$entry/$entry$extension"
-                    )) {
-                        switch ($extension) {
-                            case '.info.yml':
-                                $items[$entry] = [
-                                  'name' => $entry,
-                                  'info' => Yaml::parse(
-                                    file_get_contents(
-                                      "$directory/$entry/$entry$extension"
-                                    )
-                                  ),
-                                  'project_type' => $type,
-                                ];
-                                break;
-                            case '.info':
-                                $data = file_get_contents(
-                                  "$directory/$entry/$entry$extension"
-                                );
-                                $items[$entry] = [
-                                  'name' => $entry,
-                                  'info' => $this->drupal_parse_info_format(
-                                    $data
-                                  ),
-                                  'project_type' => $type,
-                                ];
-                                break;
-                        }
-                    } else {
-                        $this->searchItem(
-                          "$directory/$entry",
-                          $type,
-                          $extension,
-                          $items
-                        );
+        if (!is_dir($directory)) {
+            return;
+        }
+        $handle = opendir($directory);
+        while (false !== ($entry = readdir($handle))) {
+            if ($entry == '.' || $entry == '..') {
+                continue;
+            }
+            if (is_dir("$directory/$entry")) {
+                if ($infoFile = $this->scanItem("$directory/$entry", $extension)) {
+                    $data = file_get_contents($infoFile);
+                    switch ($extension) {
+                        case '.info.yml':
+                            $items[$entry] = [
+                              'name' => $entry,
+                              'info' => Yaml::parse($data),
+                              'project_type' => $type,
+                            ];
+                            break;
+                        case '.info':
+                            $items[$entry] = [
+                              'name' => $entry,
+                              'info' => $this->drupal_parse_info_format(
+                                $data
+                              ),
+                              'project_type' => $type,
+                            ];
+                            break;
                     }
+                } else {
+                    $this->searchItem(
+                      "$directory/$entry",
+                      $type,
+                      $extension,
+                      $items
+                    );
                 }
             }
-            closedir($handle);
         }
+        closedir($handle);
     }
 
     /**
@@ -485,55 +500,6 @@ class AnalyseHelper
         }
 
         return $info;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function buildFetchUrl(array $project)
-    {
-        $name = $project['name'];
-        $url = $this->getFetchBaseUrl($project);
-        $url .= '/'.$name.'/current';
-
-        // Only append usage information if we have a site key and the project is
-        // enabled. We do not want to record usage statistics for disabled projects.
-        if (!empty($site_key) && (strpos(
-              $project['project_type'],
-              'disabled'
-            ) === false)) {
-            // Append the site key.
-            $url .= (strpos($url, '?') !== false) ? '&' : '?';
-            $url .= 'site_key=';
-            $url .= rawurlencode($site_key);
-
-            // Append the version.
-            if (!empty($project['info']['version'])) {
-                $url .= '&version=';
-                $url .= rawurlencode($project['info']['version']);
-            }
-
-            // Append the list of modules or themes enabled.
-            $list = array_keys($project['includes']);
-            $url .= '&list=';
-            $url .= rawurlencode(implode(',', $list));
-        }
-
-        return $url;
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function getFetchBaseUrl($project)
-    {
-        if (isset($project['info']['project status url'])) {
-            $url = $project['info']['project status url'];
-        } else {
-            $url = self::UPDATE_DEFAULT_URL;
-        }
-
-        return $url;
     }
 
     protected function stopAnalyse(Analyse $analyse, $state = Analyse::SUCCESS)

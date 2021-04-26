@@ -40,6 +40,7 @@ class Analyse
 
     /**
      * @ORM\OneToMany(targetEntity=AnalyseItem::class, mappedBy="analyse", orphanRemoval=true)
+     * @ORM\OrderBy({"type" = "ASC", "name" = "ASC"})
      */
     private $analyseItems;
 

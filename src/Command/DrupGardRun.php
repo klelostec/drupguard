@@ -65,9 +65,8 @@ class DrupGardRun extends Command
 
             $this->entityManager->persist($queue);
             $this->entityManager->flush();
+            $output->writeln('<info>Project "' . $machineName .'" add to queue.</info>');
         }
-
-        $output->writeln('<info>Project "' . $machineName .'" add to queue.</info>');
 
         return Command::SUCCESS;
     }

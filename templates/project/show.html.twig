@@ -55,7 +55,13 @@
                 {% for item in analyse.analyseItems %}
                     <tr class="table-{{ item.stateClass }}">
                         <td>{{ item.type }}</td>
-                        <td>{{ item.name }}</td>
+                        <td>
+                            {% if item.state < 0 %}
+                                {{ item.name }}
+                            {% else %}
+                                <a href="https://www.drupal.org/project/{{ item.machineName }}" target="_blank">{{ item.name }}</a>
+                            {% endif %}
+                        </td>
                         <td>{{ item.currentVersion }}</td>
                         <td>{{ item.latestVersion }}</td>
                         <td>{{ item.recommandedVersion }}</td>

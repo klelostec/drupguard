@@ -104,6 +104,11 @@ class AnalyseItem
      */
     private $detail;
 
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $machine_name;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -221,6 +226,18 @@ class AnalyseItem
     public function setDetail(?string $detail): self
     {
         $this->detail = $detail;
+
+        return $this;
+    }
+
+    public function getMachineName(): ?string
+    {
+        return $this->machine_name;
+    }
+
+    public function setMachineName(string $machine_name): self
+    {
+        $this->machine_name = $machine_name;
 
         return $this;
     }
