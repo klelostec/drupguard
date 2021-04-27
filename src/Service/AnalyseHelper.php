@@ -82,6 +82,7 @@ class AnalyseHelper
         $drupalInfo = $this->getDrupalInfo($drupalDir);
 
         if (empty($drupalInfo['version'])) {
+            $this->stopAnalyse($analyse, Analyse::ERROR);
             throw new AnalyseException(
               'Project "'.$project->getMachineName(
               ).'" directory "'.$project->getDrupalDirectory(
@@ -278,28 +279,31 @@ class AnalyseHelper
                 }
             }
         }
-        else {
-            if ($this->filesystem->exists(
-              $info['directories']['core'].'/lib/Drupal.php'
-            )) {
-                include $info['directories']['core'].'/lib/Drupal.php';
-                $info['compat'] = \Drupal::CORE_COMPATIBILITY;
-                $info['version'] = \Drupal::VERSION;
-                $info['extension'] = '.info.yml';
-            } else {
-                if ($this->filesystem->exists(
-                  $info['directories']['core'].'/includes/bootstrap.inc'
-                )) {
-                    include $info['directories']['core'].'/includes/bootstrap.inc';
-                    $info['compat'] = DRUPAL_CORE_COMPATIBILITY;
-                    $info['version'] = VERSION;
-                    $info['extension'] = '.info';
-                }
-            }
 
-            if(substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
-                $info['compat'] = 'current';
+        if ($this->filesystem->exists(
+          $info['directories']['core'].'/lib/Drupal.php'
+        )) {
+            $drupalClass = file_get_contents($info['directories']['core'].'/lib/Drupal.php');
+            preg_match('/const CORE_COMPATIBILITY = \'([0-9a-z\.]+)\';/i', $drupalClass, $matches);
+            $info['compat'] = $matches[1];
+            preg_match('/const VERSION = \'([0-9a-z\.\-]+)\';/i', $drupalClass, $matches);
+            $info['version'] = $matches[1];
+            $info['extension'] = '.info.yml';
+        } else {
+            if ($this->filesystem->exists(
+              $info['directories']['core'].'/includes/bootstrap.inc'
+            )) {
+                $bootstrapInc = file_get_contents($info['directories']['core'].'/includes/bootstrap.inc');
+                preg_match('/define\(\'DRUPAL_CORE_COMPATIBILITY\', \'([0-9a-z\.]+)\'\);/i', $bootstrapInc, $matches);
+                $info['compat'] = $matches[1];
+                preg_match('/define\(\'VERSION\', \'([0-9a-z\.\-]+)\'\);/i', $bootstrapInc, $matches);
+                $info['version'] = $matches[1];
+                $info['extension'] = '.info';
             }
+        }
+
+        if(substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
+            $info['compat'] = 'current';
         }
 
         return $info;
