@@ -101,75 +101,83 @@ class AnalyseHelper
                 $compareFunction = 'update_calculate_project_update_status_current';
         }
 
+        try {
+            $status = null;
+            $items = $this->getItems($drupalInfo);
+            foreach ($items as $keyItem => $currentItem) {
+                $drupalCompare->update_process_project_info($currentItem);
+                $available = $drupalProcessor->processFetchTask($currentItem);
 
-        $status = null;
-        $items = $this->getItems($drupalInfo);
-        foreach ($items as $keyItem => $currentItem) {
-            $drupalCompare->update_process_project_info($currentItem);
-            $available = $drupalProcessor->processFetchTask($currentItem);
+                $drupalCompare->{$compareFunction}(
+                    $currentItem,
+                    $available
+                );
 
-            $drupalCompare->{$compareFunction}(
-              $currentItem,
-              $available
+                $analyseItem = new AnalyseItem();
+                $analyseItem->setAnalyse($analyse)
+                    ->setType($currentItem['project_type'])
+                    ->setName($currentItem['info']['name'])
+                    ->setMachineName($keyItem ?: 'unknown')
+                    ->setCurrentVersion($currentItem['existing_version'])
+                    ->setLatestVersion(!empty($currentItem['latest_version']) ? $currentItem['latest_version'] : '')
+                    ->setRecommandedVersion(!empty($currentItem['recommended']) ? $currentItem['recommended'] : '')
+                    ->setState($currentItem['status']);
+
+                $analyse->addAnalyseItem($analyseItem);
+
+                $detail = '';
+                if (!empty($currentItem['also'])) {
+                    $detail .= '<div>Major version available : <br><ul>';
+                    foreach ($currentItem['also'] as $also) {
+                        $detail .= '<li><a href="' . $currentItem['releases'][$also]['release_link'] . '" target="_blank">' . $currentItem['releases'][$also]['version'] . '</a></li>';
+                    }
+                    $detail .= '</ul></div>';
+                }
+                if (!empty($currentItem['security updates'])) {
+                    $detail .= '<div>Security update available : <br><ul>';
+                    foreach ($currentItem['security updates'] as $securityUpdate) {
+                        $detail .= '<li><a href="' . $securityUpdate['release_link'] . '" target="_blank">' . $securityUpdate['version'] . '</a></li>';
+                    }
+                    $detail .= '</ul></div>';
+                }
+
+                if (!empty($currentItem['reason'])) {
+                    $detail .= '<div>' . $currentItem['reason'] . '</div>';
+                }
+                if (!empty($currentItem['extra'])) {
+                    foreach ($currentItem['extra'] as $extra) {
+                        $detail .= '<div><strong>' . $extra['label'] . '</strong><br>' . $extra['data'] . '</div>';
+                    }
+                }
+                $analyseItem->setDetail($detail);
+
+                $this->entityManager->persist($analyseItem);
+
+                switch ($currentItem['status']) {
+                    case AnalyseItem::CURRENT :
+                        if (is_null($status)) {
+                            $status = Analyse::SUCCESS;
+                        }
+                        break;
+                    case AnalyseItem::NOT_SECURE:
+                        if (is_null($status) || $status > Analyse::ERROR) {
+                            $status = Analyse::ERROR;
+                        }
+                        break;
+                    default:
+                        if (is_null($status) || $status === Analyse::SUCCESS) {
+                            $status = Analyse::WARNING;
+                        }
+                        break;
+                }
+            }
+        }
+        catch (\Exception $exception) {
+            $this->stopAnalyse($analyse, Analyse::ERROR);
+            throw new AnalyseException(
+                'Project "'.$project->getMachineName(
+                ).'" error during analyse run.', AnalyseException::ERROR
             );
-
-            $analyseItem = new AnalyseItem();
-            $analyseItem->setAnalyse($analyse)
-              ->setType($currentItem['project_type'])
-              ->setName($currentItem['info']['name'])
-              ->setMachineName($keyItem)
-              ->setCurrentVersion($currentItem['existing_version'])
-              ->setLatestVersion(!empty($currentItem['latest_version']) ? $currentItem['latest_version'] : '')
-              ->setRecommandedVersion(!empty($currentItem['recommended']) ? $currentItem['recommended'] : '')
-              ->setState($currentItem['status']);
-
-            $analyse->addAnalyseItem($analyseItem);
-
-            $detail = '';
-            if (!empty($currentItem['also'])) {
-                $detail .= '<div>Major version available : <br><ul>';
-                foreach ($currentItem['also'] as $also) {
-                    $detail .= '<li><a href="'.$currentItem['releases'][$also]['release_link'].'" target="_blank">'.$currentItem['releases'][$also]['version'].'</a></li>';
-                }
-                $detail .= '</ul></div>';
-            }
-            if (!empty($currentItem['security updates'])) {
-                $detail .= '<div>Security update available : <br><ul>';
-                foreach ($currentItem['security updates'] as $securityUpdate) {
-                    $detail .= '<li><a href="'.$securityUpdate['release_link'].'" target="_blank">'.$securityUpdate['version'].'</a></li>';
-                }
-                $detail .= '</ul></div>';
-            }
-
-            if (!empty($currentItem['reason'])) {
-                $detail .= '<div>'.$currentItem['reason'].'</div>';
-            }
-            if (!empty($currentItem['extra'])) {
-                foreach ($currentItem['extra'] as $extra) {
-                    $detail .= '<div><strong>'.$extra['label'].'</strong><br>'.$extra['data'].'</div>';
-                }
-            }
-            $analyseItem->setDetail($detail);
-
-            $this->entityManager->persist($analyseItem);
-
-            switch ($currentItem['status']) {
-                case AnalyseItem::CURRENT :
-                    if (is_null($status)) {
-                        $status = Analyse::SUCCESS;
-                    }
-                    break;
-                case AnalyseItem::NOT_SECURE:
-                    if (is_null($status) || $status > Analyse::ERROR) {
-                        $status = Analyse::ERROR;
-                    }
-                    break;
-                default:
-                    if (is_null($status) || $status === Analyse::SUCCESS) {
-                        $status = Analyse::WARNING;
-                    }
-                    break;
-            }
         }
 
         $analyse->setState($status);
@@ -203,8 +211,6 @@ class AnalyseHelper
             $composerCmd = explode(
               ' ',
               $this->params->get(
-                'drupguard.php_binary'
-              ) . ' ' . $this->params->get(
                 'drupguard.composer_binary'
               ).' install --ignore-platform-reqs --no-scripts --no-autoloader --quiet --no-interaction'
             );
@@ -280,30 +286,32 @@ class AnalyseHelper
             }
         }
 
-        if ($this->filesystem->exists(
-          $info['directories']['core'].'/lib/Drupal.php'
-        )) {
-            $drupalClass = file_get_contents($info['directories']['core'].'/lib/Drupal.php');
-            preg_match('/const CORE_COMPATIBILITY = \'([0-9a-z\.]+)\';/i', $drupalClass, $matches);
-            $info['compat'] = $matches[1];
-            preg_match('/const VERSION = \'([0-9a-z\.\-]+)\';/i', $drupalClass, $matches);
-            $info['version'] = $matches[1];
-            $info['extension'] = '.info.yml';
-        } else {
+        if(!empty($info['directories']['core'])) {
             if ($this->filesystem->exists(
-              $info['directories']['core'].'/includes/bootstrap.inc'
+                $info['directories']['core'].'/lib/Drupal.php'
             )) {
-                $bootstrapInc = file_get_contents($info['directories']['core'].'/includes/bootstrap.inc');
-                preg_match('/define\(\'DRUPAL_CORE_COMPATIBILITY\', \'([0-9a-z\.]+)\'\);/i', $bootstrapInc, $matches);
+                $drupalClass = file_get_contents($info['directories']['core'].'/lib/Drupal.php');
+                preg_match('/const CORE_COMPATIBILITY = \'([0-9a-z\.]+)\';/i', $drupalClass, $matches);
                 $info['compat'] = $matches[1];
-                preg_match('/define\(\'VERSION\', \'([0-9a-z\.\-]+)\'\);/i', $bootstrapInc, $matches);
+                preg_match('/const VERSION = \'([0-9a-z\.\-]+)\';/i', $drupalClass, $matches);
                 $info['version'] = $matches[1];
-                $info['extension'] = '.info';
+                $info['extension'] = '.info.yml';
+            } else {
+                if ($this->filesystem->exists(
+                    $info['directories']['core'].'/includes/bootstrap.inc'
+                )) {
+                    $bootstrapInc = file_get_contents($info['directories']['core'].'/includes/bootstrap.inc');
+                    preg_match('/define\(\'DRUPAL_CORE_COMPATIBILITY\', \'([0-9a-z\.]+)\'\);/i', $bootstrapInc, $matches);
+                    $info['compat'] = $matches[1];
+                    preg_match('/define\(\'VERSION\', \'([0-9a-z\.\-]+)\'\);/i', $bootstrapInc, $matches);
+                    $info['version'] = $matches[1];
+                    $info['extension'] = '.info';
+                }
             }
-        }
 
-        if(substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
-            $info['compat'] = 'current';
+            if(substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
+                $info['compat'] = 'current';
+            }
         }
 
         return $info;

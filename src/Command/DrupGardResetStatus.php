@@ -28,25 +28,30 @@ class DrupGardResetStatus extends Command
         $this
           ->setDescription('Reset status for frozen projects analyses.')
           ->setHelp('This command allows you to reset status for frozen projects analyses.')
-          ->addArgument('project', InputArgument::REQUIRED, 'Project machine name.')
+          ->addArgument('projects', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Projects\'s machine names.')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $repo = $this->entityManager->getRepository("App:Project");
-        $machineName = $input->getArgument('project');
-        $project = $repo->findOneBy(['machineName' => $machineName]);
-        if(!$project) {
-            $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
-            return Command::FAILURE;
+
+        $projectsMachineNames = $input->getArgument('projects');
+        if (count($projectsMachineNames) > 0) {
+            foreach($projectsMachineNames as $machineName) {
+                $project = $repo->findOneBy(['machineName' => $machineName]);
+                if(!$project) {
+                    $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
+                    return Command::FAILURE;
+                }
+
+                $analyse = $project->getLastAnalyse();
+                $analyse->setIsRunning(false);
+                $this->entityManager->flush();
+
+                $output->writeln('<info>Project "' . $machineName .'"\'s status reset.</info>');
+            }
         }
-
-        $analyse = $project->getLastAnalyse();
-        $analyse->setIsRunning(false);
-        $this->entityManager->flush();
-
-        $output->writeln('<info>Project "' . $machineName .'"\'s status reset.</info>');
 
         return Command::SUCCESS;
     }

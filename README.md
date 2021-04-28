@@ -27,13 +27,5 @@ Add the cron job to cron tab
 * * * * * /path/to/php /path/to/bin/console drupguard:cron --cron-only
 ```
 
-## Note
-In case of multiple php versions installed, you can specify which binary will be used by adding those lines to .env.local :
-```
-PHP_BINARY=/usr/local/bin/php74
-COMPOSER_BINARY="/usr/local/bin/composer"
-CONSOLE_BINARY="bin/console"
-```
-
 ## Licence
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)

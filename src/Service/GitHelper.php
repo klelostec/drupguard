@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use Cz\Git\GitException;
 use Cz\Git\GitRepository;
 
 class GitHelper extends GitRepository
@@ -13,8 +14,6 @@ class GitHelper extends GitRepository
      */
     public static function getRemoteBranchesWithoutCheckout($url, array $refs = NULL)
     {
-        $env = '';
-
         if (DIRECTORY_SEPARATOR === '\\') { // Windows
             $env = 'set GIT_TERMINAL_PROMPT=0 &&';
 
@@ -38,6 +37,9 @@ class GitHelper extends GitRepository
                     $branches[$matches[1]] = $matches[1];
                 }
             }
+        }
+        else {
+            throw new GitException("An error occured during list remote branches in repository \"$url\" : \n" . implode(PHP_EOL, $output));
         }
         return $branches;
     }

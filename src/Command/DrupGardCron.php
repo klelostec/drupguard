@@ -46,7 +46,7 @@ class DrupGardCron extends Command
         foreach($projects as $project) {
             $command = $this->getApplication()->find('drupguard:run');
             $arguments = [
-              'project' => $project->getMachineName(),
+              'projects' => [$project->getMachineName()],
               '--force' => $input->getOption('force'),
             ];
 
@@ -62,13 +62,14 @@ class DrupGardCron extends Command
                 $this->entityManager->remove($queue);
                 $project->setAnalyseQueue(null);
                 $this->entityManager->flush();
+                $output->writeln('<info>Project "' . $project->getMachineName() .'"\'s analyse start.</info>');
                 $this->analyseHelper->start($project);
-                $output->writeln('<info>Project "' . $project->getMachineName() .'"\'s analyse done.</info>');
+                $output->writeln('<info>Project "' . $project->getMachineName() .'"\'s analyse end.</info>');
             }
             catch (AnalyseException $e) {
                 switch ($e->getCode()) {
                     case AnalyseException::WARNING:
-                        $output->writeln('<warning>' . $e->getMessage() . '</warning>');
+                        $output->writeln('<comment>' . $e->getMessage() . '</comment>');
                     default:
                         $output->writeln('<error>' . $e->getMessage() . '</error>');
                 }

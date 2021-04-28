@@ -14,6 +14,8 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Process\ExecutableFinder;
+use Symfony\Component\Process\PhpExecutableFinder;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Constraints\Regex;
 
@@ -88,16 +90,16 @@ class DrupGuardInstall extends Command
             );
             try {
                 $databaseQuestion = new Question(
-                  'Database url (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION)'
+                  'Database url (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET, oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
                 );
                 $databaseQuestion->setValidator(
                   function ($answer) {
                       if (!is_string($answer) || !preg_match(
-                          '#^mysql://[^:]+:[^@]+@[^:]+:[1-9]\d+/[^\?]+\?serverVersion=.*$#i',
+                          '#^(((mysql|oci8|postgresql)://[^:]+:[^@]+@[^:]+:[1-9]\d+/[^\?]+(\?serverVersion=.*)?(&charset=.*)?)|sqlite://.*/var/app.db)$#i',
                           $answer
                         )) {
                           throw new \RuntimeException(
-                            'The database url\'s format should be : mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION'
+                            'The database url\'s format should be : (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET or oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
                           );
                       }
 
@@ -107,16 +109,16 @@ class DrupGuardInstall extends Command
                 $databaseUrl = $outputStyle->askQuestion($databaseQuestion);
 
                 $mailerQuestion = new Question(
-                  'Mailer DSN (smtp://MAILER_HOST:MAILER_PORT)'
+                  'Mailer DSN (smtp://MAILER_HOST:MAILER_PORT, sendmail://default, native://default)'
                 );
                 $mailerQuestion->setValidator(
                   function ($answer) {
                       if (!is_string($answer) || ($answer !== 'sendmail://default' && $answer !== 'native://default' && !preg_match(
-                          '#^smtp://[^:]+:[1-9]\d+$#i',
+                          '#^((smtp://[^:]+:[1-9]\d+)|((sendmail|native)://default))$#i',
                           $answer
                         ))) {
                           throw new \RuntimeException(
-                            'The mailer dsn\'s format should be : smtp://MAILER_HOST:MAILER_PORT or sendmail://default or native://default'
+                            'The mailer dsn\'s format should be : smtp://MAILER_HOST:MAILER_PORT, sendmail://default or native://default'
                           );
                       }
 
@@ -125,10 +127,28 @@ class DrupGuardInstall extends Command
                 );
                 $mailerDsn = $outputStyle->askQuestion($mailerQuestion);
 
+                $phpFinder = new PhpExecutableFinder();
+                $phpExecutable = $phpFinder->find();
+                $phpQuestion = new Question(
+                    'Php binary path',
+                    $phpExecutable ?: null
+                );
+                $phpExecutable = $outputStyle->askQuestion($phpQuestion);
+
+                $composerFinder = new ExecutableFinder();
+                $composerExecutable = $composerFinder->find('composer');
+                $composerQuestion = new Question(
+                    'Composer binary path',
+                    $composerExecutable ?: null
+                );
+                $composerExecutable = $outputStyle->askQuestion($composerQuestion);
+
+
                 $envLocal = <<<EOT
 DATABASE_URL={$databaseUrl}
 MAILER_DSN={$mailerDsn}
-
+PHP_BINARY={$phpExecutable}
+COMPOSER_BINARY={$composerExecutable}
 EOT;
                 file_put_contents($this->projectDir.'/.env.local', $envLocal);
                 $outputStyle->success('File .env.local created.');

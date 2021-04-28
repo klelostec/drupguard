@@ -34,7 +34,7 @@ class DrupGardRun extends Command
         $this
           ->setDescription('Run projects analyses.')
           ->setHelp('This command allows you to run all projects analyses. If cron is enable for project, check frequency to run or not.')
-          ->addArgument('project', InputArgument::REQUIRED, 'Project machine name.')
+          ->addArgument('projects', InputArgument::IS_ARRAY | InputArgument::REQUIRED, 'Projects\'s machine names.')
           ->addOption('force', 'f', InputOption::VALUE_NONE, 'Force run analyse, work only on cron project')
         ;
     }
@@ -42,30 +42,36 @@ class DrupGardRun extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $repo = $this->entityManager->getRepository("App:Project");
-        $machineName = $input->getArgument('project');
-        $project = $repo->findOneBy(['machineName' => $machineName]);
-        if(!$project) {
-            $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
-            return Command::FAILURE;
-        }
 
-        if($project->isPending()) {
-            $output->writeln('<warning>Project "'.$project->getMachineName().'"\'s analyse is pending.</warning>');
-            return Command::SUCCESS;
-        }
+        $projectsMachineNames = $input->getArgument('projects');
+        if (count($projectsMachineNames) > 0) {
+            $force = $input->getOption('force');
+            foreach ($projectsMachineNames as $machineName) {
+                $project = $repo->findOneBy(['machineName' => $machineName]);
+                if(!$project) {
+                    $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
+                    continue;
+                }
 
-        if ($this->isRunning($project)) {
-            $output->writeln('<warning>Project "'.$project->getMachineName().'"\'s analyse is running.</warning>');
-            return Command::SUCCESS;
-        }
+                if($project->isPending()) {
+                    $output->writeln('<comment>Project "'.$project->getMachineName().'"\'s analyse is already pending.</comment>');
+                    continue;
+                }
 
-        if ($this->needRunAnalyse($project) || boolval($input->getOption('force'))) {
-            $queue = new AnalyseQueue();
-            $queue->addProject($project);
+                if ($this->isRunning($project)) {
+                    $output->writeln('<comment>Project "'.$project->getMachineName().'"\'s analyse is running.</comment>');
+                    continue;
+                }
 
-            $this->entityManager->persist($queue);
-            $this->entityManager->flush();
-            $output->writeln('<info>Project "' . $machineName .'" add to queue.</info>');
+                if ($this->needRunAnalyse($project) || boolval($force)) {
+                    $queue = new AnalyseQueue();
+                    $queue->addProject($project);
+
+                    $this->entityManager->persist($queue);
+                    $this->entityManager->flush();
+                    $output->writeln('<info>Project "' . $machineName .'" add to queue.</info>');
+                }
+            }
         }
 
         return Command::SUCCESS;

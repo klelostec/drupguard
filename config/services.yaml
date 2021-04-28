@@ -6,7 +6,6 @@
 parameters:
     drupguard.php_binary: '%env(resolve:PHP_BINARY)%'
     drupguard.composer_binary: '%env(resolve:COMPOSER_BINARY)%'
-    drupguard.console_binary: '%env(resolve:CONSOLE_BINARY)%'
 services:
     # default configuration for services in *this* file
     _defaults:
