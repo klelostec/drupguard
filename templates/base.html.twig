@@ -22,13 +22,15 @@
             {{ knp_menu_render('main', {'currentClass': 'active'}) }}
         </div>
         <div class="container">
-            {% for label, messages in app.flashes(['warning', 'error', 'success']) %}
-                {% for message in messages %}
-                    <div class="alert alert-{{ label }}">
-                        {{ message }}
-                    </div>
+            <div class="alert-container">
+                {% for label, messages in app.flashes(['warning', 'error', 'success']) %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ label }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
+            </div>
             {% block body %}{% endblock %}
         </div>
     </body>

@@ -522,27 +522,39 @@ class AnalyseHelper
 
         $project = $analyse->getProject();
         if($project->needEmail()) {
-            $email = (new TemplatedEmail())
-              ->subject('Project ' . $analyse->getProject()->getName() . ' - ' . $analyse->getDate()->format('d/m/Y H:i:s'))
-              ->from('no-reply@drupguard.com');
-            $emailsAddress = [$project->getOwner()->getEmail()];
+            $emailsAddress = [];
+            if(!$project->getOwner()->isSuperAdmin()) {
+                $emailsAddress[] = $project->getOwner()->getEmail();
+            }
             foreach($project->getAllowedUsers() as $user) {
+                if($user->isSuperAdmin() || !$user->isVerified()) {
+                    continue;
+                }
                 $emailsAddress[] = $user->getEmail();
             }
 
             $extraEmails = $project->getEmailExtra();
-            $extraEmails = str_replace("\r\n", "\n", $extraEmails);
-            $extraEmails = explode("\n", $extraEmails);
-            $emailsAddress = $emailsAddress + $extraEmails;
+            if(!empty($extraEmails)) {
+                $extraEmails = str_replace("\r\n", "\n", $extraEmails);
+                $extraEmails = explode("\n", $extraEmails);
+                $emailsAddress = $emailsAddress + $extraEmails;
+            }
 
             $emailsAddress = array_unique($emailsAddress);
-            $email->to(...$emailsAddress);
-            $email->htmlTemplate('project/email.html.twig')
-                ->context([
-                  'project' => $project,
-                  'analyse' => $analyse,
-                ]);
-            $this->mailer->send($email);
+
+            if(!empty($emailsAddress)) {
+                $email = (new TemplatedEmail())
+                    ->subject('Project ' . $analyse->getProject()->getName() . ' - ' . $analyse->getDate()->format('d/m/Y H:i:s'))
+                    ->from('no-reply@drupguard.com');
+
+                $email->to(...$emailsAddress);
+                $email->htmlTemplate('project/email.html.twig')
+                    ->context([
+                        'project' => $project,
+                        'analyse' => $analyse,
+                    ]);
+                $this->mailer->send($email);
+            }
         }
     }
 
