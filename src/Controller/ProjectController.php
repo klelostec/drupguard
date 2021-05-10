@@ -76,9 +76,9 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @Route("/{id}/{analyse}", name="project_show", requirements={"analyse"="\d+"}, methods={"GET"})
+     * @Route("/{id}/{analyse}", name="project_show", priority=1, requirements={"id"="\d+", "analyse"="\d*"}, defaults={"analyse"=""}, methods={"GET"})
      */
-    public function show(Project $project, StatsHelper $statsHelper, AnalyseRepository $analyseRepository, Analyse $analyse = null): Response
+    public function show(Project $project, Analyse $analyse = null, StatsHelper $statsHelper, AnalyseRepository $analyseRepository): Response
     {
         if(!$project->isReadable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
