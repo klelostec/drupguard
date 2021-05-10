@@ -6,6 +6,7 @@ use App\Entity\Analyse;
 use App\Entity\AnalyseItem;
 use App\Entity\Project;
 use App\Exception\AnalyseException;
+use App\Repository\AnalyseRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
@@ -32,17 +33,21 @@ class AnalyseHelper
 
     protected $mailer;
 
+    protected $analyseRepository;
+
     public function __construct(
       EntityManagerInterface $entityManager,
       KernelInterface $kernel,
       ContainerBagInterface $params,
-      MailerInterface $mailer
+      MailerInterface $mailer,
+      AnalyseRepository $analyseRepository
     ) {
         $this->entityManager = $entityManager;
         $this->projectDir = $kernel->getProjectDir();
         $this->params = $params;
         $this->filesystem = new Filesystem();
         $this->mailer = $mailer;
+        $this->analyseRepository = $analyseRepository;
     }
 
     function start(Project $project)
@@ -450,7 +455,7 @@ class AnalyseHelper
      *
      * @see drupal_parse_info_file()
      */
-    function drupal_parse_info_format($data)
+    protected function drupal_parse_info_format($data)
     {
         $info = [];
 
@@ -521,41 +526,55 @@ class AnalyseHelper
         $this->entityManager->flush();
 
         $project = $analyse->getProject();
-        if($project->needEmail()) {
-            $emailsAddress = [];
-            if(!$project->getOwner()->isSuperAdmin()) {
-                $emailsAddress[] = $project->getOwner()->getEmail();
-            }
-            foreach($project->getAllowedUsers() as $user) {
-                if($user->isSuperAdmin() || !$user->isVerified()) {
-                    continue;
-                }
-                $emailsAddress[] = $user->getEmail();
-            }
-
-            $extraEmails = $project->getEmailExtra();
-            if(!empty($extraEmails)) {
-                $extraEmails = str_replace("\r\n", "\n", $extraEmails);
-                $extraEmails = explode("\n", $extraEmails);
-                $emailsAddress = $emailsAddress + $extraEmails;
-            }
-
-            $emailsAddress = array_unique($emailsAddress);
-
-            if(!empty($emailsAddress)) {
-                $email = (new TemplatedEmail())
-                    ->subject('Project ' . $analyse->getProject()->getName() . ' - ' . $analyse->getDate()->format('d/m/Y H:i:s'))
-                    ->from('no-reply@drupguard.com');
-
-                $email->to(...$emailsAddress);
-                $email->htmlTemplate('project/email.html.twig')
-                    ->context([
-                        'project' => $project,
-                        'analyse' => $analyse,
-                    ]);
-                $this->mailer->send($email);
-            }
+        if($project->needEmail() && $state <= $project->getEmailLevel()) {
+            $this->emailReport($project, $analyse);
         }
     }
 
+    public function emailReport(Project $project, Analyse $analyse = null) {
+        if(!$analyse) {
+            $analyse = $project->getLastAnalyse();
+            if($analyse && $analyse->isRunning()) {
+                $analyse = $this->analyseRepository->findOneBy(['project' => $project->getId(), 'isRunning' => FALSE], ['date' => 'DESC']);
+            }
+        }
+
+        if(!$analyse || $analyse->isRunning()) {
+            return;
+        }
+
+        $emailsAddress = [];
+        if(!$project->getOwner()->isSuperAdmin()) {
+            $emailsAddress[] = $project->getOwner()->getEmail();
+        }
+        foreach($project->getAllowedUsers() as $user) {
+            if($user->isSuperAdmin() || !$user->isVerified()) {
+                continue;
+            }
+            $emailsAddress[] = $user->getEmail();
+        }
+
+        $extraEmails = $project->getEmailExtra();
+        if(!empty($extraEmails)) {
+            $extraEmails = str_replace("\r\n", "\n", $extraEmails);
+            $extraEmails = explode("\n", $extraEmails);
+            $emailsAddress = $emailsAddress + $extraEmails;
+        }
+
+        $emailsAddress = array_unique($emailsAddress);
+
+        if(!empty($emailsAddress)) {
+            $email = (new TemplatedEmail())
+                ->subject('Project ' . $project->getName() . ' - ' . $analyse->getDate()->format('d/m/Y H:i:s'))
+                ->from('no-reply@drupguard.com');
+
+            $email->to(...$emailsAddress);
+            $email->htmlTemplate('project/email.html.twig')
+                ->context([
+                    'project' => $project,
+                    'analyse' => $analyse,
+                ]);
+            $this->mailer->send($email);
+        }
+    }
 }

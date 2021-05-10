@@ -110,6 +110,20 @@ class Analyse
         }
     }
 
+    public function getStateLabel(): string
+    {
+        switch ($this->state) {
+            case self::ERROR:
+                return 'Error';
+            case self::WARNING:
+                return 'Warning';
+            case self::SUCCESS:
+                return 'Success';
+            default:
+                return 'Other';
+        }
+    }
+
     /**
      * @return Collection|AnalyseItem[]
      */

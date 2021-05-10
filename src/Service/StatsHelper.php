@@ -34,11 +34,11 @@ class StatsHelper {
     function buildProjectDonut(Analyse $analyse) {
         $query = $this->entityManager->createQueryBuilder()
           ->select([
-            "CASE WHEN ai.state = 1 THEN 'danger' WHEN ai.state IN (2, 3, 4) THEN 'warning' WHEN ai.state = 5 THEN 'success' ELSE 'other' END as state",
+            "CASE WHEN ai.state = 1 THEN 'danger' WHEN ai.state IN (2, 3, 4) THEN 'warning' WHEN ai.state = 5 THEN 'success' ELSE 'other' END as real_state",
             "COUNT(ai) as count"
           ])
           ->from(AnalyseItem::class, 'ai')
-          ->groupBy('ai.state')
+          ->groupBy('real_state')
           ->where('ai.analyse = :analyse')
           ->setParameter(':analyse', $analyse->getId());
 
@@ -46,7 +46,7 @@ class StatsHelper {
         return $ret;
     }
 
-    function buildProjectHistory(Project $project) {
+    function buildProjectHistory(Project $project, Analyse $analyse = NULL) {
         $query = $this->entityManager->createQueryBuilder()
           ->select([
             "a.id",
@@ -59,12 +59,19 @@ class StatsHelper {
           ->from(AnalyseItem::class, 'ai')
           ->join('ai.analyse', 'a', Join::WITH)
           ->groupBy('a.id')
-          ->where('a.project = :project AND a.isRunning=0')
+          ->where('a.project = :project')
           ->setParameter(':project', $project->getId())
           ->setMaxResults(12)
           ->setFirstResult(0)
           ->orderBy('a.date', 'DESC')
         ;
+        if($analyse) {
+            $query->andWhere('a.id = :analyse')
+                ->setParameter(':analyse', $analyse->getId());
+        }
+        else {
+            $query->andWhere('a.isRunning=0');
+        }
 
         $ret = [
           'data' => [

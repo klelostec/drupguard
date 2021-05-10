@@ -1,24 +1,33 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Project{% endblock %}
+{% block title %}Project {{ project.name }}{% if analyse %}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}{% endif %}{% endblock %}
+
+{% block analyse_navigation %}
+    {% if analyse and (prevAnalyse or nextAnalyse) %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-6">
+                    {% if prevAnalyse %}
+                        <a href="{{ path('project_show', {'id': project.id, 'analyse': prevAnalyse.id}) }}" class="btn"><i class="fas fa-step-backward"></i>&nbsp;Previous analyse</a>
+                    {% endif %}
+                </div>
+                <div class="col-6 text-end">
+                    {% if nextAnalyse %}
+                        <a href="{{ path('project_show', {'id': project.id, 'analyse': nextAnalyse.id}) }}" class="btn">Next analyse&nbsp;<i class="fas fa-step-forward"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}
 
 {% block body %}
     <div class="container-fluid d-flex align-items-center">
-        <h1 class="d-inline-flex">Project {{ project.name }}{% if analyse %}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}{% endif %}</h1>
-        {% if project.isWritable(user) %}
-            <div class="d-inline-flex ms-auto">
-                <a href="{{ path('project_edit', {'id': project.id}) }}" class="btn"><i class="fas fa-edit"></i></a>
-                {% if project.analyseQueue is not null or (project.lastAnalyse and project.lastAnalyse.running) %}
-                    <span><i class="fas fa-spinner fa-spin"></i></span>
-                {% else %}
-                    <a href="{{ path('project_run', {'id': project.id}) }}" class="btn btn-run"><i class="fas fa-play"></i></a>
-                {% endif %}
-
-                <a href="{{ path('project_delete', {'id': project.id}) }}" class="btn"><i class="fas fa-trash"></i></a>
-            </div>
-        {% endif %}
+        <h1 class="d-inline-flex">{{ block('title') }}</h1>
+        {{ include('project/_project_lancher.html.twig') }}
     </div>
     {% if analyse %}
+        {{ block('analyse_navigation') }}
         <div class="container-fluid">
             <div class="row">
                 <div class="col-4">
@@ -75,6 +84,9 @@
             {% endif %}
         </tbody>
     </table>
+    {% if analyse %}
+        {{ block('analyse_navigation') }}
+    {% endif %}
     <a href="{{ path('project_index') }}">back to list</a>
 {% endblock %}
 {% block javascripts %}
@@ -131,58 +143,4 @@
             });
         </script>
     {% endif %}
-
-    <script>
-        var intervalCheck, timeoutAlert, alert;
-        var startCheck = function () {
-            intervalCheck = setInterval(function(){
-                $.ajax({
-                    url: '{{ path('project_check', {'id': project.id}) }}'
-                }).done(function(data) {
-                    if(!data.running && !data.pending) {
-                        stopCheck();
-                        document.location.reload();
-                    }
-                });
-            }, 5000);
-        };
-        var startAlert = function() {
-            alert = $('<div class="alert alert-success alert-analyse-start" role="alert">Analyse is pending. This page will be refreshed automatically when finished.</div>')
-            $('.alert-container').prepend(alert);
-            timeoutAlert = setTimeout(function(){
-                removeAlert(alert);
-            }, 3000);
-        };
-        var stopCheck = function() {
-            clearInterval(intervalCheck);
-            clearTimeout(timeoutAlert);
-        };
-        var removeAlert = function (alert) {
-            if(!alert) {
-                return;
-            }
-            alert.fadeOut("normal", function() {
-                $(this).remove();
-                alert = null;
-            });
-        }
-
-        {% if project.analyseQueue is not null or (project.lastAnalyse and project.lastAnalyse.running) %}
-            $(document).ready(function() {
-                startCheck();
-                startAlert();
-            });
-        {% endif %}
-
-        $(document).on('click', 'a.btn-run', function(e) {
-           e.preventDefault();
-           $('a.btn-run').replaceWith('<span><i class="fas fa-spinner fa-spin"></i></span>');
-           startAlert();
-           $.ajax({
-               url: '{{ path('project_run', {'id': project.id}) }}'
-           }).done(function() {
-               startCheck();
-           });
-        });
-    </script>
 {% endblock %}

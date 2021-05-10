@@ -2,13 +2,14 @@
 
 namespace App\Controller;
 
+use App\Entity\Analyse;
 use App\Entity\AnalyseQueue;
 use App\Entity\Project;
 use App\Form\ProjectType;
+use App\Repository\AnalyseRepository;
 use App\Repository\ProjectRepository;
 use App\Service\AnalyseHelper;
 use App\Service\GitHelper;
-use App\Service\MachineName;
 use App\Service\MachineNameHelper;
 use App\Service\StatsHelper;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -17,8 +18,8 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
@@ -75,24 +76,56 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="project_show", methods={"GET"})
+     * @Route("/{id}/{analyse}", name="project_show", requirements={"analyse"="\d+"}, methods={"GET"})
      */
-    public function show(Project $project, StatsHelper $statsHelper): Response
+    public function show(Project $project, StatsHelper $statsHelper, AnalyseRepository $analyseRepository, Analyse $analyse = null): Response
     {
         if(!$project->isReadable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
         }
 
-        $analyse = $project->getLastAnalyse();
-        if($analyse && $analyse->isRunning() && ($count = $project->getAnalyses()->count()) > 1) {
-            $analyse = $project->getAnalyses()->offsetGet($count-2);
+        if($analyse && ($analyse->getProject()->getId() !== $project->getId() || $analyse->isRunning())) {
+            throw new NotFoundHttpException();
+        }
+
+        if(!$analyse) {
+            $analyse = $project->getLastAnalyse();
+            if($analyse && $analyse->isRunning()) {
+                $analyse = $analyseRepository->findOneBy(['project' => $project->getId(), 'isRunning' => FALSE], ['date' => 'DESC']);
+            }
+        }
+
+        $prevAnalyse = $nextAnalyse = null;
+        if($analyse) {
+            $prevAnalyse = $analyseRepository->getPreviousAnalyse($analyse);
+            $nextAnalyse = $analyseRepository->getNextAnalyse($analyse);
         }
 
         return $this->render('project/show.html.twig', [
             'project' => $project,
             'analyse' => $analyse,
+            'prevAnalyse' => $prevAnalyse,
+            'nextAnalyse' => $nextAnalyse,
             'statsDonut' => $analyse ? $statsHelper->buildProjectDonut($analyse) : [],
             'statsHistory' => $analyse ? $statsHelper->buildProjectHistory($project) : [],
+            'user' => $this->getUser()
+        ]);
+    }
+
+    /**
+     * @Route("/{id}/history", name="project_history", methods={"GET"})
+     */
+    public function history(Project $project, Request $request, AnalyseRepository $analyseRepository, StatsHelper $statsHelper): Response
+    {
+        $page = $request->query->get('page', 0);
+        $nbItems = $analyseRepository->countByProject($project);
+        $limit = 20;
+        return $this->render('project/history.html.twig', [
+            'currentPage' => $page,
+            'nbPages' => ceil($nbItems/$limit),
+            'project' => $project,
+            'statsHelper' => $statsHelper,
+            'analyses' => $analyseRepository->findByProject($project, $page, $limit),
             'user' => $this->getUser()
         ]);
     }

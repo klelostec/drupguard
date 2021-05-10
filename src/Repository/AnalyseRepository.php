@@ -3,7 +3,11 @@
 namespace App\Repository;
 
 use App\Entity\Analyse;
+use App\Entity\Project;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,32 +23,55 @@ class AnalyseRepository extends ServiceEntityRepository
         parent::__construct($registry, Analyse::class);
     }
 
-    // /**
-    //  * @return Analyse[] Returns an array of Analyse objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    protected function getQueryByProject(Project $project) : Paginator {
+        $query = $this->createQueryBuilder('a')
+            ->andWhere('a.project = :project')
+            ->setParameter('project', $project->getId())
+            ->orderBy('a.date', 'DESC');
+        return new Paginator($query);
+    }
+
+    /**
+     * @return Analyse[] Returns an array of Analyse objects
+     */
+    public function findByProject(Project $project, $page = 0, $limit = 10)
     {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('a.id', 'ASC')
-            ->setMaxResults(10)
+        return $this->getQueryByProject($project)
             ->getQuery()
+            ->setMaxResults($limit)
+            ->setFirstResult(($page ?: 0)*$limit)
             ->getResult()
         ;
     }
-    */
 
-    /*
-    public function findOneBySomeField($value): ?Analyse
+    /**
+     * @return int Returns the number of Project objects
+     */
+    public function countByProject(Project $project)
+    {
+        return $this->getQueryByProject($project)->count();
+    }
+
+    protected function getPreviousNextAnalyse(Analyse $analyse, $compare = '<')
     {
         return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
+            ->andWhere('a.isRunning = 0 AND a.project = :project AND a.date ' . $compare . ' :analyse')
+            ->setParameter('project', $analyse->getProject()->getId())
+            ->setParameter('analyse', $analyse->getDate())
+            ->orderBy('a.date', $compare === '<' ? 'DESC' : 'ASC')
+            ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult()
-        ;
+            ;
     }
-    */
+
+    public function getNextAnalyse(Analyse $analyse)
+    {
+        return $this->getPreviousNextAnalyse($analyse, '>');
+    }
+
+    public function getPreviousAnalyse(Analyse $analyse)
+    {
+        return $this->getPreviousNextAnalyse($analyse, '<');
+    }
 }

@@ -1,0 +1,69 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Project {{ project.name }} - Analyses list{% endblock %}
+
+{% block body %}
+    <div class="container-fluid d-flex align-items-center">
+        <h1 class="d-inline-flex">{{ block('title') }}</h1>
+        {{ include('project/_project_lancher.html.twig') }}
+    </div>
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th scope="col">Date</th>
+            <th scope="col">Error</th>
+            <th scope="col">Warning</th>
+            <th scope="col">Success</th>
+            <th scope="col">Other</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if analyses is not empty %}
+            {% for analyse in analyses %}
+                <tr class="project-{{ analyse.stateClass }}">
+                    {% if analyse.running %}
+                        <th scope="row">{{ analyse.date|date('d/m/Y H:i:s') }}</th>
+                        <td colspan="4">{{ analyse.stateLabel }}</td>
+                    {% else %}
+                        <th scope="row">
+                            <a href="{{ path('project_show', {'id': project.id, 'analyse': analyse.id}) }}">{{ analyse.date|date('d/m/Y H:i:s') }}</a>
+                        </th>
+                        {% set data = statsHelper.buildProjectHistory(project, analyse) %}
+                        <td>{{ data.data[3][1] }}</td>
+                        <td>{{ data.data[1][1] }}</td>
+                        <td>{{ data.data[0][1] }}</td>
+                        <td>{{ data.data[2][1] }}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        {% endif %}
+        </tbody>
+    </table>
+
+
+    {% if nbPages > 1 %}
+        <div class="container">
+            <nav aria-label="Pagination">
+                <ul class="pagination justify-content-center">
+                    {% if currentPage+1 != 1 -%}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('project_history', {'id': project.id, 'page': currentPage-1}) }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for i in 0..nbPages-1 %}
+                        <li class="page-item{{ i==currentPage ? ' active' : '' }}"><a class="page-link" href="{{ path('project_history', {'id': project.id, 'page': i}) }}">{{ i+1 }}</a></li>
+                    {% endfor %}
+                    {% if currentPage+1 != nbPages -%}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ path('project_history', {'id': project.id, 'page': currentPage+1}) }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+{% endblock %}
