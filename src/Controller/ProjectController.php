@@ -124,6 +124,7 @@ class ProjectController extends AbstractController
             'currentPage' => $page,
             'nbPages' => ceil($nbItems/$limit),
             'project' => $project,
+            'analyse' => null,
             'statsHelper' => $statsHelper,
             'analyses' => $analyseRepository->findByProject($project, $page, $limit),
             'user' => $this->getUser()
@@ -202,7 +203,6 @@ class ProjectController extends AbstractController
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($queue);
             $entityManager->flush();
-//            $analyseHelper->start($project);
         }
 
         return new JsonResponse(['return' => true]);
@@ -230,5 +230,19 @@ class ProjectController extends AbstractController
           'pending' => $project->isPending()
         ]);
         return $response;
+    }
+
+    /**
+     * @Route("/{id}/{analyse}/email", name="project_email", methods={"GET"})
+     */
+    public function email(Project $project, Analyse $analyse, AnalyseHelper $analyseHelper): Response
+    {
+        if(!$project->isWritable($this->getUser())) {
+            throw new AccessDeniedException('Cannot edit project.');
+        }
+
+        $analyseHelper->emailReport($project, $analyse);
+
+        return new JsonResponse(['return' => true]);
     }
 }

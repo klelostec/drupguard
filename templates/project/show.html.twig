@@ -23,7 +23,7 @@
 
 {% block body %}
     <div class="container-fluid d-flex align-items-center">
-        <h1 class="d-inline-flex">{{ block('title') }}</h1>
+        <h1 class="d-inline-flex"><div class="project-bullet my-1 me-3 project-{{ analyse ? analyse.stateClass : 'other' }}"></div>{{ block('title') }}</h1>
         {{ include('project/_project_lancher.html.twig') }}
     </div>
     {% if analyse %}
@@ -61,7 +61,7 @@
         </thead>
         <tbody>
             {% if analyse %}
-                {% for item in analyse.analyseItems %}
+                {% for item in analyse.activeAnalyseItems %}
                     <tr class="table-{{ item.stateClass }}">
                         <td>{{ item.type }}</td>
                         <td>
@@ -84,6 +84,39 @@
             {% endif %}
         </tbody>
     </table>
+    {% if analyse and analyse.ignoredAnalyseItems is not empty%}
+        <h2>Ignored modules</h2>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">Type</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Current version</th>
+                    <th scope="col">Latest version</th>
+                    <th scope="col">Recommanded version</th>
+                    <th scope="col">Detail</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in analyse.ignoredAnalyseItems %}
+                    <tr class="table-secondary">
+                        <td>{{ item.type }}</td>
+                        <td>
+                            {% if item.state < 0 %}
+                                {{ item.name }}
+                            {% else %}
+                                <a href="https://www.drupal.org/project/{{ item.machineName }}" target="_blank">{{ item.name }}</a>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.currentVersion }}</td>
+                        <td>{{ item.latestVersion }}</td>
+                        <td>{{ item.recommandedVersion }}</td>
+                        <td>{{ item.detail|raw }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
     {% if analyse %}
         {{ block('analyse_navigation') }}
     {% endif %}

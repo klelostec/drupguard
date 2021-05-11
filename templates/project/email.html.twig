@@ -1,169 +1,70 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml" style="margin: 0;padding: 0;font-family: Helvetica,Arial,sans-serif;-webkit-font-smoothing: antialiased;mso-line-height-rule: exactly;text-transform: none;height: 100% !important;width: 100% !important;"><head>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Drupguard | Project {{ project.name }}{% if analyse %}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}{% endif %}</title>
-    <style>
-        table {
-            caption-side:bottom;
-            border-collapse:collapse
-        }
-        caption {
-            padding-top:.5rem;
-            padding-bottom:.5rem;
-            color:#6c757d;
-            text-align:left
-        }
-        th {
-            text-align:inherit;
-            text-align:-webkit-match-parent
-        }
-        tbody,
-        td,
-        tfoot,
-        th,
-        thead,
-        tr {
-            border:0 solid;
-            border-color:inherit
-        }
-        .table {
-            --bs-table-bg:transparent;
-            --bs-table-striped-color:#212529;
-            --bs-table-striped-bg:rgba(0,0,0,0.05);
-            --bs-table-active-color:#212529;
-            --bs-table-active-bg:rgba(0,0,0,0.1);
-            --bs-table-hover-color:#212529;
-            --bs-table-hover-bg:rgba(0,0,0,0.075);
-            width:100%;
-            margin-bottom:1rem;
-            color:#212529;
-            vertical-align:top;
-            border-color:#dee2e6
-        }
-        .table>:not(caption)>*>* {
-            padding:.5rem;
-            background-color:var(--bs-table-bg);
-            border-bottom-width:1px;
-            box-shadow:inset 0 0 0 9999px var(--bs-table-accent-bg)
-        }
-        .table>tbody {
-            vertical-align:inherit
-        }
-        .table>thead {
-            vertical-align:bottom
-        }
-        .table>:not(:last-child)>:last-child>* {
-            border-bottom-color:currentColor
-        }
-        .caption-top {
-            caption-side:top
-        }
-        .table-sm>:not(caption)>*>* {
-            padding:.25rem
-        }
-        .table-bordered>:not(caption)>* {
-            border-width:1px 0
-        }
-        .table-bordered>:not(caption)>*>* {
-            border-width:0 1px
-        }
-        .table-borderless>:not(caption)>*>* {
-            border-bottom-width:0
-        }
-        .table-striped>tbody>tr:nth-of-type(odd) {
-            --bs-table-accent-bg:var(--bs-table-striped-bg);
-            color:var(--bs-table-striped-color)
-        }
-        .table-active {
-            --bs-table-accent-bg:var(--bs-table-active-bg);
-            color:var(--bs-table-active-color)
-        }
-        .table-hover>tbody>tr:hover {
-            --bs-table-accent-bg:var(--bs-table-hover-bg);
-            color:var(--bs-table-hover-color)
-        }
-        .table-secondary {
-            --bs-table-bg:#e2e3e5;
-            --bs-table-striped-bg:#d7d8da;
-            --bs-table-striped-color:#000;
-            --bs-table-active-bg:#cbccce;
-            --bs-table-active-color:#000;
-            --bs-table-hover-bg:#d1d2d4;
-            --bs-table-hover-color:#000;
-            color:#000;
-            border-color:#cbccce
-        }
-        .table-success {
-            --bs-table-bg:#d1e7dd;
-            --bs-table-striped-bg:#c7dbd2;
-            --bs-table-striped-color:#000;
-            --bs-table-active-bg:#bcd0c7;
-            --bs-table-active-color:#000;
-            --bs-table-hover-bg:#c1d6cc;
-            --bs-table-hover-color:#000;
-            color:#000;
-            border-color:#bcd0c7
-        }
-
-        .table-warning {
-            --bs-table-bg:#fff3cd;
-            --bs-table-striped-bg:#f2e7c3;
-            --bs-table-striped-color:#000;
-            --bs-table-active-bg:#e6dbb9;
-            --bs-table-active-color:#000;
-            --bs-table-hover-bg:#ece1be;
-            --bs-table-hover-color:#000;
-            color:#000;
-            border-color:#e6dbb9
-        }
-        .table-danger {
-            --bs-table-bg:#f8d7da;
-            --bs-table-striped-bg:#eccccf;
-            --bs-table-striped-color:#000;
-            --bs-table-active-bg:#dfc2c4;
-            --bs-table-active-color:#000;
-            --bs-table-hover-bg:#e5c7ca;
-            --bs-table-hover-color:#000;
-            color:#000;
-            border-color:#dfc2c4
-        }
-
-    </style>
-</head>
-<body>
-    <h1>Project {{ project.name }}{% if analyse %}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}{% endif %}</h1>
-    <div class="container">
-        <table class="table">
-            <thead>
-            <tr>
-                <th scope="col">Type</th>
-                <th scope="col">Name</th>
-                <th scope="col">Current version</th>
-                <th scope="col">Latest version</th>
-                <th scope="col">Recommanded version</th>
-                <th scope="col">Detail</th>
+<div class="container-fluid d-flex align-items-center">
+    <h1 class="d-inline-flex">
+        <div class="project-bullet my-1 me-3 project-{{ analyse ? analyse.stateClass : 'other' }}"></div>
+        Project {{ project.name }}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}
+    </h1>
+</div>
+<h2>Detail</h2>
+<table class="table">
+    <thead>
+    <tr>
+        <th scope="col">Type</th>
+        <th scope="col">Name</th>
+        <th scope="col">Current version</th>
+        <th scope="col">Latest version</th>
+        <th scope="col">Recommanded version</th>
+        <th scope="col">Detail</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for item in analyse.activeAnalyseItems %}
+        <tr class="table-{{ item.stateClass }}">
+            <td>{{ item.type }}</td>
+            <td>
+                {% if item.state < 0 %}
+                    {{ item.name }}
+                {% else %}
+                    <a href="https://www.drupal.org/project/{{ item.machineName }}" target="_blank">{{ item.name }}</a>
+                {% endif %}
+            </td>
+            <td>{{ item.currentVersion }}</td>
+            <td>{{ item.latestVersion }}</td>
+            <td>{{ item.recommandedVersion }}</td>
+            <td>{{ item.detail|raw }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% if analyse.ignoredAnalyseItems is not empty%}
+    <h2>Ignored modules</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Type</th>
+            <th scope="col">Name</th>
+            <th scope="col">Current version</th>
+            <th scope="col">Latest version</th>
+            <th scope="col">Recommanded version</th>
+            <th scope="col">Detail</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in analyse.ignoredAnalyseItems %}
+            <tr class="table-secondary">
+                <td>{{ item.type }}</td>
+                <td>
+                    {% if item.state < 0 %}
+                        {{ item.name }}
+                    {% else %}
+                        <a href="https://www.drupal.org/project/{{ item.machineName }}" target="_blank">{{ item.name }}</a>
+                    {% endif %}
+                </td>
+                <td>{{ item.currentVersion }}</td>
+                <td>{{ item.latestVersion }}</td>
+                <td>{{ item.recommandedVersion }}</td>
+                <td>{{ item.detail|raw }}</td>
             </tr>
-            </thead>
-            <tbody>
-            {% if analyse %}
-                {% for item in analyse.analyseItems %}
-                    <tr class="table-{{ item.stateClass }}">
-                        <td>{{ item.type }}</td>
-                        <td>{{ item.name }}</td>
-                        <td>{{ item.currentVersion }}</td>
-                        <td>{{ item.latestVersion }}</td>
-                        <td>{{ item.recommandedVersion }}</td>
-                        <td>{{ item.detail|raw }}</td>
-                    </tr>
-                {% endfor %}
-            {% else %}
-                <tr class="table-secondary text-center">
-                    <td colspan="6">No analyse available.</td>
-                </tr>
-            {% endif %}
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}

@@ -86,6 +86,10 @@ class ProjectType extends AbstractType
             ->add('cronFrequency', TextType::class, $cronFreqOption)
             ->add('isPublic')
             ->add('allowedUsers')
+            ->add('ignoredModules', TextareaType::class, [
+                'required' => false,
+                'help' => 'Ignored modules will not be taken into account to calculate project status. If you need to ignore some modules, fill this field with modules machine name, one per line.',
+            ])
         ;
 
         $formModifierNeedEmail = function (FormInterface $form, $needEmail = false) use ($emailLevelOption, $emailExtraOption) {

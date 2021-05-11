@@ -105,7 +105,20 @@ class Project
      */
     private $analyseQueue;
 
-    private $email;
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $ignored_modules;
+
+    /**
+     * @var string[]
+     */
+    private $email_processed;
+
+    /**
+     * @var string[]
+     */
+    private $ignored_modules_processed;
 
     public function __construct()
     {
@@ -357,29 +370,57 @@ class Project
         return $this;
     }
 
-    public function getEmails() {
-        if(is_null($this->email)) {
-            $this->email = [];
+    public function getEmailsProcessed() : array {
+        if(is_null($this->email_processed)) {
+            $this->email_processed = [];
             if(!$this->getOwner()->isSuperAdmin()) {
-                $this->email[] = $this->getOwner()->getEmail();
+                $this->email_processed[] = $this->getOwner()->getEmail();
             }
             foreach($this->getAllowedUsers() as $user) {
                 if($user->isSuperAdmin() || !$user->isVerified()) {
                     continue;
                 }
-                $this->email[] = $user->getEmail();
+                $this->email_processed[] = $user->getEmail();
             }
 
             $extraEmails = $this->getEmailExtra();
             if(!empty($extraEmails)) {
                 $extraEmails = str_replace("\r\n", "\n", $extraEmails);
                 $extraEmails = explode("\n", $extraEmails);
-                $this->email = array_merge($this->email, $extraEmails);
+                $this->email_processed = array_merge($this->email_processed, $extraEmails);
             }
 
-            $this->email = array_unique($this->email);
+            $this->email_processed = array_unique($this->email_processed);
         }
 
-        return $this->email;
+        return $this->email_processed;
+    }
+
+    public function getIgnoredModules(): ?string
+    {
+        return $this->ignored_modules;
+    }
+
+    public function setIgnoredModules(?string $ignored_modules): self
+    {
+        $this->ignored_modules = $ignored_modules;
+
+        return $this;
+    }
+
+    public function getIgnoredModulesProcessed(): array
+    {
+        if(!isset($this->ignored_modules_processed)) {
+            $this->ignored_modules_processed = [];
+            $modules = $this->getIgnoredModules();
+            if(!empty($modules)) {
+                $modules = str_replace("\r\n", "\n", $modules);
+                $modules = explode("\n", $modules);
+            }
+
+            $this->ignored_modules_processed = array_unique($modules);
+        }
+
+        return $this->ignored_modules_processed;
     }
 }

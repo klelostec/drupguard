@@ -109,6 +109,7 @@ class AnalyseHelper
         try {
             $status = null;
             $items = $this->getItems($drupalInfo);
+            $ignoredModules = $project->getIgnoredModulesProcessed();
             foreach ($items as $keyItem => $currentItem) {
                 $drupalCompare->update_process_project_info($currentItem);
                 $available = $drupalProcessor->processFetchTask($currentItem);
@@ -118,6 +119,7 @@ class AnalyseHelper
                     $available
                 );
 
+                $itemIsIgnored = in_array($keyItem, $ignoredModules);
                 $analyseItem = new AnalyseItem();
                 $analyseItem->setAnalyse($analyse)
                     ->setType($currentItem['project_type'])
@@ -126,7 +128,8 @@ class AnalyseHelper
                     ->setCurrentVersion($currentItem['existing_version'])
                     ->setLatestVersion(!empty($currentItem['latest_version']) ? $currentItem['latest_version'] : '')
                     ->setRecommandedVersion(!empty($currentItem['recommended']) ? $currentItem['recommended'] : '')
-                    ->setState($currentItem['status']);
+                    ->setState($currentItem['status'])
+                    ->setIsIgnored($itemIsIgnored);
 
                 $analyse->addAnalyseItem($analyseItem);
 
@@ -158,22 +161,24 @@ class AnalyseHelper
 
                 $this->entityManager->persist($analyseItem);
 
-                switch ($currentItem['status']) {
-                    case AnalyseItem::CURRENT :
-                        if (is_null($status)) {
-                            $status = Analyse::SUCCESS;
-                        }
-                        break;
-                    case AnalyseItem::NOT_SECURE:
-                        if (is_null($status) || $status > Analyse::ERROR) {
-                            $status = Analyse::ERROR;
-                        }
-                        break;
-                    default:
-                        if (is_null($status) || $status === Analyse::SUCCESS) {
-                            $status = Analyse::WARNING;
-                        }
-                        break;
+                if(!$itemIsIgnored) {
+                    switch ($currentItem['status']) {
+                        case AnalyseItem::CURRENT :
+                            if (is_null($status)) {
+                                $status = Analyse::SUCCESS;
+                            }
+                            break;
+                        case AnalyseItem::NOT_SECURE:
+                            if (is_null($status) || $status > Analyse::ERROR) {
+                                $status = Analyse::ERROR;
+                            }
+                            break;
+                        default:
+                            if (is_null($status) || $status === Analyse::SUCCESS) {
+                                $status = Analyse::WARNING;
+                            }
+                            break;
+                    }
                 }
             }
         }
@@ -543,7 +548,7 @@ class AnalyseHelper
             return;
         }
 
-        $emailsAddress = $project->getEmails();
+        $emailsAddress = $project->getEmailsProcessed();
 
         if(!empty($emailsAddress)) {
             $email = (new TemplatedEmail())

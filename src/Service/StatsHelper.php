@@ -39,7 +39,7 @@ class StatsHelper {
           ])
           ->from(AnalyseItem::class, 'ai')
           ->groupBy('real_state')
-          ->where('ai.analyse = :analyse')
+          ->where('ai.analyse = :analyse AND ai.isIgnored=0')
           ->setParameter(':analyse', $analyse->getId());
 
         $ret = $query->getQuery()->getResult('COLUMN_HYDRATOR');
@@ -59,7 +59,7 @@ class StatsHelper {
           ->from(AnalyseItem::class, 'ai')
           ->join('ai.analyse', 'a', Join::WITH)
           ->groupBy('a.id')
-          ->where('a.project = :project')
+          ->where('a.project = :project AND ai.isIgnored=0')
           ->setParameter(':project', $project->getId())
           ->setMaxResults(12)
           ->setFirstResult(0)

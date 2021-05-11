@@ -154,6 +154,26 @@ class Analyse
         return $this;
     }
 
+    /**
+     * @return Collection|AnalyseItem[]
+     */
+    public function getActiveAnalyseItems(): Collection
+    {
+        return $this->getAnalyseItems()->filter(function(AnalyseItem $analyseItem) {
+            return !$analyseItem->isIgnored();
+        });
+    }
+
+    /**
+     * @return Collection|AnalyseItem[]
+     */
+    public function getIgnoredAnalyseItems(): Collection
+    {
+        return $this->getAnalyseItems()->filter(function(AnalyseItem $analyseItem) {
+            return $analyseItem->isIgnored();
+        });
+    }
+
     public function getProject(): ?Project
     {
         return $this->project;

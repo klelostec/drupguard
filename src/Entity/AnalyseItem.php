@@ -109,6 +109,11 @@ class AnalyseItem
      */
     private $machine_name;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isIgnored;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -202,10 +207,10 @@ class AnalyseItem
     {
         switch ($this->state) {
             case self::NOT_SECURE:
+            case self::NOT_SUPPORTED:
                 return 'danger';
             case self::NOT_CURRENT:
             case self::REVOKED:
-            case self::NOT_SUPPORTED:
                 return 'warning';
             case self::CURRENT:
                 return 'success';
@@ -238,6 +243,18 @@ class AnalyseItem
     public function setMachineName(string $machine_name): self
     {
         $this->machine_name = $machine_name;
+
+        return $this;
+    }
+
+    public function isIgnored(): ?bool
+    {
+        return $this->isIgnored;
+    }
+
+    public function setIsIgnored(bool $isIgnored): self
+    {
+        $this->isIgnored = $isIgnored;
 
         return $this;
     }
