@@ -105,6 +105,8 @@ class Project
      */
     private $analyseQueue;
 
+    private $email;
+
     public function __construct()
     {
         $this->allowedUsers = new ArrayCollection();
@@ -353,5 +355,31 @@ class Project
         $this->analyseQueue = $analyseQueue;
 
         return $this;
+    }
+
+    public function getEmails() {
+        if(is_null($this->email)) {
+            $this->email = [];
+            if(!$this->getOwner()->isSuperAdmin()) {
+                $this->email[] = $this->getOwner()->getEmail();
+            }
+            foreach($this->getAllowedUsers() as $user) {
+                if($user->isSuperAdmin() || !$user->isVerified()) {
+                    continue;
+                }
+                $this->email[] = $user->getEmail();
+            }
+
+            $extraEmails = $this->getEmailExtra();
+            if(!empty($extraEmails)) {
+                $extraEmails = str_replace("\r\n", "\n", $extraEmails);
+                $extraEmails = explode("\n", $extraEmails);
+                $this->email = array_merge($this->email, $extraEmails);
+            }
+
+            $this->email = array_unique($this->email);
+        }
+
+        return $this->email;
     }
 }

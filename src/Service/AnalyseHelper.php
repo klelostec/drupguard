@@ -543,25 +543,7 @@ class AnalyseHelper
             return;
         }
 
-        $emailsAddress = [];
-        if(!$project->getOwner()->isSuperAdmin()) {
-            $emailsAddress[] = $project->getOwner()->getEmail();
-        }
-        foreach($project->getAllowedUsers() as $user) {
-            if($user->isSuperAdmin() || !$user->isVerified()) {
-                continue;
-            }
-            $emailsAddress[] = $user->getEmail();
-        }
-
-        $extraEmails = $project->getEmailExtra();
-        if(!empty($extraEmails)) {
-            $extraEmails = str_replace("\r\n", "\n", $extraEmails);
-            $extraEmails = explode("\n", $extraEmails);
-            $emailsAddress = $emailsAddress + $extraEmails;
-        }
-
-        $emailsAddress = array_unique($emailsAddress);
+        $emailsAddress = $project->getEmails();
 
         if(!empty($emailsAddress)) {
             $email = (new TemplatedEmail())
