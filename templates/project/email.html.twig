@@ -1,56 +1,65 @@
-<div class="container-fluid d-flex align-items-center">
-    <h1 class="d-inline-flex">
-        <div class="project-bullet my-1 me-3 project-{{ analyse ? analyse.stateClass : 'other' }}"></div>
-        Project {{ project.name }}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}
-    </h1>
-</div>
-<h2>Detail</h2>
-<table class="table">
-    <thead>
-    <tr>
-        <th scope="col">Type</th>
-        <th scope="col">Name</th>
-        <th scope="col">Current version</th>
-        <th scope="col">Latest version</th>
-        <th scope="col">Recommanded version</th>
-        <th scope="col">Detail</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for item in analyse.activeAnalyseItems %}
-        <tr class="table-{{ item.stateClass }}">
-            <td>{{ item.type }}</td>
+{% apply inline_css %}
+    <style>
+        .project-bullet {
+            height: 50px;
+            width: 50px;
+            border-radius: 50%;
+        }
+        .project-success {
+            background-color: #d1e7dd;
+        }
+        .project-warning {
+            background-color: #fff3cd;
+        }
+        .project-danger {
+            background-color: #f8d7da;
+        }
+        .project-other {
+            background-color: #e2e3e5;
+        }
+
+        .table-success {
+            color: #000;
+            border-color: #bcd0c7;
+            background-color: #d1e7dd;
+        }
+        .table-warning {
+            color: #000;
+            border-color: #e6dbb9;
+            background-color: #fff3cd;
+        }
+        .table-danger {
+            color: #000;
+            border-color: #dfc2c4;
+            background-color: #f8d7da;
+        }
+        .table-secondary {
+            color: #000;
+            border-color: #cbccce;
+            background-color: #e2e3e5;
+        }
+    </style>
+
+    <table border="0" cellspacing="0" cellpadding="0">
+        <tr style="vertical-align: middle;">
+            <td class="project-bullet project-{{ analyse ? analyse.stateClass : 'other' }}"></td>
             <td>
-                {% if item.state < 0 %}
-                    {{ item.name }}
-                {% else %}
-                    <a href="https://www.drupal.org/project/{{ item.machineName }}" target="_blank">{{ item.name }}</a>
-                {% endif %}
+                <h1>Project {{ project.name }}{{ ' - ' ~ analyse.date|date('d/m/Y H:i:s') }}</h1>
             </td>
-            <td>{{ item.currentVersion }}</td>
-            <td>{{ item.latestVersion }}</td>
-            <td>{{ item.recommandedVersion }}</td>
-            <td>{{ item.detail|raw }}</td>
         </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% if analyse.ignoredAnalyseItems is not empty%}
-    <h2>Ignored modules</h2>
-    <table class="table">
-        <thead>
+    </table>
+    <h2>Detail</h2>
+    <table>
         <tr>
-            <th scope="col">Type</th>
-            <th scope="col">Name</th>
-            <th scope="col">Current version</th>
-            <th scope="col">Latest version</th>
-            <th scope="col">Recommanded version</th>
-            <th scope="col">Detail</th>
+            <th>Type</th>
+            <th>Name</th>
+            <th>Current version</th>
+            <th>Latest version</th>
+            <th>Recommanded version</th>
+            <th>Detail</th>
         </tr>
-        </thead>
-        <tbody>
-        {% for item in analyse.ignoredAnalyseItems %}
-            <tr class="table-secondary">
+        {% for item in analyse.activeAnalyseItems %}
+            <tr class="table-{{ item.stateClass }}">
                 <td>{{ item.type }}</td>
                 <td>
                     {% if item.state < 0 %}
@@ -65,6 +74,34 @@
                 <td>{{ item.detail|raw }}</td>
             </tr>
         {% endfor %}
-        </tbody>
     </table>
-{% endif %}
+    {% if analyse.ignoredAnalyseItems is not empty%}
+        <h2>Ignored modules</h2>
+        <table class="table">
+            <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>Current version</th>
+                <th>Latest version</th>
+                <th>Recommanded version</th>
+                <th>Detail</th>
+            </tr>
+            {% for item in analyse.ignoredAnalyseItems %}
+                <tr class="table-secondary">
+                    <td>{{ item.type }}</td>
+                    <td>
+                        {% if item.state < 0 %}
+                            {{ item.name }}
+                        {% else %}
+                            <a href="https://www.drupal.org/project/{{ item.machineName }}" target="_blank">{{ item.name }}</a>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.currentVersion }}</td>
+                    <td>{{ item.latestVersion }}</td>
+                    <td>{{ item.recommandedVersion }}</td>
+                    <td>{{ item.detail|raw }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+{% endapply %}
