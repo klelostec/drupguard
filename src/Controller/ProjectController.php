@@ -107,7 +107,15 @@ class ProjectController extends AbstractController
             'prevAnalyse' => $prevAnalyse,
             'nextAnalyse' => $nextAnalyse,
             'statsDonut' => $analyse ? $statsHelper->buildProjectDonut($analyse) : [],
-            'statsHistory' => $analyse ? $statsHelper->buildProjectHistory($project) : [],
+            'statsHistory' => $analyse ? $statsHelper->buildProjectHistory($project) : [
+                'data' => [
+                    ['success'],
+                    ['warning'],
+                    ['other'],
+                    ['danger']
+                ],
+                'categories' => []
+            ],
             'user' => $this->getUser()
         ]);
     }

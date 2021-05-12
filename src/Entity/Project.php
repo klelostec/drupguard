@@ -416,9 +416,8 @@ class Project
             if(!empty($modules)) {
                 $modules = str_replace("\r\n", "\n", $modules);
                 $modules = explode("\n", $modules);
+                $this->ignored_modules_processed = array_unique($modules);
             }
-
-            $this->ignored_modules_processed = array_unique($modules);
         }
 
         return $this->ignored_modules_processed;

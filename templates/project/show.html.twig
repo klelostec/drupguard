@@ -151,7 +151,7 @@
                         colors: {success: '#d1e7dd', warning: '#fff3cd', danger: '#f8d7da', other: '#e2e3e5'}
                     },
                     legend: {
-                        position: 'right'
+                        position: 'bottom'
                     },
                     grid: {
                         y: {
@@ -160,13 +160,24 @@
                     },
                     axis: {
                         x: {
+                            // label: {
+                            //     text: 'Analysis',
+                            //     position: 'outer-center'
+                            // },
+                            show: true,
                             type: 'category',
                             categories: {{ statsHistory.categories|json_encode()|raw }},
                             tick: {
-                                rotate: -75,
-                            }
+                                // rotate: -75,
+                                width: 44
+                            },
+                            height: 50
                         },
                         y: {
+                            label: {
+                                text: 'Number of modules',
+                                position: 'outer-middle'
+                            },
                             tick: {
                                 format: function(x) { return x % 1 === 0 ? x : ''; }
                             }
