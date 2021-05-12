@@ -136,7 +136,7 @@
                         colors: {success: '#d1e7dd', warning: '#fff3cd', danger: '#f8d7da', other: '#e2e3e5'}
                     },
                     donut: {
-                        title: "Last analyse"
+                        title: "{{ analyse.date|date('d/m/Y H:i:s') }}"
                     }
                 });
                 c3.generate({
