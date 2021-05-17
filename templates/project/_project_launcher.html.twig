@@ -1,15 +1,19 @@
-<div class="d-inline-flex ms-auto">
+<div class="d-inline-flex ms-auto project-launcher">
     <a href="{{ path('project_show', {'id': project.id}) }}" class="btn" title="Show last analyse"><i class="fas fa-history"></i></a>
     <a href="{{ path('project_history', {'id': project.id}) }}" class="btn" title="Show analyse list"><i class="fas fa-list"></i></a>
     {% if project.isWritable(user) %}
         <a href="{{ path('project_edit', {'id': project.id}) }}" class="btn" title="Edit project"><i class="fas fa-edit"></i></a>
         {% if project.analyseQueue is not null or (project.lastAnalyse and project.lastAnalyse.running) %}
-            <span><i class="fas fa-spinner fa-spin"></i></span>
+            <span class="btn"><i class="fas fa-spinner fa-spin"></i></span>
         {% else %}
             <a href="{{ path('project_run', {'id': project.id}) }}" class="btn btn-run" title="Run analyse"><i class="fas fa-play"></i></a>
         {% endif %}
         {% if analyse %}
-            <a href="{{ path('project_email', {'id': project.id, 'analyse': analyse.id}) }}" class="btn btn-email" title="Send report by email"><i class="fas fa-envelope"></i></a>
+            {% if project.emailsProcessed is not empty %}
+                <a href="{{ path('project_email', {'id': project.id, 'analyse': analyse.id}) }}" class="btn btn-email" title="Send report by email"><i class="fas fa-envelope"></i></a>
+            {% else %}
+                <span class="btn"><i class="fas fad fa-envelope"></i></span>
+            {% endif %}
         {% endif %}
         <a href="{{ path('project_delete', {'id': project.id}) }}" class="btn" title="Delete project"><i class="fas fa-trash"></i></a>
     {% endif %}
@@ -58,7 +62,7 @@
 
     $(document).on('click', 'a.btn-run', function(e) {
         e.preventDefault();
-        $('a.btn-run').replaceWith('<span><i class="fas fa-spinner fa-spin"></i></span>');
+        $('a.btn-run').replaceWith('<span class="btn"><i class="fas fa-spinner fa-spin"></i></span>');
         startAlert();
         $.ajax({
             url: '{{ path('project_run', {'id': project.id}) }}'
@@ -71,7 +75,7 @@
         $(document).on('click', 'a.btn-email', function(e) {
             e.preventDefault();
             var html = $('a.btn-email')[0].outerHTML;
-            $('a.btn-email').replaceWith('<span class="btn-email"><i class="fas fa-spinner fa-spin"></i></span>');
+            $('a.btn-email').replaceWith('<span class="btn btn-email"><i class="fas fa-spinner fa-spin"></i></span>');
             $.ajax({
                 url: '{{ path('project_email', {'id': project.id, 'analyse': analyse.id}) }}'
             }).done(function() {

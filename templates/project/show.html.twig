@@ -24,7 +24,7 @@
 {% block body %}
     <div class="container-fluid d-flex align-items-center">
         <h1 class="d-inline-flex"><div class="project-bullet my-1 me-3 project-{{ analyse ? analyse.stateClass : 'other' }}"></div>{{ block('title') }}</h1>
-        {{ include('project/_project_lancher.html.twig') }}
+        {{ include('project/_project_launcher.html.twig') }}
     </div>
     {% if analyse %}
         {{ block('analyse_navigation') }}
