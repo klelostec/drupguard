@@ -532,6 +532,8 @@ class AnalyseHelper
 
         $project = $analyse->getProject();
         if($project->needEmail() && $state <= $project->getEmailLevel()) {
+            //need to refresh collection
+            $this->entityManager->refresh($analyse);
             $this->emailReport($project, $analyse);
         }
     }
