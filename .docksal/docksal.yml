@@ -1,6 +1,31 @@
+# Basic LAMP stack
+
 version: "2.1"
+
 services:
-  # MailHog
+  # Web
+  web:
+    extends:
+      file: ${HOME}/.docksal/stacks/services.yml
+      service: web
+    depends_on:
+      - cli
+
+  # DB
+  db:
+    extends:
+      file: ${HOME}/.docksal/stacks/services.yml
+      service: mysql
+
+  # CLI
+  cli:
+    image: ${COMPOSE_PROJECT_NAME_SAFE}_cli
+    build:
+      context: services/cli
+      args:
+        - CLI_IMAGE=${CLI_IMAGE:-docksal/cli:2.13-php7.4}
+
+  # Mail
   mail:
     extends:
       file: ${HOME}/.docksal/stacks/services.yml
