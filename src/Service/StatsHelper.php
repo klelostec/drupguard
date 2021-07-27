@@ -9,8 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\Expr\Join;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-class StatsHelper {
-
+class StatsHelper
+{
     protected $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel)
@@ -19,7 +19,8 @@ class StatsHelper {
         $this->entityManager->getConfiguration()->addCustomHydrationMode('COLUMN_HYDRATOR', 'App\Doctrine\ORM\Hydration\ColumnHydrator');
     }
 
-    protected function getLastFinishedAnalyse(Project $project) {
+    protected function getLastFinishedAnalyse(Project $project)
+    {
         $query = $this->entityManager->createQueryBuilder()
           ->select('a')
           ->from(Analyse::class, 'a')
@@ -31,7 +32,8 @@ class StatsHelper {
         return $query->getQuery()->getOneOrNullResult();
     }
 
-    function buildProjectDonut(Analyse $analyse) {
+    public function buildProjectDonut(Analyse $analyse)
+    {
         $query = $this->entityManager->createQueryBuilder()
           ->select([
             "CASE WHEN ai.state = 1 THEN 'danger' WHEN ai.state IN (2, 3, 4) THEN 'warning' WHEN ai.state = 5 THEN 'success' ELSE 'other' END as real_state",
@@ -46,7 +48,8 @@ class StatsHelper {
         return $ret;
     }
 
-    function buildProjectHistory(Project $project, Analyse $analyse = NULL) {
+    public function buildProjectHistory(Project $project, Analyse $analyse = null)
+    {
         $query = $this->entityManager->createQueryBuilder()
           ->select([
             "a.id",
@@ -65,11 +68,10 @@ class StatsHelper {
           ->setFirstResult(0)
           ->orderBy('a.date', 'DESC')
         ;
-        if($analyse) {
+        if ($analyse) {
             $query->andWhere('a.id = :analyse')
                 ->setParameter(':analyse', $analyse->getId());
-        }
-        else {
+        } else {
             $query->andWhere('a.isRunning=0');
         }
 
@@ -82,9 +84,9 @@ class StatsHelper {
           ],
           'categories' => []
         ];
-        if(!empty($res = $query->getQuery()->getResult())) {
+        if (!empty($res = $query->getQuery()->getResult())) {
             $res = array_reverse($res);
-            foreach($res as $current) {
+            foreach ($res as $current) {
                 $ret['data'][0][] = $current['success'];
                 $ret['data'][1][] = $current['warning'];
                 $ret['data'][2][] = $current['other'];
@@ -95,6 +97,4 @@ class StatsHelper {
 
         return $ret;
     }
-
-
 }

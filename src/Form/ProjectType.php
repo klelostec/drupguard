@@ -93,7 +93,7 @@ class ProjectType extends AbstractType
         ;
 
         $formModifierNeedEmail = function (FormInterface $form, $needEmail = false) use ($emailLevelOption, $emailExtraOption) {
-            if(!$needEmail) {
+            if (!$needEmail) {
                 $emailLevelOption['row_attr']['class'] .=' d-none';
                 $emailExtraOption['row_attr']['class'] .=' d-none';
             }
@@ -104,7 +104,7 @@ class ProjectType extends AbstractType
         };
 
         $formModifierHasCron = function (FormInterface $form, $hasCron = false) use ($cronFreqOption) {
-            if(!$hasCron) {
+            if (!$hasCron) {
                 $cronFreqOption['row_attr']['class'] .=' d-none';
             }
             $cronFreqOption['required'] = boolval($hasCron);
@@ -114,7 +114,7 @@ class ProjectType extends AbstractType
 
         $formModifierGitBranch = function (FormInterface $form, $gitRemote = '') {
             $choices = [];
-            if(!empty($gitRemote)) {
+            if (!empty($gitRemote)) {
                 $choices = GitHelper::getRemoteBranchesWithoutCheckout($gitRemote);
             }
 
@@ -124,15 +124,15 @@ class ProjectType extends AbstractType
         };
 
         $builder->addEventListener(
-          FormEvents::POST_SET_DATA,
-          function (FormEvent $event) use ($formModifierHasCron, $formModifierGitBranch, $formModifierNeedEmail) {
+            FormEvents::POST_SET_DATA,
+            function (FormEvent $event) use ($formModifierHasCron, $formModifierGitBranch, $formModifierNeedEmail) {
               $data = $event->getData();
               $form = $event->getForm();
               $formModifierNeedEmail($form, $data->needEmail());
               $formModifierHasCron($form, $data->hasCron());
               $formModifierGitBranch($form, $data->getGitRemoteRepository());
 
-              if($data->getId()) {
+              if ($data->getId()) {
                   $form->add('name', TextType::class, [
                     'help' => 'Machine name : ' . $data->getMachineName(),
                     'constraints' => [
@@ -144,22 +144,22 @@ class ProjectType extends AbstractType
           }
         );
         $builder->get('needEmail')->addEventListener(
-          FormEvents::POST_SUBMIT,
-          function (FormEvent $event) use ($formModifierNeedEmail) {
+            FormEvents::POST_SUBMIT,
+            function (FormEvent $event) use ($formModifierNeedEmail) {
               $needEmail = $event->getForm()->getData();
               $formModifierNeedEmail($event->getForm()->getParent(), $needEmail);
           }
         );
         $builder->get('hasCron')->addEventListener(
-          FormEvents::POST_SUBMIT,
-          function (FormEvent $event) use ($formModifierHasCron) {
+            FormEvents::POST_SUBMIT,
+            function (FormEvent $event) use ($formModifierHasCron) {
               $hasCron = $event->getForm()->getData();
               $formModifierHasCron($event->getForm()->getParent(), $hasCron);
           }
         );
         $builder->get('gitRemoteRepository')->addEventListener(
-          FormEvents::POST_SUBMIT,
-          function (FormEvent $event) use ($formModifierGitBranch) {
+            FormEvents::POST_SUBMIT,
+            function (FormEvent $event) use ($formModifierGitBranch) {
               $gitRemoteRepository = $event->getForm()->getData();
               $formModifierGitBranch($event->getForm()->getParent(), $gitRemoteRepository);
           }
@@ -176,8 +176,7 @@ class ProjectType extends AbstractType
 
                 if ($data->hasCron()) { // then we want password to be required
                     $groups[] = 'Cron';
-                }
-                else {
+                } else {
                     $groups[] = 'NotCron';
                 }
 

@@ -18,8 +18,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class AnalyseHelper
 {
-
-    const UPDATE_DEFAULT_URL = 'https://updates.drupal.org/release-history';
+    public const UPDATE_DEFAULT_URL = 'https://updates.drupal.org/release-history';
 
     protected $entityManager;
 
@@ -36,11 +35,11 @@ class AnalyseHelper
     protected $analyseRepository;
 
     public function __construct(
-      EntityManagerInterface $entityManager,
-      KernelInterface $kernel,
-      ContainerBagInterface $params,
-      MailerInterface $mailer,
-      AnalyseRepository $analyseRepository
+        EntityManagerInterface $entityManager,
+        KernelInterface $kernel,
+        ContainerBagInterface $params,
+        MailerInterface $mailer,
+        AnalyseRepository $analyseRepository
     ) {
         $this->entityManager = $entityManager;
         $this->projectDir = $kernel->getProjectDir();
@@ -50,7 +49,7 @@ class AnalyseHelper
         $this->analyseRepository = $analyseRepository;
     }
 
-    function start(Project $project)
+    public function start(Project $project)
     {
         $analyse = new Analyse();
         $analyse->setDate(new \DateTime());
@@ -66,22 +65,20 @@ class AnalyseHelper
 
         try {
             $this->gitCheckout($project, $projectWorkspace);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $this->stopAnalyse($analyse, Analyse::ERROR);
             throw new AnalyseException(
-              'Cannot checkout project "'.$project->getMachineName().'".',
-              AnalyseException::ERROR
+                'Cannot checkout project "'.$project->getMachineName().'".',
+                AnalyseException::ERROR
             );
         }
         try {
             $this->build($drupalDir);
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $this->stopAnalyse($analyse, Analyse::ERROR);
             throw new AnalyseException(
-              'Cannot build project "'.$project->getMachineName().'".' . PHP_EOL . $e->getMessage(),
-              AnalyseException::ERROR
+                'Cannot build project "'.$project->getMachineName().'".' . PHP_EOL . $e->getMessage(),
+                AnalyseException::ERROR
             );
         }
         $drupalInfo = $this->getDrupalInfo($drupalDir);
@@ -89,9 +86,10 @@ class AnalyseHelper
         if (empty($drupalInfo['version'])) {
             $this->stopAnalyse($analyse, Analyse::ERROR);
             throw new AnalyseException(
-              'Project "'.$project->getMachineName(
+                'Project "'.$project->getMachineName(
               ).'" directory "'.$project->getDrupalDirectory(
-              ).'" isn\'t a Drupal directory.', AnalyseException::ERROR
+              ).'" isn\'t a Drupal directory.',
+                AnalyseException::ERROR
             );
         }
 
@@ -161,9 +159,9 @@ class AnalyseHelper
 
                 $this->entityManager->persist($analyseItem);
 
-                if(!$itemIsIgnored) {
+                if (!$itemIsIgnored) {
                     switch ($currentItem['status']) {
-                        case AnalyseItem::CURRENT :
+                        case AnalyseItem::CURRENT:
                             if (is_null($status)) {
                                 $status = Analyse::SUCCESS;
                             }
@@ -181,12 +179,12 @@ class AnalyseHelper
                     }
                 }
             }
-        }
-        catch (\Exception $exception) {
+        } catch (\Exception $exception) {
             $this->stopAnalyse($analyse, Analyse::ERROR);
             throw new AnalyseException(
                 'Project "'.$project->getMachineName(
-                ).'" error during analyse run.', AnalyseException::ERROR
+                ).'" error during analyse run.',
+                AnalyseException::ERROR
             );
         }
 
@@ -199,15 +197,15 @@ class AnalyseHelper
         if ($this->filesystem->exists($projectWorkspace)) {
             $gitClient = new GitHelper($projectWorkspace);
             $gitClient->reset(
-              true
+                true
             ); //ensure modified files are restored to prevent errors when checkout
             $gitClient->checkout($project->getGitBranch());
             $gitClient->pull();
         } else {
             $this->filesystem->mkdir($projectWorkspace);
             $gitClient = GitHelper::cloneRepository(
-              $project->getGitRemoteRepository(),
-              $projectWorkspace
+                $project->getGitRemoteRepository(),
+                $projectWorkspace
             );
             $gitClient->checkout($project->getGitBranch());
         }
@@ -217,16 +215,16 @@ class AnalyseHelper
     {
         if ($this->filesystem->exists(
             $drupalDir.'/composer.json'
-          ) && $this->filesystem->exists($drupalDir.'/composer.lock')) {
+        ) && $this->filesystem->exists($drupalDir.'/composer.lock')) {
             $composerCmd = explode(
-              ' ',
-              $this->params->get(
-                'drupguard.composer_binary'
+                ' ',
+                $this->params->get(
+                  'drupguard.composer_binary'
               ).' install --ignore-platform-reqs --no-scripts --no-autoloader --quiet --no-interaction'
             );
             $composerInstall = new Process($composerCmd, $drupalDir);
             $composerInstall->setTimeout(60*60);
-            if($composerInstall->run() !== 0) {
+            if ($composerInstall->run() !== 0) {
                 throw new \Exception($composerInstall->getErrorOutput());
             }
         }
@@ -250,21 +248,21 @@ class AnalyseHelper
                             '/{$name}',
                             '',
                             $dir
-                          );
+                        );
                     } else {
                         if (in_array('type:drupal-module', $types)) {
                             $info['directories']['module'] = $drupalDir.'/'.str_replace(
                                 '/{$name}',
                                 '',
                                 $dir
-                              );
+                            );
                         } else {
                             if (in_array('type:drupal-theme', $types)) {
                                 $info['directories']['theme'] = $drupalDir.'/'.str_replace(
                                     '/{$name}',
                                     '',
                                     $dir
-                                  );
+                                );
                             }
                         }
                     }
@@ -277,26 +275,26 @@ class AnalyseHelper
                 $info['directories']['core'] = $drupalDir.'/core';
                 $info['directories']['module'] = $drupalDir.'/modules'.($this->filesystem->exists(
                     $drupalDir.'/modules/contrib'
-                  ) ? '/contrib' : '');
+                ) ? '/contrib' : '');
                 $info['directories']['theme'] = $drupalDir.'/themes'.($this->filesystem->exists(
                     $drupalDir.'/themes/contrib'
-                  ) ? '/contrib' : '');
+                ) ? '/contrib' : '');
             } else {
                 if ($this->filesystem->exists(
-                  $drupalDir.'/includes/bootstrap.inc'
+                    $drupalDir.'/includes/bootstrap.inc'
                 )) {
                     $info['directories']['core'] = $drupalDir;
                     $info['directories']['module'] = $drupalDir.'/sites/all/modules'.($this->filesystem->exists(
                         $drupalDir.'/sites/all/modules/contrib'
-                      ) ? '/contrib' : '');
+                    ) ? '/contrib' : '');
                     $info['directories']['theme'] = $drupalDir.'/sites/all/themes'.($this->filesystem->exists(
                         $drupalDir.'/sites/all/themes/contrib'
-                      ) ? '/contrib' : '');
+                    ) ? '/contrib' : '');
                 }
             }
         }
 
-        if(!empty($info['directories']['core'])) {
+        if (!empty($info['directories']['core'])) {
             if ($this->filesystem->exists(
                 $info['directories']['core'].'/lib/Drupal.php'
             )) {
@@ -319,7 +317,7 @@ class AnalyseHelper
                 }
             }
 
-            if(substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
+            if (substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
                 $info['compat'] = 'current';
             }
         }
@@ -345,37 +343,38 @@ class AnalyseHelper
 
         //modules
         $this->searchItem(
-          $drupalInfo['directories']['module'],
-          'module',
-          $drupalInfo['extension'],
-          $items
+            $drupalInfo['directories']['module'],
+            'module',
+            $drupalInfo['extension'],
+            $items
         );
 
         //themes
         $this->searchItem(
-          $drupalInfo['directories']['theme'],
-          'theme',
-          $drupalInfo['extension'],
-          $items
+            $drupalInfo['directories']['theme'],
+            'theme',
+            $drupalInfo['extension'],
+            $items
         );
 
         return $items;
     }
 
-    protected function scanItem($directory, $extension) {
+    protected function scanItem($directory, $extension)
+    {
         if (!is_dir($directory)) {
-            return FALSE;
+            return false;
         }
         $handle = opendir($directory);
         while (false !== ($entry = readdir($handle))) {
             if ($entry == '.' || $entry == '..') {
                 continue;
             }
-            if(substr($entry, -1*strlen($extension)) === $extension) {
+            if (substr($entry, -1*strlen($extension)) === $extension) {
                 return "$directory/$entry";
             }
         }
-        return FALSE;
+        return false;
     }
 
     protected function searchItem($directory, $type, $extension, &$items)
@@ -403,7 +402,7 @@ class AnalyseHelper
                             $items[$entry] = [
                               'name' => $entry,
                               'info' => $this->drupal_parse_info_format(
-                                $data
+                                  $data
                               ),
                               'project_type' => $type,
                             ];
@@ -411,10 +410,10 @@ class AnalyseHelper
                     }
                 } else {
                     $this->searchItem(
-                      "$directory/$entry",
-                      $type,
-                      $extension,
-                      $items
+                        "$directory/$entry",
+                        $type,
+                        $extension,
+                        $items
                     );
                 }
             }
@@ -465,7 +464,7 @@ class AnalyseHelper
         $info = [];
 
         if (preg_match_all(
-          '
+            '
     @^\s*                           # Start at the beginning of a line, ignoring leading whitespace
     ((?:
       [^=;\[\]]|                    # Key names cannot contain equal signs, semi-colons or square brackets,
@@ -478,9 +477,9 @@ class AnalyseHelper
       ([^\r\n]*?)                   # Non-quoted string
     )\s*$                           # Stop at the next end of a line, ignoring trailing whitespace
     @msx',
-          $data,
-          $matches,
-          PREG_SET_ORDER
+            $data,
+            $matches,
+            PREG_SET_ORDER
         )) {
             foreach ($matches as $match) {
                 // Fetch the key and value string.
@@ -490,7 +489,7 @@ class AnalyseHelper
                 }
                 $value = stripslashes(substr($value1, 1, -1)).stripslashes(
                     substr($value2, 1, -1)
-                  ).$value3;
+                ).$value3;
 
                 // Parse array syntax.
                 $keys = preg_split('/\]?\[/', rtrim($key, ']'));
@@ -531,28 +530,29 @@ class AnalyseHelper
         $this->entityManager->flush();
 
         $project = $analyse->getProject();
-        if($project->needEmail() && $state <= $project->getEmailLevel()) {
+        if ($project->needEmail() && $state <= $project->getEmailLevel()) {
             //need to refresh collection
             $this->entityManager->refresh($analyse);
             $this->emailReport($project, $analyse);
         }
     }
 
-    public function emailReport(Project $project, Analyse $analyse = null) {
-        if(!$analyse) {
+    public function emailReport(Project $project, Analyse $analyse = null)
+    {
+        if (!$analyse) {
             $analyse = $project->getLastAnalyse();
-            if($analyse && $analyse->isRunning()) {
-                $analyse = $this->analyseRepository->findOneBy(['project' => $project->getId(), 'isRunning' => FALSE], ['date' => 'DESC']);
+            if ($analyse && $analyse->isRunning()) {
+                $analyse = $this->analyseRepository->findOneBy(['project' => $project->getId(), 'isRunning' => false], ['date' => 'DESC']);
             }
         }
 
-        if(!$analyse || $analyse->isRunning()) {
+        if (!$analyse || $analyse->isRunning()) {
             return;
         }
 
         $emailsAddress = $project->getEmailsProcessed();
 
-        if(!empty($emailsAddress)) {
+        if (!empty($emailsAddress)) {
             $email = (new TemplatedEmail())
                 ->subject('Project ' . $project->getName() . ' - ' . $analyse->getDate()->format('d/m/Y H:i:s'))
                 ->from('no-reply@drupguard.com');

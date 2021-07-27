@@ -42,7 +42,7 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if(!empty($form->get('plainPassword')->getData())) {
+            if (!empty($form->get('plainPassword')->getData())) {
                 // encode the plain password
                 $user->setPassword(
                     $passwordEncoder->hashPassword(
@@ -51,16 +51,18 @@ class ProfileController extends AbstractController
                     )
                 );
             }
-            if($oldEmail != $user->getEmail()) {
+            if ($oldEmail != $user->getEmail()) {
                 $user->setIsVerified(false);
             }
 
             $this->getDoctrine()->getManager()->flush();
 
-            if($oldEmail != $user->getEmail()) {
+            if ($oldEmail != $user->getEmail()) {
                 $this->addFlash('success', 'Please, check you email to confirm your email address.');
                 // generate a signed url and email it to the user
-                $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
+                $this->emailVerifier->sendEmailConfirmation(
+                    'app_verify_email',
+                    $user,
                     (new TemplatedEmail())
                         ->from(new Address('no-reply@drupguard.com', 'DrupGuard'))
                         ->to($user->getEmail())

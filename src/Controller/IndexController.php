@@ -13,7 +13,7 @@ class IndexController extends AbstractController
      */
     public function index(): Response
     {
-        if(!$this->getUser()) {
+        if (!$this->getUser()) {
             return $this->forward('App\Controller\SecurityController::login');
         }
 

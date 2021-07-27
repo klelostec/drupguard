@@ -73,7 +73,7 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if(!empty($form->get('plainPassword')->getData())) {
+            if (!empty($form->get('plainPassword')->getData())) {
                 // encode the plain password
                 $user->setPassword(
                     $passwordEncoder->hashPassword(
@@ -98,7 +98,7 @@ class UserController extends AbstractController
      */
     public function delete(Request $request, User $user): Response
     {
-        if($user->isSuperAdmin()) {
+        if ($user->isSuperAdmin()) {
             throw new AccessDeniedException('Cannot delete super admin.');
         }
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
@@ -111,6 +111,5 @@ class UserController extends AbstractController
         return $this->render('user/delete.html.twig', [
             'user' => $user
         ]);
-
     }
 }

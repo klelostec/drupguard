@@ -27,7 +27,8 @@ class ProjectRepository extends ServiceEntityRepository
      *
      * @return \Doctrine\ORM\Tools\Pagination\Paginator
      */
-    protected function getQueryByAllowedUser(User $user) {
+    protected function getQueryByAllowedUser(User $user)
+    {
         $query = $this->createQueryBuilder('p')
           ->leftJoin('p.allowedUsers', 'pu', Join::WITH)
           ->andWhere('p.isPublic = 1 OR p.owner = :user OR (pu.id IS NOT NULL AND pu.id = :user)')
@@ -82,7 +83,4 @@ class ProjectRepository extends ServiceEntityRepository
           ->setMaxResults($numberItems);
         return $query->getQuery()->getResult();
     }
-
-
-
 }

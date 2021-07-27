@@ -48,12 +48,12 @@ class DrupGardRun extends Command
             $force = $input->getOption('force');
             foreach ($projectsMachineNames as $machineName) {
                 $project = $repo->findOneBy(['machineName' => $machineName]);
-                if(!$project) {
+                if (!$project) {
                     $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
                     continue;
                 }
 
-                if($project->isPending()) {
+                if ($project->isPending()) {
                     $output->writeln('<comment>Project "'.$project->getMachineName().'"\'s analyse is already pending.</comment>');
                     continue;
                 }
@@ -87,7 +87,7 @@ class DrupGardRun extends Command
 
         return $cronHelper->getNextRunDate(
             $project->getLastAnalyse()->getDate()
-          ) <= $currentDate;
+        ) <= $currentDate;
     }
 
     protected function isRunning(Project $project): ?bool

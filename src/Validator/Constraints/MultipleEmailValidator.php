@@ -27,7 +27,7 @@ class MultipleEmailValidator extends ConstraintValidator
             $value = str_replace("\r\n", "\n", $value);
             $values = explode("\n", $value);
             $strictValidator = new EguliasEmailValidator();
-            foreach($values as $email) {
+            foreach ($values as $email) {
                 if (!$strictValidator->isValid($email, new NoRFCWarningsValidation())) {
                     $this->context->buildViolation($constraint->message)
                       ->setParameter('{{ value }}', $this->formatValue($value))

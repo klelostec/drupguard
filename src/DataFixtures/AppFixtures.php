@@ -11,7 +11,8 @@ class AppFixtures extends Fixture
 {
     protected $passwordEncoder;
 
-    public function __construct(UserPasswordHasherInterface $passwordEncoder) {
+    public function __construct(UserPasswordHasherInterface $passwordEncoder)
+    {
         $this->passwordEncoder = $passwordEncoder;
     }
 
@@ -25,9 +26,9 @@ class AppFixtures extends Fixture
           ->setIsVerified(true)
           ->setEmail('admin@drupguard.com')
           ->setPassword(
-            $this->passwordEncoder->hashPassword(
-              $user,
-              'admin'
+              $this->passwordEncoder->hashPassword(
+                $user,
+                'admin'
             )
           )
           ->setRoles(['ROLE_ADMIN']);

@@ -107,7 +107,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRoles(array $roles): self
     {
-        if(($key = array_search('ROLE_USER', $roles)) !== false) {
+        if (($key = array_search('ROLE_USER', $roles)) !== false) {
             unset($roles[$key]);
             $roles = array_values($roles);
         }
@@ -225,11 +225,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function isSuperAdmin() {
+    public function isSuperAdmin()
+    {
         return $this->getId() ===1;
     }
 
-    public function __toString(){
+    public function __toString()
+    {
         return $this->getFirstname() . ' ' . $this->getLastname();
     }
 

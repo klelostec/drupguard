@@ -39,16 +39,15 @@ class DrupGardList extends Command
         $table = new Table($output);
         $table->setHeaders(['Project name', 'Machine name', 'Cron frequency', 'Last analyse', 'Last analyse state', 'Is running', 'Pending']);
         $repo = $this->entityManager->getRepository("App:Project");
-        if($filter = $input->getOption('filter')) {
+        if ($filter = $input->getOption('filter')) {
             // Add a not equals parameter to your criteria
             $criteria = new Criteria();
             $criteria->where(Criteria::expr()->contains($input->getOption('filter-field'), $filter));
             $projects = $repo->matching($criteria);
-        }
-        else {
+        } else {
             $projects = $repo->findAll();
         }
-        foreach($projects as $p) {
+        foreach ($projects as $p) {
             /**
              * @var $analyse \App\Entity\Analyse
              */

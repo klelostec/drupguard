@@ -150,7 +150,6 @@ class Project
 
     public function setMachineName(string $machineName): self
     {
-
         $this->machineName = $machineName;
 
         return $this;
@@ -306,13 +305,15 @@ class Project
         return $this;
     }
 
-    public function isWritable(User $user) {
+    public function isWritable(User $user)
+    {
         return $user->isSuperAdmin() ||
           $this->getOwner()->getId() === $user->getId() ||
           $this->getAllowedUsers()->contains($user);
     }
 
-    public function isReadable(User $user) {
+    public function isReadable(User $user)
+    {
         return $this->isPublic() ||
           $this->isWritable($user);
     }
@@ -370,21 +371,22 @@ class Project
         return $this;
     }
 
-    public function getEmailsProcessed() : array {
-        if(is_null($this->email_processed)) {
+    public function getEmailsProcessed(): array
+    {
+        if (is_null($this->email_processed)) {
             $this->email_processed = [];
-            if(!$this->getOwner()->isSuperAdmin()) {
+            if (!$this->getOwner()->isSuperAdmin()) {
                 $this->email_processed[] = $this->getOwner()->getEmail();
             }
-            foreach($this->getAllowedUsers() as $user) {
-                if($user->isSuperAdmin() || !$user->isVerified()) {
+            foreach ($this->getAllowedUsers() as $user) {
+                if ($user->isSuperAdmin() || !$user->isVerified()) {
                     continue;
                 }
                 $this->email_processed[] = $user->getEmail();
             }
 
             $extraEmails = $this->getEmailExtra();
-            if(!empty($extraEmails)) {
+            if (!empty($extraEmails)) {
                 $extraEmails = str_replace("\r\n", "\n", $extraEmails);
                 $extraEmails = explode("\n", $extraEmails);
                 $this->email_processed = array_merge($this->email_processed, $extraEmails);
@@ -410,10 +412,10 @@ class Project
 
     public function getIgnoredModulesProcessed(): array
     {
-        if(!isset($this->ignored_modules_processed)) {
+        if (!isset($this->ignored_modules_processed)) {
             $this->ignored_modules_processed = [];
             $modules = $this->getIgnoredModules();
-            if(!empty($modules)) {
+            if (!empty($modules)) {
                 $modules = str_replace("\r\n", "\n", $modules);
                 $modules = explode("\n", $modules);
                 $this->ignored_modules_processed = array_unique($modules);

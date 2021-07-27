@@ -55,10 +55,10 @@ class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if(empty($project->getOwner())) {
+            if (empty($project->getOwner())) {
                 $project->setOwner($this->getUser());
             }
-            if(empty($project->getMachineName())) {
+            if (empty($project->getMachineName())) {
                 $machineName = $machineNameHelper->getMachineName($project->getMachineName());
                 $project->setMachineName($machineName);
             }
@@ -80,23 +80,23 @@ class ProjectController extends AbstractController
      */
     public function show(Project $project, Analyse $analyse = null, StatsHelper $statsHelper, AnalyseRepository $analyseRepository): Response
     {
-        if(!$project->isReadable($this->getUser())) {
+        if (!$project->isReadable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
         }
 
-        if($analyse && ($analyse->getProject()->getId() !== $project->getId() || $analyse->isRunning())) {
+        if ($analyse && ($analyse->getProject()->getId() !== $project->getId() || $analyse->isRunning())) {
             throw new NotFoundHttpException();
         }
 
-        if(!$analyse) {
+        if (!$analyse) {
             $analyse = $project->getLastAnalyse();
-            if($analyse && $analyse->isRunning()) {
-                $analyse = $analyseRepository->findOneBy(['project' => $project->getId(), 'isRunning' => FALSE], ['date' => 'DESC']);
+            if ($analyse && $analyse->isRunning()) {
+                $analyse = $analyseRepository->findOneBy(['project' => $project->getId(), 'isRunning' => false], ['date' => 'DESC']);
             }
         }
 
         $prevAnalyse = $nextAnalyse = null;
-        if($analyse) {
+        if ($analyse) {
             $prevAnalyse = $analyseRepository->getPreviousAnalyse($analyse);
             $nextAnalyse = $analyseRepository->getNextAnalyse($analyse);
         }
@@ -144,7 +144,7 @@ class ProjectController extends AbstractController
      */
     public function edit(Request $request, Project $project): Response
     {
-        if(!$project->isWritable($this->getUser())) {
+        if (!$project->isWritable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
         }
 
@@ -168,14 +168,14 @@ class ProjectController extends AbstractController
      */
     public function delete(Request $request, Project $project, KernelInterface $kernel): Response
     {
-        if(!$project->isWritable($this->getUser())) {
+        if (!$project->isWritable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
         }
 
         if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
             $fileSystem = new Filesystem();
             $workspaceDir = $kernel->getProjectDir() . '/workspace/' . $project->getMachineName();
-            if($fileSystem->exists($workspaceDir)) {
+            if ($fileSystem->exists($workspaceDir)) {
                 $fileSystem->remove($workspaceDir);
             }
 
@@ -196,15 +196,15 @@ class ProjectController extends AbstractController
      */
     public function run(Project $project, AnalyseHelper $analyseHelper): Response
     {
-        if(!$project->isWritable($this->getUser())) {
+        if (!$project->isWritable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
         }
 
-        if($project->isPending() || ($project->getLastAnalyse() && $project->getLastAnalyse()->isRunning())) {
+        if ($project->isPending() || ($project->getLastAnalyse() && $project->getLastAnalyse()->isRunning())) {
             return new JsonResponse(['return' => false]);
         }
 
-        if(!$project->isPending()) {
+        if (!$project->isPending()) {
             $queue = new AnalyseQueue();
             $queue->addProject($project);
 
@@ -219,9 +219,10 @@ class ProjectController extends AbstractController
     /**
      * @Route("/ajax/git-branches", name="project_ajax_git_branches", methods={"POST"})
      */
-    public function ajaxGitBranches(Request $request): Response {
+    public function ajaxGitBranches(Request $request): Response
+    {
         $branches = [];
-        if($gitRemoteRepository = $request->request->get('gitRemoteRepository')) {
+        if ($gitRemoteRepository = $request->request->get('gitRemoteRepository')) {
             $branches = GitHelper::getRemoteBranchesWithoutCheckout($gitRemoteRepository);
         }
         return new JsonResponse($branches);
@@ -245,7 +246,7 @@ class ProjectController extends AbstractController
      */
     public function email(Project $project, Analyse $analyse, AnalyseHelper $analyseHelper): Response
     {
-        if(!$project->isWritable($this->getUser())) {
+        if (!$project->isWritable($this->getUser())) {
             throw new AccessDeniedException('Cannot edit project.');
         }
 

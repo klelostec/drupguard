@@ -75,30 +75,30 @@ class DrupGuardInstall extends Command
         $nbStep = count($this->commands)+1;
         $commandStart = 1;
         $noOutput = new NullOutput();
-        if(!$filesystem->exists($this->projectDir . '/.env.local')) {
+        if (!$filesystem->exists($this->projectDir . '/.env.local')) {
             $nbStep++;
             $commandStart++;
 
             $outputStyle->section(
-              sprintf(
-                'Step %d of %d. <info>%s</info>',
-                1,
-                $nbStep,
-                'Create .env.local file'
+                sprintf(
+                  'Step %d of %d. <info>%s</info>',
+                  1,
+                  $nbStep,
+                  'Create .env.local file'
               )
             );
             try {
                 $databaseQuestion = new Question(
-                  'Database url (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET, oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
+                    'Database url (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET, oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
                 );
                 $databaseQuestion->setValidator(
-                  function ($answer) {
+                    function ($answer) {
                       if (!is_string($answer) || !preg_match(
                           '#^(((mysql|oci8|postgresql)://[^:]+:[^@]+@[^:]+:[1-9]\d+/[^\?]+(\?serverVersion=.*)?(&charset=.*)?)|sqlite://.*/var/app.db)$#i',
                           $answer
-                        )) {
+                      )) {
                           throw new \RuntimeException(
-                            'The database url\'s format should be : (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET or oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
+                              'The database url\'s format should be : (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET or oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
                           );
                       }
 
@@ -108,16 +108,16 @@ class DrupGuardInstall extends Command
                 $databaseUrl = $outputStyle->askQuestion($databaseQuestion);
 
                 $mailerQuestion = new Question(
-                  'Mailer DSN (smtp://MAILER_HOST:MAILER_PORT, sendmail://default, native://default)'
+                    'Mailer DSN (smtp://MAILER_HOST:MAILER_PORT, sendmail://default, native://default)'
                 );
                 $mailerQuestion->setValidator(
-                  function ($answer) {
+                    function ($answer) {
                       if (!is_string($answer) || ($answer !== 'sendmail://default' && $answer !== 'native://default' && !preg_match(
                           '#^((smtp://[^:]+:[1-9]\d+)|((sendmail|native)://default))$#i',
                           $answer
-                        ))) {
+                      ))) {
                           throw new \RuntimeException(
-                            'The mailer dsn\'s format should be : smtp://MAILER_HOST:MAILER_PORT, sendmail://default or native://default'
+                              'The mailer dsn\'s format should be : smtp://MAILER_HOST:MAILER_PORT, sendmail://default or native://default'
                           );
                       }
 
@@ -151,8 +151,7 @@ COMPOSER_BINARY={$composerExecutable}
 EOT;
                 file_put_contents($this->projectDir.'/.env.local', $envLocal);
                 $outputStyle->success('File .env.local created.');
-            }
-            catch(\Exception $e) {
+            } catch (\Exception $e) {
                 $outputStyle->error('File .env.local creation failed.');
                 return Command::FAILURE;
             }
@@ -162,11 +161,10 @@ EOT;
 
             $commandObj = $this->getApplication()->find('cache:clear');
             $commandParameters = new ArrayInput([]);
-            if($commandObj->run($commandParameters, $noOutput) != Command::SUCCESS) {
+            if ($commandObj->run($commandParameters, $noOutput) != Command::SUCCESS) {
                 $outputStyle->error('Cache clear failed.');
                 return Command::FAILURE;
-            }
-            else {
+            } else {
                 $outputStyle->success('Cache has been successfully cleared.');
             }
         }
@@ -179,33 +177,32 @@ EOT;
 
         foreach ($this->commands as $step => $command) {
             $outputStyle->section(
-              sprintf(
-                'Step %d of %d. <info>%s</info>',
-                $step + $commandStart,
-                $nbStep,
-                $command['message']
+                sprintf(
+                  'Step %d of %d. <info>%s</info>',
+                  $step + $commandStart,
+                  $nbStep,
+                  $command['message']
               )
             );
 
             $commandObj = $this->getApplication()->find(
-              $command['name']
+                $command['name']
             );
             $commandParameters = new ArrayInput($command['parameters']);
-            if($commandObj->run($commandParameters, $noOutput) != Command::SUCCESS) {
+            if ($commandObj->run($commandParameters, $noOutput) != Command::SUCCESS) {
                 $outputStyle->error($command['errorMessage']);
                 return Command::FAILURE;
-            }
-            else {
+            } else {
                 $outputStyle->success($command['successMessage']);
             }
         }
 
         $outputStyle->section(
-          sprintf(
-            'Step %d of %d. <info>%s</info>',
-            $nbStep,
-            $nbStep,
-            'Create super admin user'
+            sprintf(
+              'Step %d of %d. <info>%s</info>',
+              $nbStep,
+              $nbStep,
+              'Create super admin user'
           )
         );
         try {
@@ -217,9 +214,9 @@ EOT;
               ->setIsVerified(true)
               ->setEmail('admin@drupguard.com')
               ->setPassword(
-                $this->passwordEncoder->hashPassword(
-                  $user,
-                  'admin'
+                  $this->passwordEncoder->hashPassword(
+                    $user,
+                    'admin'
                 )
               )
               ->setRoles(['ROLE_SUPER_ADMIN']);
@@ -227,8 +224,7 @@ EOT;
             $this->entityManager->persist($user);
             $this->entityManager->flush();
             $outputStyle->success('Admin user created.');
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             $outputStyle->error('Admin user creation failed.');
             return Command::FAILURE;
         }

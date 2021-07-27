@@ -11,11 +11,10 @@ use GuzzleHttp\HandlerStack;
  */
 class DrupalUpdateFetcher
 {
-
     /**
      * URL to check for updates, if a given project doesn't define its own.
      */
-    const UPDATE_DEFAULT_URL = 'https://updates.drupal.org/release-history';
+    public const UPDATE_DEFAULT_URL = 'https://updates.drupal.org/release-history';
 
     protected $compat;
 
@@ -138,5 +137,4 @@ class DrupalUpdateFetcher
 
         return $url;
     }
-
 }

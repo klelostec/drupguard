@@ -7,7 +7,6 @@ namespace App\Service;
  */
 class DrupalUpdateProcessor
 {
-
     protected $updateFetcher;
 
     public function __construct($compat)
@@ -82,5 +81,4 @@ class DrupalUpdateProcessor
 
         return $data;
     }
-
 }

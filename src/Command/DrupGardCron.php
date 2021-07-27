@@ -43,7 +43,7 @@ class DrupGardCron extends Command
         //Add needed project to queue
         $repo = $this->entityManager->getRepository("App:Project");
         $projects = $repo->findByCronNeeded(boolval($input->getOption('cron-only')));
-        foreach($projects as $project) {
+        foreach ($projects as $project) {
             $command = $this->getApplication()->find('drupguard:run');
             $arguments = [
               'projects' => [$project->getMachineName()],
@@ -56,7 +56,7 @@ class DrupGardCron extends Command
 
         $nbITems = intval($input->getOption('queue-items'));
         $projectQueues = $repo->findByQueue($nbITems);
-        foreach($projectQueues as $project) {
+        foreach ($projectQueues as $project) {
             try {
                 $queue = $project->getAnalyseQueue();
                 $this->entityManager->remove($queue);
@@ -65,13 +65,14 @@ class DrupGardCron extends Command
                 $output->writeln('<info>Project "' . $project->getMachineName() .'"\'s analyse start.</info>');
                 $this->analyseHelper->start($project);
                 $output->writeln('<info>Project "' . $project->getMachineName() .'"\'s analyse end.</info>');
-            }
-            catch (AnalyseException $e) {
+            } catch (AnalyseException $e) {
                 switch ($e->getCode()) {
                     case AnalyseException::WARNING:
                         $output->writeln('<comment>' . $e->getMessage() . '</comment>');
+                        break;
                     default:
                         $output->writeln('<error>' . $e->getMessage() . '</error>');
+                        break;
                 }
             }
         }

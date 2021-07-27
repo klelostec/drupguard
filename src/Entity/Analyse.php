@@ -12,9 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Analyse
 {
-    const SUCCESS = 3;
-    const WARNING = 2;
-    const ERROR = 1;
+    public const SUCCESS = 3;
+    public const WARNING = 2;
+    public const ERROR = 1;
 
     /**
      * @ORM\Id
@@ -159,7 +159,7 @@ class Analyse
      */
     public function getActiveAnalyseItems(): Collection
     {
-        return $this->getAnalyseItems()->filter(function(AnalyseItem $analyseItem) {
+        return $this->getAnalyseItems()->filter(function (AnalyseItem $analyseItem) {
             return !$analyseItem->isIgnored();
         });
     }
@@ -169,7 +169,7 @@ class Analyse
      */
     public function getIgnoredAnalyseItems(): Collection
     {
-        return $this->getAnalyseItems()->filter(function(AnalyseItem $analyseItem) {
+        return $this->getAnalyseItems()->filter(function (AnalyseItem $analyseItem) {
             return $analyseItem->isIgnored();
         });
     }

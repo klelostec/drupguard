@@ -38,9 +38,9 @@ class DrupGardResetStatus extends Command
 
         $projectsMachineNames = $input->getArgument('projects');
         if (count($projectsMachineNames) > 0) {
-            foreach($projectsMachineNames as $machineName) {
+            foreach ($projectsMachineNames as $machineName) {
                 $project = $repo->findOneBy(['machineName' => $machineName]);
-                if(!$project) {
+                if (!$project) {
                     $output->writeln('<error>Project "' . $machineName .'" not found.</error>');
                     return Command::FAILURE;
                 }

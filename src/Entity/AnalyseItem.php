@@ -10,51 +10,50 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class AnalyseItem
 {
-
     /**
      * Project is missing security update(s).
      */
-    const NOT_SECURE = 1;
+    public const NOT_SECURE = 1;
 
     /**
      * Current release has been unpublished and is no longer available.
      */
-    const REVOKED = 2;
+    public const REVOKED = 2;
 
     /**
      * Current release is no longer supported by the project maintainer.
      */
-    const NOT_SUPPORTED = 3;
+    public const NOT_SUPPORTED = 3;
 
     /**
      * Project has a new release available, but it is not a security release.
      */
-    const NOT_CURRENT = 4;
+    public const NOT_CURRENT = 4;
 
     /**
      * Project is up to date.
      */
-    const CURRENT = 5;
+    public const CURRENT = 5;
 
     /**
      * Project's status cannot be checked.
      */
-    const NOT_CHECKED = -1;
+    public const NOT_CHECKED = -1;
 
     /**
      * No available update data was found for project.
      */
-    const UNKNOWN = -2;
+    public const UNKNOWN = -2;
 
     /**
      * There was a failure fetching available update data for this project.
      */
-    const NOT_FETCHED = -3;
+    public const NOT_FETCHED = -3;
 
     /**
      * We need to (re)fetch available update data for this project.
      */
-    const FETCH_PENDING = -4;
+    public const FETCH_PENDING = -4;
 
     /**
      * @ORM\Id

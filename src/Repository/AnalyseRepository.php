@@ -23,7 +23,8 @@ class AnalyseRepository extends ServiceEntityRepository
         parent::__construct($registry, Analyse::class);
     }
 
-    protected function getQueryByProject(Project $project) : Paginator {
+    protected function getQueryByProject(Project $project): Paginator
+    {
         $query = $this->createQueryBuilder('a')
             ->andWhere('a.project = :project')
             ->setParameter('project', $project->getId())

@@ -7,9 +7,10 @@ use App\Entity\AnalyseItem;
 /**
  * Process project update information.
  */
-class DrupalUpdateCompare {
-
-    public function update_process_project_info(&$project) {
+class DrupalUpdateCompare
+{
+    public function update_process_project_info(&$project)
+    {
         // Assume an official release until we see otherwise.
         $install_type = 'official';
 
@@ -27,15 +28,13 @@ class DrupalUpdateCompare {
             $matches = [];
             if (preg_match('/^(\d+\.x-)?(\d+)\..*$/', $info['version'], $matches)) {
                 $info['major'] = $matches[2];
-            }
-            elseif (!isset($info['major'])) {
+            } elseif (!isset($info['major'])) {
                 // This would only happen for version strings that don't follow the
                 // drupal.org convention. We let contribs define "major" in their
                 // .info.yml in this case, and only if that's missing would we hit this.
                 $info['major'] = -1;
             }
-        }
-        else {
+        } else {
             // No version info available at all.
             $install_type = 'unknown';
             $info['version'] = 'Unknown';
@@ -114,7 +113,8 @@ class DrupalUpdateCompare {
      * @param $available
      *   Data about available project releases of a specific project.
      */
-    function update_calculate_project_update_status_current(&$project_data, $available) {
+    public function update_calculate_project_update_status_current(&$project_data, $available)
+    {
         foreach (['title', 'link'] as $attribute) {
             if (!isset($project_data[$attribute]) && isset($available[$attribute])) {
                 $project_data[$attribute] = $available[$attribute];
@@ -187,8 +187,7 @@ class DrupalUpdateCompare {
         }
         try {
             $existing_major = DrupalModuleVersion::createFromVersionString($project_data['existing_version'])->getMajorVersion();
-        }
-        catch (\UnexpectedValueException $exception) {
+        } catch (\UnexpectedValueException $exception) {
             // If the version has an unexpected value we can't determine updates.
             $project_data['status'] = AnalyseItem::UNKNOWN;
             $project_data['reason'] = 'Invalid version: ' . $project_data['existing_version'];
@@ -202,16 +201,15 @@ class DrupalUpdateCompare {
         $is_in_supported_branch = function ($version) use ($supported_branches) {
             foreach ($supported_branches as $supported_branch) {
                 if (strpos($version, $supported_branch) === 0) {
-                    return TRUE;
+                    return true;
                 }
             }
-            return FALSE;
+            return false;
         };
         if ($is_in_supported_branch($project_data['existing_version'])) {
             // Still supported, stay at the current major version.
             $target_major = $existing_major;
-        }
-        elseif ($supported_branches) {
+        } elseif ($supported_branches) {
             // We know the current release is unsupported since it is not in
             // 'supported_branches' list. We should use the next valid supported
             // branch for the target major version.
@@ -219,9 +217,7 @@ class DrupalUpdateCompare {
             foreach ($supported_branches as $supported_branch) {
                 try {
                     $target_major = DrupalModuleVersion::createFromSupportBranch($supported_branch)->getMajorVersion();
-
-                }
-                catch (\UnexpectedValueException $exception) {
+                } catch (\UnexpectedValueException $exception) {
                     continue;
                 }
             }
@@ -229,9 +225,7 @@ class DrupalUpdateCompare {
                 // If there are no valid support branches, use the current major.
                 $target_major = $existing_major;
             }
-
-        }
-        else {
+        } else {
             // Malformed XML file? Stick with the current branch.
             $target_major = $existing_major;
         }
@@ -264,13 +258,12 @@ class DrupalUpdateCompare {
         }
 
         $recommended_version_without_extra = '';
-        $recommended_release = NULL;
+        $recommended_release = null;
 
         foreach ($available['releases'] as $version => $release) {
             try {
                 $release_module_version = DrupalModuleVersion::createFromVersionString($release['version']);
-            }
-            catch (\UnexpectedValueException $exception) {
+            } catch (\UnexpectedValueException $exception) {
                 continue;
             }
             // First, if this is the existing release, check a few conditions.
@@ -278,8 +271,7 @@ class DrupalUpdateCompare {
                 if (isset($release['terms']['Release type']) &&
                   in_array('Insecure', $release['terms']['Release type'])) {
                     $project_data['status'] = AnalyseItem::NOT_SECURE;
-                }
-                elseif ($release['status'] == 'unpublished') {
+                } elseif ($release['status'] == 'unpublished') {
                     $project_data['status'] = AnalyseItem::REVOKED;
                     if (empty($project_data['extra'])) {
                         $project_data['extra'] = [];
@@ -289,8 +281,7 @@ class DrupalUpdateCompare {
                       'label' => 'Release revoked',
                       'data' => 'Your currently installed release has been revoked, and is no longer available for download. Disabling everything included in this release or upgrading is strongly recommended!',
                     ];
-                }
-                elseif (isset($release['terms']['Release type']) &&
+                } elseif (isset($release['terms']['Release type']) &&
                   in_array('Unsupported', $release['terms']['Release type'])) {
                     $project_data['status'] = AnalyseItem::NOT_SUPPORTED;
                     if (empty($project_data['extra'])) {
@@ -353,8 +344,7 @@ class DrupalUpdateCompare {
 
             if ($release_module_version->getVersionExtra()) {
                 $release_version_without_extra = str_replace('-' . $release_module_version->getVersionExtra(), '', $release['version']);
-            }
-            else {
+            } else {
                 $release_version_without_extra = $release['version'];
             }
 
@@ -366,7 +356,7 @@ class DrupalUpdateCompare {
                     $recommended_version_without_extra = $release_version_without_extra;
                     $recommended_release = $release;
                 }
-                if ($release_module_version->getVersionExtra() === NULL) {
+                if ($release_module_version->getVersionExtra() === null) {
                     $project_data['recommended'] = $recommended_release['version'];
                     $project_data['releases'][$recommended_release['version']] = $recommended_release;
                 }
@@ -387,8 +377,7 @@ class DrupalUpdateCompare {
                 if (empty($project_data['datestamp'])) {
                     // We don't have current timestamp info, so we can't know.
                     continue;
-                }
-                elseif (isset($release['date']) && ($project_data['datestamp'] + 100 > $release['date'])) {
+                } elseif (isset($release['date']) && ($project_data['datestamp'] + 100 > $release['date'])) {
                     // We're newer than this, so we can skip it.
                     continue;
                 }
@@ -427,8 +416,7 @@ class DrupalUpdateCompare {
         if ($project_data['install_type'] == 'dev') {
             if (isset($project_data['dev_version']) && $available['releases'][$project_data['dev_version']]['date'] > $available['releases'][$project_data['latest_version']]['date']) {
                 $project_data['latest_dev'] = $project_data['dev_version'];
-            }
-            else {
+            } else {
                 $project_data['latest_dev'] = $project_data['latest_version'];
             }
         }
@@ -438,12 +426,10 @@ class DrupalUpdateCompare {
             case 'official':
                 if ($project_data['existing_version'] === $project_data['recommended'] || $project_data['existing_version'] === $project_data['latest_version']) {
                     $project_data['status'] = AnalyseItem::CURRENT;
-                }
-                else {
-                    if(!empty($project_data['security updates'])) {
+                } else {
+                    if (!empty($project_data['security updates'])) {
                         $project_data['status'] = AnalyseItem::NOT_SECURE;
-                    }
-                    else {
+                    } else {
                         $project_data['status'] = AnalyseItem::NOT_CURRENT;
                     }
                 }
@@ -454,11 +440,9 @@ class DrupalUpdateCompare {
                 if (empty($project_data['datestamp'])) {
                     $project_data['status'] = AnalyseItem::NOT_CHECKED;
                     $project_data['reason'] = 'Unknown release date';
-                }
-                elseif (($project_data['datestamp'] + 100 > $latest['date'])) {
+                } elseif (($project_data['datestamp'] + 100 > $latest['date'])) {
                     $project_data['status'] = AnalyseItem::CURRENT;
-                }
-                else {
+                } else {
                     $project_data['status'] = AnalyseItem::NOT_CURRENT;
                 }
                 break;
@@ -469,7 +453,8 @@ class DrupalUpdateCompare {
         }
     }
 
-    function update_calculate_project_update_status_branches(&$project_data, $available) {
+    public function update_calculate_project_update_status_branches(&$project_data, $available)
+    {
         foreach (['title', 'link'] as $attribute) {
             if (!isset($project_data[$attribute]) && isset($available[$attribute])) {
                 $project_data[$attribute] = $available[$attribute];
@@ -535,8 +520,7 @@ class DrupalUpdateCompare {
         $supported_majors = [];
         if (isset($available['supported_majors'])) {
             $supported_majors = explode(',', $available['supported_majors']);
-        }
-        elseif (isset($available['default_major'])) {
+        } elseif (isset($available['default_major'])) {
             // Older release history XML file without supported or recommended.
             $supported_majors[] = $available['default_major'];
         }
@@ -544,21 +528,18 @@ class DrupalUpdateCompare {
         if (in_array($existing_major, $supported_majors)) {
             // Still supported, stay at the current major version.
             $target_major = $existing_major;
-        }
-        elseif (isset($available['recommended_major'])) {
+        } elseif (isset($available['recommended_major'])) {
             // Since 'recommended_major' is defined, we know this is the new XML
             // format. Therefore, we know the current release is unsupported since
             // its major version was not in the 'supported_majors' list. We should
             // find the best release from the recommended major version.
             $target_major = $available['recommended_major'];
             $project_data['status'] = AnalyseItem::NOT_SUPPORTED;
-        }
-        elseif (isset($available['default_major'])) {
+        } elseif (isset($available['default_major'])) {
             // Older release history XML file without recommended, so recommend
             // the currently defined "default_major" version.
             $target_major = $available['default_major'];
-        }
-        else {
+        } else {
             // Malformed XML file? Stick with the current version.
             $target_major = $existing_major;
         }
@@ -598,8 +579,7 @@ class DrupalUpdateCompare {
                 if (isset($release['terms']['Release type']) &&
                   in_array('Insecure', $release['terms']['Release type'])) {
                     $project_data['status'] = AnalyseItem::NOT_SECURE;
-                }
-                elseif ($release['status'] == 'unpublished') {
+                } elseif ($release['status'] == 'unpublished') {
                     $project_data['status'] = AnalyseItem::REVOKED;
                     if (empty($project_data['extra'])) {
                         $project_data['extra'] = [];
@@ -609,8 +589,7 @@ class DrupalUpdateCompare {
                       'label' => 'Release revoked',
                       'data' => 'Your currently installed release has been revoked, and is no longer available for download. Disabling everything included in this release or upgrading is strongly recommended!',
                     ];
-                }
-                elseif (isset($release['terms']['Release type']) &&
+                } elseif (isset($release['terms']['Release type']) &&
                   in_array('Unsupported', $release['terms']['Release type'])) {
                     $project_data['status'] = AnalyseItem::NOT_SUPPORTED;
                     if (empty($project_data['extra'])) {
@@ -704,8 +683,7 @@ class DrupalUpdateCompare {
                 if (empty($project_data['datestamp'])) {
                     // We don't have current timestamp info, so we can't know.
                     continue;
-                }
-                elseif (isset($release['date']) && ($project_data['datestamp'] + 100 > $release['date'])) {
+                } elseif (isset($release['date']) && ($project_data['datestamp'] + 100 > $release['date'])) {
                     // We're newer than this, so we can skip it.
                     continue;
                 }
@@ -753,8 +731,7 @@ class DrupalUpdateCompare {
         if ($project_data['install_type'] == 'dev') {
             if (isset($project_data['dev_version']) && $available['releases'][$project_data['dev_version']]['date'] > $available['releases'][$project_data['latest_version']]['date']) {
                 $project_data['latest_dev'] = $project_data['dev_version'];
-            }
-            else {
+            } else {
                 $project_data['latest_dev'] = $project_data['latest_version'];
             }
         }
@@ -764,8 +741,7 @@ class DrupalUpdateCompare {
             case 'official':
                 if ($project_data['existing_version'] === $project_data['recommended'] || $project_data['existing_version'] === $project_data['latest_version']) {
                     $project_data['status'] = AnalyseItem::CURRENT;
-                }
-                else {
+                } else {
                     $project_data['status'] = AnalyseItem::NOT_CURRENT;
                 }
                 break;
@@ -775,11 +751,9 @@ class DrupalUpdateCompare {
                 if (empty($project_data['datestamp'])) {
                     $project_data['status'] = AnalyseItem::NOT_CHECKED;
                     $project_data['reason'] = 'Unknown release date';
-                }
-                elseif (($project_data['datestamp'] + 100 > $latest['date'])) {
+                } elseif (($project_data['datestamp'] + 100 > $latest['date'])) {
                     $project_data['status'] = AnalyseItem::CURRENT;
-                }
-                else {
+                } else {
                     $project_data['status'] = AnalyseItem::NOT_CURRENT;
                 }
                 break;

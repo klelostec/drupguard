@@ -26,8 +26,7 @@ class GitRemoteValidator extends ConstraintValidator
               ->setParameter('{{ value }}', $this->formatValue($value))
               ->setCode(GitRemote::GIT_STRING_ERROR)
               ->addViolation();
-        }
-        else if(!GitHelper::isRemoteUrlReadable($value)) {
+        } elseif (!GitHelper::isRemoteUrlReadable($value)) {
             $this->context->buildViolation($constraint->readMessage)
               ->setParameter('{{ value }}', $this->formatValue($value))
               ->setCode(GitRemote::GIT_READ_ERROR)

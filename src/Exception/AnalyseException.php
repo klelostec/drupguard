@@ -2,8 +2,8 @@
 
 namespace App\Exception;
 
-class AnalyseException extends \Exception {
-
-    const WARNING=1;
-    const ERROR=0;
+class AnalyseException extends \Exception
+{
+    public const WARNING=1;
+    public const ERROR=0;
 }
