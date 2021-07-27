@@ -14,10 +14,9 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Process\ExecutableFinder;
 use Symfony\Component\Process\PhpExecutableFinder;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use Symfony\Component\Validator\Constraints\Regex;
 
 class DrupGuardInstall extends Command
 {
@@ -48,7 +47,7 @@ class DrupGuardInstall extends Command
     protected $entityManager;
     protected $passwordEncoder;
 
-    public function __construct(KernelInterface $kernel, EntityManagerInterface $entityManager, UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(KernelInterface $kernel, EntityManagerInterface $entityManager, UserPasswordHasherInterface $passwordEncoder)
     {
         parent::__construct();
         $this->projectDir = $kernel->getProjectDir();
@@ -218,7 +217,7 @@ EOT;
               ->setIsVerified(true)
               ->setEmail('admin@drupguard.com')
               ->setPassword(
-                $this->passwordEncoder->encodePassword(
+                $this->passwordEncoder->hashPassword(
                   $user,
                   'admin'
                 )

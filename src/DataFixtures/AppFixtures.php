@@ -5,13 +5,13 @@ namespace App\DataFixtures;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class AppFixtures extends Fixture
 {
     protected $passwordEncoder;
 
-    public function __construct(UserPasswordEncoderInterface $passwordEncoder) {
+    public function __construct(UserPasswordHasherInterface $passwordEncoder) {
         $this->passwordEncoder = $passwordEncoder;
     }
 
@@ -25,7 +25,7 @@ class AppFixtures extends Fixture
           ->setIsVerified(true)
           ->setEmail('admin@drupguard.com')
           ->setPassword(
-            $this->passwordEncoder->encodePassword(
+            $this->passwordEncoder->hashPassword(
               $user,
               'admin'
             )

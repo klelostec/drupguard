@@ -1,7 +1,8 @@
 security:
-    encoders:
+    enable_authenticator_manager: true
+    password_hashers:
         App\Entity\User:
-            algorithm: bcrypt
+            algorithm: auto
 
     # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
     providers:
@@ -15,12 +16,14 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            anonymous: true
             lazy: true
             provider: app_user_provider
-            guard:
-                authenticators:
-                    - App\Security\LoginFormAuthenticator
+            form_login:
+                use_referer: true
+                login_path: app_login
+                check_path: app_login
+                default_target_path: project_index
+                enable_csrf: true
             logout:
                 path: app_logout
                 target: app_home
@@ -29,17 +32,14 @@ security:
                 secret:   '%kernel.secret%'
                 lifetime: 604800 # 1 week in seconds
                 path:     /
-            # activate different ways to authenticate
-            # https://symfony.com/doc/current/security.html#firewalls-authentication
-
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+            entry_point: App\Security\LoginFormAuthenticator
+            custom_authenticator: App\Security\LoginFormAuthenticator
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-#        - { path: ^/admin, roles: ROLE_ADMIN }
-#        - { path: ^[^/]$, roles: ROLE_USER }
+    # - { path: ^/admin, roles: ROLE_ADMIN }
+    # - { path: ^/profile, roles: ROLE_USER }
 
     role_hierarchy:
         ROLE_ADMIN: ROLE_USER

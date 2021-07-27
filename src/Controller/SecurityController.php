@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,7 +11,6 @@ class SecurityController extends AbstractController
 {
     /**
      * @Route("/login", name="app_login")
-     * @Security("is_granted('IS_ANONYMOUS')")
      */
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
@@ -30,7 +28,6 @@ class SecurityController extends AbstractController
 
     /**
      * @Route("/logout", name="app_logout")
-     * @Security("is_granted('ROLE_USER')")
      */
     public function logout()
     {

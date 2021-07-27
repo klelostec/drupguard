@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mime\Address;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class ProfileController extends AbstractController
@@ -30,7 +30,7 @@ class ProfileController extends AbstractController
      * @Route("/profile", name="app_profile")
      * @Security("is_granted('ROLE_USER')")
      */
-    public function profile(Request $request, UserPasswordEncoderInterface $passwordEncoder, AuthenticationUtils $authenticationUtils): Response
+    public function profile(Request $request, UserPasswordHasherInterface $passwordEncoder, AuthenticationUtils $authenticationUtils): Response
     {
         $user = $this->getUser();
         if (null === $user) {
@@ -45,7 +45,7 @@ class ProfileController extends AbstractController
             if(!empty($form->get('plainPassword')->getData())) {
                 // encode the plain password
                 $user->setPassword(
-                    $passwordEncoder->encodePassword(
+                    $passwordEncoder->hashPassword(
                         $user,
                         $form->get('plainPassword')->getData()
                     )

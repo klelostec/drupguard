@@ -5,7 +5,7 @@
 {% block body %}
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a class="nav-link"href="{{ path('app_login') }}">Login</a>
+            <a class="nav-link" href="{{ path('app_login') }}">Login</a>
         </li>
         <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="#">Register</a>
@@ -14,18 +14,20 @@
             <a class="nav-link" href="{{ path('app_forgot_password_request') }}">Reset your password</a>
         </li>
     </ul>
+
     {% for flashError in app.flashes('verify_email_error') %}
         <div class="alert alert-danger" role="alert">{{ flashError }}</div>
     {% endfor %}
 
     {{ form_start(registrationForm) }}
         {{ form_row(registrationForm.username) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.lastname) }}
         {{ form_row(registrationForm.firstname) }}
+        {{ form_row(registrationForm.lastname) }}
+        {{ form_row(registrationForm.email) }}
         {{ form_row(registrationForm.plainPassword, {
             label: 'Password'
         }) }}
+        {{ form_row(registrationForm.agreeTerms) }}
 
     <button class="btn btn-lg btn-primary" type="submit">Register</button>
     {{ form_end(registrationForm) }}

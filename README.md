@@ -18,6 +18,7 @@ Each project's analysis can be execute periodically and a report can be sent by 
 git clone git@github.com:klelostec/drupguard.git
 cd drupguard
 symfony composer install
+yarn install
 yarn encore production
 php bin/console drupguard:install
 ```
@@ -31,13 +32,11 @@ Add the cron job to cron tab
 
 For docksal users :
 ```
-fin p start
-fin bash
-wget https://get.symfony.com/cli/installer -O - | bash
-sudo mv /home/docker/.symfony/bin/symfony /usr/local/bin/symfony
-symfony composer install
-yarn encore production
-symfony console drupguard:install
+fin p up
+fin symfony composer install
+fin yarn install
+fin yarn encore production
+fin symfony console drupguard:install
 #mysql://user:user@db:3306/default?serverVersion=5.7
 #smtp://mail:1025
 #/usr/local/bin/php
