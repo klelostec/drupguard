@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +14,6 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * @Route("/admin/user")
- * @Security("is_granted('ROLE_ADMIN')")
  */
 class UserController extends AbstractController
 {
@@ -34,18 +32,19 @@ class UserController extends AbstractController
      */
     public function new(Request $request, UserPasswordHasherInterface $passwordEncoder): Response
     {
-        $user = new User();
-        $form = $this->createForm(UserType::class, $user, [
+        $form = $this->createForm(UserType::class, null, [
             'validation_groups' => ['Default', 'Add'],
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $user = $form->getData();
+
             // encode the plain password
             $user->setPassword(
                 $passwordEncoder->hashPassword(
                     $user,
-                    $form->get('plainPassword')->getData()
+                    $form->get('password')->getData()
                 )
             );
 
@@ -57,7 +56,6 @@ class UserController extends AbstractController
         }
 
         return $this->render('user/new.html.twig', [
-            'user' => $user,
             'form' => $form->createView(),
         ]);
     }
@@ -73,12 +71,12 @@ class UserController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!empty($form->get('plainPassword')->getData())) {
+            if (!empty($form->get('password')->getData())) {
                 // encode the plain password
                 $user->setPassword(
                     $passwordEncoder->hashPassword(
                         $user,
-                        $form->get('plainPassword')->getData()
+                        $form->get('password')->getData()
                     )
                 );
             }

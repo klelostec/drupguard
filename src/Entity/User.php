@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -27,6 +28,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\NotBlank(groups={"registration", "user_add", "user_update"})
      */
     private $username;
 
@@ -38,21 +40,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
+     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile_password"})
+     * @Assert\Length(
+     *     min=6,
+     *     max=4096,
+     *     minMessage="Your password should be at least {{ limit }} characters",
+     *     groups={"registration", "user_add", "user_update", "profile_password"}
+     * )
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
+     * @Assert\Email(groups={"registration", "user_add", "user_update", "profile"})
+     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile"})
      */
     private $lastname;
 
@@ -81,9 +94,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *
      * @see UserInterface
      */
-    public function getUsername(): string
+    public function getUsername(): ?string
     {
-        return (string) $this->username;
+        return $this->username;
     }
 
     public function setUsername(string $username): self
@@ -118,9 +131,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see UserInterface
      */
-    public function getPassword(): string
+    public function getPassword(): ?string
     {
-        return (string) $this->password;
+        return $this->password;
     }
 
     public function setPassword(string $password): self
@@ -230,13 +243,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->getId() ===1;
     }
 
-    public function __toString()
-    {
-        return $this->getFirstname() . ' ' . $this->getLastname();
-    }
-
     public function getUserIdentifier()
     {
         return $this->username;
+    }
+
+    public function __toString()
+    {
+        return $this->getFirstname() . ' ' . $this->getLastname();
     }
 }

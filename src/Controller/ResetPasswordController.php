@@ -37,7 +37,6 @@ class ResetPasswordController extends AbstractController
      * Display & process form to request a password reset.
      *
      * @Route("", name="app_forgot_password_request")
-     * @Security("is_granted('IS_ANONYMOUS')")
      */
     public function request(Request $request, MailerInterface $mailer): Response
     {
@@ -60,7 +59,6 @@ class ResetPasswordController extends AbstractController
      * Confirmation page after a user has requested a password reset.
      *
      * @Route("/check-email", name="app_check_email")
-     * @Security("is_granted('IS_ANONYMOUS')")
      */
     public function checkEmail(): Response
     {
@@ -78,7 +76,6 @@ class ResetPasswordController extends AbstractController
      * Validates and process the reset URL that the user clicked in their email.
      *
      * @Route("/reset/{token}", name="app_reset_password")
-     * @Security("is_granted('IS_ANONYMOUS')")
      */
     public function reset(Request $request, UserPasswordHasherInterface $passwordEncoder, string $token = null): Response
     {

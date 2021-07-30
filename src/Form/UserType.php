@@ -22,19 +22,12 @@ class UserType extends AbstractType
     {
         $builder
             ->add('username')
-            ->add('email', EmailType::class, [
-                'constraints' => [
-                    new NotBlank([
-                        'message' => 'Please enter your email',
-                    ]),
-                ],
-            ])
+            ->add('email', EmailType::class)
             ->add('firstname')
             ->add('lastname')
-            ->add('plainPassword', PasswordType::class, [
+            ->add('password', PasswordType::class, [
                 // instead of being set onto the object directly,
                 // this is read and encoded in the controller
-                'mapped' => false,
                 'required' => false,
                 'constraints' => [
                     new AtLeastOneOf([
@@ -79,8 +72,7 @@ class UserType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => User::class,
-            'validation_groups' => ['Default', 'Add']
+            'data_class' => User::class
         ]);
     }
 }
