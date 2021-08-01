@@ -11,6 +11,7 @@ use App\Repository\ProjectRepository;
 use App\Service\AnalyseHelper;
 use App\Service\MachineNameHelper;
 use App\Service\StatsHelper;
+use Cz\Git\GitException;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
@@ -205,16 +206,28 @@ class ProjectController extends AbstractController
      */
     public function ajaxGitBranches(Request $request): Response
     {
-        $project = new Project();
-        $project->setGitRemoteRepository($request->query->get('repo'));
-        $form = $this->createForm(ProjectType::class, $project);
-        // no field? Return an empty response
-        if (!$form->has('gitBranch')) {
-            return new Response(null, 204);
+        try {
+            $project = new Project();
+            $project->setGitRemoteRepository($request->query->get('repo'));
+            if($branch = $request->query->get('branch')) {
+                $project->setGitBranch($branch);
+            }
+            $form = $this->createForm(ProjectType::class, $project);
+            // no field? Return an empty response
+            if (!$form->has('gitBranch')) {
+                $ret = '';
+            }
+            else {
+                $ret = $this->renderView('project/_form_git_branch.html.twig', [
+                    'projectForm' => $form->createView(),
+                ]);
+            }
+            return $this->json(['html' => $ret]);
         }
-        return $this->render('project/_form_git_branch.html.twig', [
-            'projectForm' => $form->createView(),
-        ]);
+        catch(GitException $e) {
+            return $this->json(['error' => $e->getMessage()]);
+        }
+
     }
 
     /**

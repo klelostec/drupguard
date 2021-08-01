@@ -60,18 +60,22 @@ $(document).ready(function() {
         $.ajax({
             url: $gitRemoteInput.data('ajax-git-branches'),
             data: {
-                repo: $gitRemoteInput.val()
-            },
-            success: function (html) {
-                if (!html) {
-                    $gitBranchTarget.empty();
-                    $gitBranchTarget.addClass('d-none');
-                    return;
-                }
+                repo: $gitRemoteInput.val(),
+                branch: $('#project_gitBranch').val()
+            }
+        }).done(function (data) {
+            if (!data || !data.html) {
+                $gitBranchTarget.empty();
+                $gitBranchTarget.addClass('d-none');
+            }
+            else {
                 // Replace the current field and show
                 $gitBranchTarget
-                    .html(html)
+                    .html(data.html)
                     .removeClass('d-none')
+            }
+            if(data.error) {
+                showModal('Git error', data.error);
             }
         });
     });

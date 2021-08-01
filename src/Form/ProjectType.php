@@ -29,7 +29,6 @@ class ProjectType extends AbstractType
     {
         /** @var Project|null $project */
         $project = $options['data'] ?? null;
-        $repo = $project ? $project->getGitRemoteRepository() : null;
         $showEmail = $project && $project->needEmail() ? true : false;
         $showCron = $project && $project->hasCron() ? true : false;
         $showUser = !$project || !$project->isPublic() ? true : false;
@@ -75,18 +74,14 @@ class ProjectType extends AbstractType
             ->add('submit', SubmitType::class)
         ;
 
-        if ($repo) {
-            $builder->add('gitBranch', ChoiceType::class, [
-                'choices' => $this->getGitBranchChoices($repo)
-            ]);
-        } else {
+        if (!$project){
             $builder->add('machineName', null, [
                 'row_attr' => ['class' => 'mb-3 row js-machine-name-row d-none'],
             ]);
         }
 
         $builder->addEventListener(
-            FormEvents::PRE_SET_DATA,
+            FormEvents::POST_SET_DATA,
             function (FormEvent $event) {
                 /** @var Project|null $data */
                 $data = $event->getData();
@@ -95,7 +90,8 @@ class ProjectType extends AbstractType
                 }
                 $this->setupGitBranchField(
                     $event->getForm(),
-                    $data->getGitRemoteRepository()
+                    $data->getGitRemoteRepository(),
+                    $data->getGitBranch()
                 );
             }
         );
@@ -106,30 +102,28 @@ class ProjectType extends AbstractType
                 $form = $event->getForm();
                 $this->setupGitBranchField(
                     $form->getParent(),
-                    $form->getData()
+                    $form->getData(),
+                    NULL
                 );
             }
         );
     }
 
-    private function getGitBranchChoices(string $repo)
-    {
-        return GitHelper::getRemoteBranchesWithoutCheckout($repo);
-    }
-
-    private function setupGitBranchField(FormInterface $form, ?string $repo)
+    private function setupGitBranchField(FormInterface $form, ?string $repo, ?string $branch)
     {
         if (null === $repo) {
             $form->remove('gitBranch');
             return;
         }
-        $choices = $this->getGitBranchChoices($repo);
+        $choices = GitHelper::getRemoteBranchesWithoutCheckout($repo);
         if (empty($choices)) {
             $form->remove('gitBranch');
             return;
         }
+        $default = $branch && isset($choices[$branch]) ? $branch : GitHelper::getRemoteDefaultBrancheWithoutCheckout($repo);
         $form->add('gitBranch', ChoiceType::class, [
-            'choices' => $choices
+            'choices' => $choices,
+            'data' => $default
         ]);
     }
 
