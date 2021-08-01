@@ -70,16 +70,14 @@ class ProfileController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!empty($form->get('password')->getData())) {
-                // encode the plain password
-                $user->setPassword(
-                    $passwordEncoder->hashPassword(
-                        $user,
-                        $form->get('password')->getData()
-                    )
-                );
-                $this->addFlash('success', 'Password has been changed.');
-            }
+            // encode the plain password
+            $user->setPassword(
+                $passwordEncoder->hashPassword(
+                    $user,
+                    $user->getPlainPassword()
+                )
+            );
+            $this->addFlash('success', 'Password has been changed.');
             $this->getDoctrine()->getManager()->flush();
         }
 
@@ -87,5 +85,4 @@ class ProfileController extends AbstractController
             'profilePasswordForm' => $form->createView(),
         ]);
     }
-
 }

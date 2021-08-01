@@ -32,19 +32,20 @@ class UserController extends AbstractController
      */
     public function new(Request $request, UserPasswordHasherInterface $passwordEncoder): Response
     {
-        $form = $this->createForm(UserType::class, null, [
-            'validation_groups' => ['Default', 'Add'],
-        ]);
+        $form = $this->createForm(UserType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /**
+             * @var User $user
+             */
             $user = $form->getData();
 
             // encode the plain password
             $user->setPassword(
                 $passwordEncoder->hashPassword(
                     $user,
-                    $form->get('password')->getData()
+                    $user->getPlainPassword()
                 )
             );
 
@@ -56,7 +57,7 @@ class UserController extends AbstractController
         }
 
         return $this->render('user/new.html.twig', [
-            'form' => $form->createView(),
+            'userForm' => $form->createView(),
         ]);
     }
 
@@ -65,18 +66,16 @@ class UserController extends AbstractController
      */
     public function edit(Request $request, User $user, UserPasswordHasherInterface $passwordEncoder): Response
     {
-        $form = $this->createForm(UserType::class, $user, [
-            'validation_groups' => ['Default'],
-        ]);
+        $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            if (!empty($form->get('password')->getData())) {
+            if (!empty($user->getPlainPassword())) {
                 // encode the plain password
                 $user->setPassword(
                     $passwordEncoder->hashPassword(
                         $user,
-                        $form->get('password')->getData()
+                        $user->getPlainPassword()
                     )
                 );
             }
@@ -87,7 +86,7 @@ class UserController extends AbstractController
 
         return $this->render('user/edit.html.twig', [
             'user' => $user,
-            'form' => $form->createView(),
+            'userForm' => $form->createView(),
         ]);
     }
 

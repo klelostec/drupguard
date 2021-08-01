@@ -9,10 +9,9 @@ use App\Form\ProjectType;
 use App\Repository\AnalyseRepository;
 use App\Repository\ProjectRepository;
 use App\Service\AnalyseHelper;
-use App\Service\GitHelper;
 use App\Service\MachineNameHelper;
 use App\Service\StatsHelper;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,11 +20,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * @Route("/project")
- * @Security("is_granted('ROLE_USER')")
  */
 class ProjectController extends AbstractController
 {
@@ -50,16 +47,17 @@ class ProjectController extends AbstractController
      */
     public function new(Request $request, MachineNameHelper $machineNameHelper): Response
     {
-        $project = new Project();
-        $form = $this->createForm(ProjectType::class, $project);
+        $form = $this->createForm(ProjectType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $project = $form->getData();
+
             if (empty($project->getOwner())) {
                 $project->setOwner($this->getUser());
             }
             if (empty($project->getMachineName())) {
-                $machineName = $machineNameHelper->getMachineName($project->getMachineName());
+                $machineName = $machineNameHelper->getMachineName($project->getName());
                 $project->setMachineName($machineName);
             }
             $entityManager = $this->getDoctrine()->getManager();
@@ -70,20 +68,16 @@ class ProjectController extends AbstractController
         }
 
         return $this->render('project/new.html.twig', [
-            'project' => $project,
-            'form' => $form->createView(),
+            'projectForm' => $form->createView(),
         ]);
     }
 
     /**
      * @Route("/{id}/{analyse}", name="project_show", priority=1, requirements={"id"="\d+", "analyse"="\d*"}, defaults={"analyse"=""}, methods={"GET"})
+     * @IsGranted("PROJECT_SHOW", subject="project")
      */
     public function show(Project $project, Analyse $analyse = null, StatsHelper $statsHelper, AnalyseRepository $analyseRepository): Response
     {
-        if (!$project->isReadable($this->getUser())) {
-            throw new AccessDeniedException('Cannot edit project.');
-        }
-
         if ($analyse && ($analyse->getProject()->getId() !== $project->getId() || $analyse->isRunning())) {
             throw new NotFoundHttpException();
         }
@@ -141,13 +135,10 @@ class ProjectController extends AbstractController
 
     /**
      * @Route("/{id}/edit", name="project_edit", methods={"GET","POST"})
+     * @IsGranted("PROJECT_EDIT", subject="project")
      */
     public function edit(Request $request, Project $project): Response
     {
-        if (!$project->isWritable($this->getUser())) {
-            throw new AccessDeniedException('Cannot edit project.');
-        }
-
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
 
@@ -158,20 +149,16 @@ class ProjectController extends AbstractController
         }
 
         return $this->render('project/edit.html.twig', [
-            'project' => $project,
-            'form' => $form->createView(),
+            'projectForm' => $form->createView(),
         ]);
     }
 
     /**
      * @Route("/{id}/delete", name="project_delete", methods={"GET","POST"})
+     * @IsGranted("PROJECT_DELETE", subject="project")
      */
     public function delete(Request $request, Project $project, KernelInterface $kernel): Response
     {
-        if (!$project->isWritable($this->getUser())) {
-            throw new AccessDeniedException('Cannot edit project.');
-        }
-
         if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
             $fileSystem = new Filesystem();
             $workspaceDir = $kernel->getProjectDir() . '/workspace/' . $project->getMachineName();
@@ -193,13 +180,10 @@ class ProjectController extends AbstractController
 
     /**
      * @Route("/{id}/run", name="project_run", methods={"GET"})
+     * @IsGranted("PROJECT_RUN", subject="project")
      */
     public function run(Project $project, AnalyseHelper $analyseHelper): Response
     {
-        if (!$project->isWritable($this->getUser())) {
-            throw new AccessDeniedException('Cannot edit project.');
-        }
-
         if ($project->isPending() || ($project->getLastAnalyse() && $project->getLastAnalyse()->isRunning())) {
             return new JsonResponse(['return' => false]);
         }
@@ -217,15 +201,30 @@ class ProjectController extends AbstractController
     }
 
     /**
-     * @Route("/ajax/git-branches", name="project_ajax_git_branches", methods={"POST"})
+     * @Route("/ajax/git-branches", name="project_ajax_git_branches")
      */
     public function ajaxGitBranches(Request $request): Response
     {
-        $branches = [];
-        if ($gitRemoteRepository = $request->request->get('gitRemoteRepository')) {
-            $branches = GitHelper::getRemoteBranchesWithoutCheckout($gitRemoteRepository);
+        $project = new Project();
+        $project->setGitRemoteRepository($request->query->get('repo'));
+        $form = $this->createForm(ProjectType::class, $project);
+        // no field? Return an empty response
+        if (!$form->has('gitBranch')) {
+            return new Response(null, 204);
         }
-        return new JsonResponse($branches);
+        return $this->render('project/_form_git_branch.html.twig', [
+            'projectForm' => $form->createView(),
+        ]);
+    }
+
+    /**
+     * @Route("/ajax/machine-name", name="project_ajax_machine_name")
+     */
+    public function ajaxMachineName(Request $request, MachineNameHelper $machineNameHelper): Response
+    {
+        $name = (string) $request->query->get('name');
+        $name = $machineNameHelper->getMachineName($name);
+        return new JsonResponse($name);
     }
 
     /**
@@ -243,13 +242,10 @@ class ProjectController extends AbstractController
 
     /**
      * @Route("/{id}/{analyse}/email", name="project_email", methods={"GET"})
+     * @IsGranted("PROJECT_EMAIL", subject="project")
      */
     public function email(Project $project, Analyse $analyse, AnalyseHelper $analyseHelper): Response
     {
-        if (!$project->isWritable($this->getUser())) {
-            throw new AccessDeniedException('Cannot edit project.');
-        }
-
         $analyseHelper->emailReport($project, $analyse);
 
         return new JsonResponse(['return' => true]);

@@ -9,10 +9,9 @@ class GitHelper extends GitRepository
 {
     /**
      * @param  string
-     * @param  array|NULL
-     * @return bool
+     * @return array
      */
-    public static function getRemoteBranchesWithoutCheckout($url, array $refs = null)
+    public static function getRemoteBranchesWithoutCheckout($url)
     {
         if (DIRECTORY_SEPARATOR === '\\') { // Windows
             $env = 'set GIT_TERMINAL_PROMPT=0 &&';
@@ -21,13 +20,12 @@ class GitHelper extends GitRepository
         }
 
         exec(self::processCommand(array(
-            $env . ' git ls-remote',
-            '--heads',
-            '--quiet',
-            '--exit-code',
-            $url,
-            $refs,
-          )) . ' 2>&1', $output, $returnCode);
+                $env . ' git ls-remote',
+                '--heads',
+                '--quiet',
+                '--exit-code',
+                $url,
+            )) . ' 2>&1', $output, $returnCode);
 
         $branches = [];
         if ($returnCode === 0) {
@@ -40,6 +38,41 @@ class GitHelper extends GitRepository
             throw new GitException("An error occured during list remote branches in repository \"$url\" : \n" . implode(PHP_EOL, $output));
         }
         return $branches;
+    }
+
+    /**
+     * @param  string
+     * @return string
+     */
+    public static function getRemoteDefaultBrancheWithoutCheckout($url)
+    {
+        if (DIRECTORY_SEPARATOR === '\\') { // Windows
+            $env = 'set GIT_TERMINAL_PROMPT=0 &&';
+        } else {
+            $env = 'GIT_TERMINAL_PROMPT=0';
+        }
+
+        exec(self::processCommand(array(
+                $env . ' git ls-remote',
+                '--symref',
+                '--quiet',
+                '--exit-code',
+                $url,
+                'HEAD'
+            )) . ' 2>&1', $output, $returnCode);
+
+        $branch = null;
+        if ($returnCode === 0) {
+            foreach ($output as $current) {
+                if (preg_match('#refs/heads/(.*)\tHEAD$#', $current, $matches)) {
+                    $branch = $matches[1];
+                    break;
+                }
+            }
+        } else {
+            throw new GitException("An error occured during get default branch in repository \"$url\" : \n" . implode(PHP_EOL, $output));
+        }
+        return $branch;
     }
 
     public function reset($hard = false)

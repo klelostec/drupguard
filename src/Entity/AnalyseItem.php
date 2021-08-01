@@ -89,7 +89,7 @@ class AnalyseItem
 
     /**
      * @ORM\ManyToOne(targetEntity=Analyse::class, inversedBy="analyseItems")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $analyse;
 

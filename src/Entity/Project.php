@@ -3,11 +3,12 @@
 namespace App\Entity;
 
 use App\Repository\ProjectRepository;
-use Cron\CronExpression;
+use App\Validator\Constraints as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=ProjectRepository::class)
@@ -15,6 +16,13 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  */
 class Project
 {
+    public const EMAIL_LEVEL = [
+        'Choose email level' => null,
+        'Success' => Analyse::SUCCESS,
+        'Warning' => Analyse::WARNING,
+        'Error' => Analyse::ERROR,
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -24,26 +32,31 @@ class Project
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
+     * @Assert\Regex(pattern="/^[a-z0-9_]+$/i", groups={"machine_name"})
      */
     private $machineName;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @AppAssert\GitRemote()
      */
     private $gitRemoteRepository;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank()
      */
     private $gitBranch;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Regex(pattern="#^(/[\w-]+)*$#i")
      */
     private $drupalDirectory;
 
@@ -60,6 +73,8 @@ class Project
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Assert\Blank(groups={"not_cron"})
+     * @AppAssert\CronExpression(groups={"cron"})
      */
     private $cronFrequency;
 
@@ -71,12 +86,12 @@ class Project
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="allowedProjects")
      * @ORM\OrderBy({"firstname" = "ASC", "lastname" = "ASC"})
+     * @Assert\Blank(groups={"public"})
      */
     private $allowedUsers;
 
     /**
      * @ORM\OneToOne(targetEntity=Analyse::class)
-     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     private $lastAnalyse;
 
@@ -91,12 +106,16 @@ class Project
     private $needEmail;
 
     /**
-     * @ORM\Column(type="string", length=255, nullable=true)
+     * @ORM\Column(type="smallint", nullable=true)
+     * @Assert\Blank(groups={"not_email"})
+     * @Assert\Choice(callback="getEmailLevelChoices", groups={"email"})
      */
     private $emailLevel;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Assert\Blank(groups={"not_email"})
+     * @AppAssert\MultipleEmail(groups={"email"})
      */
     private $emailExtra;
 
@@ -305,19 +324,6 @@ class Project
         return $this;
     }
 
-    public function isWritable(User $user)
-    {
-        return $user->isSuperAdmin() ||
-          $this->getOwner()->getId() === $user->getId() ||
-          $this->getAllowedUsers()->contains($user);
-    }
-
-    public function isReadable(User $user)
-    {
-        return $this->isPublic() ||
-          $this->isWritable($user);
-    }
-
     public function needEmail(): ?bool
     {
         return $this->needEmail;
@@ -330,16 +336,22 @@ class Project
         return $this;
     }
 
-    public function getEmailLevel(): ?string
+    public function getEmailLevel(): ?int
     {
         return $this->emailLevel;
     }
 
-    public function setEmailLevel(?string $emailLevel): self
+    public function setEmailLevel(?int $emailLevel): self
     {
         $this->emailLevel = $emailLevel;
 
         return $this;
+    }
+
+    public function getEmailLevelChoices()
+    {
+        $ret = array_slice(self::EMAIL_LEVEL, 1);
+        return array_values($ret);
     }
 
     public function getEmailExtra(): ?string

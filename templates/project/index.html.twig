@@ -16,8 +16,10 @@
                                 <h2>{{ project.name }}</h2>
                                 <p>{{ project.lastAnalyse ? project.lastAnalyse.date|date('d/m/Y H:i:s') : 'No analyse available' }}</p>
                             </a>
-                            {% if project.isWritable(user) %}
+                            {% if is_granted('PROJECT_EDIT', project) %}
                                 <a class="btn project-action-btn edit" href="{{ path('project_edit', {'id': project.id}) }}"><i class="fas fa-edit"></i></a>
+                            {% endif %}
+                            {% if is_granted('PROJECT_DELETE', project) %}
                                 <a class="btn project-action-btn delete" href="{{ path('project_delete', {'id': project.id}) }}"><i class="fas fa-trash"></i></a>
                             {% endif %}
                         </div>

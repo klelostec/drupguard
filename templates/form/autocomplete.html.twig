@@ -1,0 +1,77 @@
+{%- block autocomplete_widget -%}
+    {%- set attr = attr|merge({class: (attr.class|default('') ~ ' form-control')|trim}) -%}
+    {% if multiple %}
+        {{- block('autocomplete_widget_multiple') -}}
+    {% else %}
+        {{- block('autocomplete_widget_single') -}}
+    {% endif %}
+{%- endblock autocomplete_widget %}
+
+{%- block autocomplete_widget_single -%}
+    <input id="{{ id }}" {{ block('attributes') }} {%- if disabled %} disabled="disabled"{% endif -%} {%- if required %} required="required"{% endif -%} type="text" autocomplete="off" {% if value is not empty %}value="{{ value.label }}" {% endif %}/>
+    <input id="{{ id }}_value" type="hidden" name="{{ full_name }}" {%- if disabled %} disabled="disabled"{% endif -%} {% if value is not empty %}value="{{ value.id }}" {% endif %}/>
+    <script>
+        $(document).ready(function() {
+            $('#{{ id }}').autoComplete({
+                resolver: 'custom',
+                events: {
+                    search: function (term, callback) {
+                        $.ajax('{{ url }}', {data: { 'term': term}}).done(function (res) {
+                            callback(res)
+                        });
+                    }
+                }
+            }).on('autocomplete.select', function(evt, item) {
+                $('#{{ id }}_value').val(item.id);
+            }).on('autocomplete.freevalue', function (evt, value) {
+                $('#{{ id }}_value').val('');
+                $(this).autoComplete('clear');
+            });
+        });
+    </script>
+{%- endblock autocomplete_widget_single -%}
+
+{%- block autocomplete_widget_multiple -%}
+    <input id="{{ id }}" {{ block('attributes') }} {%- if disabled %} disabled="disabled"{% endif -%} type="text" autocomplete="off"/>
+    <div class="autocomplete-widget-values">
+        {%- for val in value -%}
+            {{ block('autocomplete_widget_multiple_item')|replace({'%ID%': val.id, '%LABEL%': val.label, '%NAME%': full_name})|raw }}
+        {%- endfor -%}
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#{{ id }}').autoComplete({
+                resolver: 'custom',
+                events: {
+                    search: function (term, callback) {
+                        var excludeVal = $( 'input[name="{{ full_name }}"]' ).map(function() {
+                            return $( this ).val();
+                        }).get();
+                        $.ajax('{{ url }}', {data: {'term': term, 'exclude': excludeVal}}).done(function (res) {
+                            callback(res)
+                        });
+                    }
+                }
+            }).on('autocomplete.select', function(evt, item) {
+                $(this).autoComplete('clear');
+                var template = "{{ block('autocomplete_widget_multiple_item')|replace({'%NAME%': full_name})|escape('js') }}";
+                template = template.replace('%ID%', item.id).replace('%LABEL%', item.text);
+                $('.autocomplete-widget-values').append(template);
+            }).on('autocomplete.freevalue', function (evt, value) {
+                $(this).autoComplete('clear');
+            });
+            $(document).on('click', '.autocomplete-widget-item .btn-close', function(e){
+                e.preventDefault();
+                $(this).parent().remove();
+            });
+        });
+    </script>
+{%- endblock autocomplete_widget_multiple -%}
+
+{%- block autocomplete_widget_multiple_item -%}
+    <div class="col-auto d-inline-flex px-2 mt-2 me-2 autocomplete-widget-item rounded-pill bg-secondary text-white">
+        <input type="hidden" name="%NAME%" value="%ID%"/>
+        %LABEL%
+        <button type="button" class="d-inline-block btn-close btn-close-white ms-1 mt-1 p-0" aria-label="Remove"></button>
+    </div>
+{%- endblock autocomplete_widget_multiple_item -%}

@@ -46,7 +46,7 @@ class Analyse
 
     /**
      * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="analyses")
-     * @ORM\JoinColumn(nullable=false, onDelete="CASCADE")
+     * @ORM\JoinColumn(nullable=false)
      */
     private $project;
 

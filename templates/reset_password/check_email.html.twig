@@ -3,9 +3,22 @@
 {% block title %}Password Reset Email Sent{% endblock %}
 
 {% block body %}
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('app_login') }}">Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('app_register') }}">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Reset your password</a>
+        </li>
+    </ul>
     <p>
         An email has been sent that contains a link that you can click to reset your password.
         This link will expire in {{ resetToken.expirationMessageKey|trans(resetToken.expirationMessageData, 'ResetPasswordBundle') }}.
     </p>
     <p>If you don't receive an email please check your spam folder or <a href="{{ path('app_forgot_password_request') }}">try again</a>.</p>
+
+    <a href="{{ path('app_login') }}" class="btn btn-primary">Go to login</a>
 {% endblock %}

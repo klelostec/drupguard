@@ -4,6 +4,7 @@ namespace App\Command;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Hackzilla\PasswordGenerator\Generator\ComputerPasswordGenerator;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
@@ -23,24 +24,24 @@ class DrupGuardInstall extends Command
     protected static $defaultName = 'drupguard:install';
 
     protected $commands = [
-      [
-        'name' => 'doctrine:schema:drop',
-        'parameters' => [
-          '--force' => true,
+        [
+            'name' => 'doctrine:schema:drop',
+            'parameters' => [
+                '--force' => true,
+            ],
+            'message' => 'Ensure empty database',
+            'successMessage' => 'Database schema dropped successfully.',
+            'errorMessage' => 'Database schema drop fail.'
         ],
-        'message' => 'Ensure empty database',
-        'successMessage' => 'Database schema dropped successfully.',
-        'errorMessage' => 'Database schema drop fail.'
-      ],
-      [
-        'name' => 'doctrine:schema:create',
-        'parameters' => [
-          '--no-interaction' => true,
-        ],
-        'message' => 'Create schema',
-        'successMessage' => 'Database schema created successfully.',
-        'errorMessage' => 'Database schema creation fail.'
-      ]
+        [
+            'name' => 'doctrine:schema:create',
+            'parameters' => [
+                '--no-interaction' => true,
+            ],
+            'message' => 'Create schema',
+            'successMessage' => 'Database schema created successfully.',
+            'errorMessage' => 'Database schema creation fail.'
+        ]
     ];
 
     private $projectDir;
@@ -68,10 +69,9 @@ class DrupGuardInstall extends Command
         $outputStyle = new SymfonyStyle($input, $output);
         $outputStyle->title('Installing DrupGuard');
         $outputStyle->writeln($this->getDrupGuardLogo());
-
-        //check .env.local
         $filesystem = new Filesystem();
 
+        //check .env.local
         $nbStep = count($this->commands)+1;
         $commandStart = 1;
         $noOutput = new NullOutput();
@@ -81,11 +81,11 @@ class DrupGuardInstall extends Command
 
             $outputStyle->section(
                 sprintf(
-                  'Step %d of %d. <info>%s</info>',
-                  1,
-                  $nbStep,
-                  'Create .env.local file'
-              )
+                    'Step %d of %d. <info>%s</info>',
+                    1,
+                    $nbStep,
+                    'Create .env.local file'
+                )
             );
             try {
                 $databaseQuestion = new Question(
@@ -93,17 +93,17 @@ class DrupGuardInstall extends Command
                 );
                 $databaseQuestion->setValidator(
                     function ($answer) {
-                      if (!is_string($answer) || !preg_match(
-                          '#^(((mysql|oci8|postgresql)://[^:]+:[^@]+@[^:]+:[1-9]\d+/[^\?]+(\?serverVersion=.*)?(&charset=.*)?)|sqlite://.*/var/app.db)$#i',
-                          $answer
-                      )) {
-                          throw new \RuntimeException(
-                              'The database url\'s format should be : (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET or oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
-                          );
-                      }
+                        if (!is_string($answer) || !preg_match(
+                            '#^(((mysql|oci8|postgresql)://[^:]+:[^@]+@[^:]+:[1-9]\d+/[^\?]+(\?serverVersion=.*)?(&charset=.*)?)|sqlite://.*/var/app.db)$#i',
+                            $answer
+                        )) {
+                            throw new \RuntimeException(
+                                'The database url\'s format should be : (mysql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION, sqlite://KERNEL_PROJECT_DIR/var/app.db, postgresql://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME?serverVersion=DB_SERVER_VERSION&charset=DB_CHARSET or oci8://DB_USER:DB_PASSWORD@DB_HOST:DB_PORT/DB_NAME)'
+                            );
+                        }
 
-                      return $answer;
-                  }
+                        return $answer;
+                    }
                 );
                 $databaseUrl = $outputStyle->askQuestion($databaseQuestion);
 
@@ -112,17 +112,17 @@ class DrupGuardInstall extends Command
                 );
                 $mailerQuestion->setValidator(
                     function ($answer) {
-                      if (!is_string($answer) || ($answer !== 'sendmail://default' && $answer !== 'native://default' && !preg_match(
-                          '#^((smtp://[^:]+:[1-9]\d+)|((sendmail|native)://default))$#i',
-                          $answer
-                      ))) {
-                          throw new \RuntimeException(
-                              'The mailer dsn\'s format should be : smtp://MAILER_HOST:MAILER_PORT, sendmail://default or native://default'
-                          );
-                      }
+                        if (!is_string($answer) || ($answer !== 'sendmail://default' && $answer !== 'native://default' && !preg_match(
+                            '#^((smtp://[^:]+:[1-9]\d+)|((sendmail|native)://default))$#i',
+                            $answer
+                        ))) {
+                            throw new \RuntimeException(
+                                'The mailer dsn\'s format should be : smtp://MAILER_HOST:MAILER_PORT, sendmail://default or native://default'
+                            );
+                        }
 
-                      return $answer;
-                  }
+                        return $answer;
+                    }
                 );
                 $mailerDsn = $outputStyle->askQuestion($mailerQuestion);
 
@@ -142,8 +142,10 @@ class DrupGuardInstall extends Command
                 );
                 $composerExecutable = $outputStyle->askQuestion($composerQuestion);
 
+                $secret = md5(random_bytes(10));
 
                 $envLocal = <<<EOT
+APP_SECRET=${$secret}
 DATABASE_URL={$databaseUrl}
 MAILER_DSN={$mailerDsn}
 PHP_BINARY={$phpExecutable}
@@ -178,11 +180,11 @@ EOT;
         foreach ($this->commands as $step => $command) {
             $outputStyle->section(
                 sprintf(
-                  'Step %d of %d. <info>%s</info>',
-                  $step + $commandStart,
-                  $nbStep,
-                  $command['message']
-              )
+                    'Step %d of %d. <info>%s</info>',
+                    $step + $commandStart,
+                    $nbStep,
+                    $command['message']
+                )
             );
 
             $commandObj = $this->getApplication()->find(
@@ -199,13 +201,23 @@ EOT;
 
         $outputStyle->section(
             sprintf(
-              'Step %d of %d. <info>%s</info>',
-              $nbStep,
-              $nbStep,
-              'Create super admin user'
-          )
+                'Step %d of %d. <info>%s</info>',
+                $nbStep,
+                $nbStep,
+                'Create super admin user'
+            )
         );
         try {
+            $generator = new ComputerPasswordGenerator();
+
+            $generator
+                ->setUppercase()
+                ->setLowercase()
+                ->setNumbers()
+                ->setSymbols()
+                ->setLength(12);
+
+            $adminPassword = $generator->generatePassword();
             $user = new User();
             $user
               ->setUsername('admin')
@@ -215,9 +227,9 @@ EOT;
               ->setEmail('admin@drupguard.com')
               ->setPassword(
                   $this->passwordEncoder->hashPassword(
-                    $user,
-                    'admin'
-                )
+                      $user,
+                      $adminPassword
+                  )
               )
               ->setRoles(['ROLE_SUPER_ADMIN']);
 
@@ -230,7 +242,7 @@ EOT;
         }
 
         $outputStyle->section('End');
-        $outputStyle->comment('Please connect as Admin user with credentials username/password: . <info>admin / admin</info>');
+        $outputStyle->comment('Please connect as Admin user with credentials username/password: . <info>admin / ' . $adminPassword . '</info>');
         $outputStyle->success('Drupguard has been successfully installed.');
 
         return Command::SUCCESS;

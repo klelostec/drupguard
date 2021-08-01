@@ -1,4 +1,7 @@
 {
+    "behat/transliterator": {
+        "version": "v1.3.0"
+    },
     "composer/package-versions-deprecated": {
         "version": "1.11.99.1"
     },
@@ -117,6 +120,9 @@
     },
     "guzzlehttp/psr7": {
         "version": "2.0.0"
+    },
+    "hackzilla/password-generator": {
+        "version": "1.6.0"
     },
     "knplabs/knp-menu": {
         "version": "v3.2.0"

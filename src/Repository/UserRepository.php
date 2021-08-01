@@ -39,17 +39,21 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     /**
      * @return User[] Returns an array of User objects
      */
-    public function findByFirstOrLastName($value)
+    public function findByFirstOrLastName($value, $exclude= [])
     {
-        return $this->createQueryBuilder('u')
-            ->andWhere('u.firstname LIKE :val OR u.lastname LIKE :val')
+        $queryBuilder = $this->createQueryBuilder('u')
+            ->andWhere('u.firstname LIKE :val OR u.lastname LIKE :val OR u.username LIKE :val OR CONCAT(u.firstname, \' \', u.lastname) LIKE :val')
             ->setParameter('val', $value . '%')
             ->orderBy('u.firstname', 'ASC')
             ->orderBy('u.lastname', 'ASC')
-            ->setMaxResults(10)
+            ->setMaxResults(10);
+        if (!empty($exclude)) {
+            $queryBuilder->andWhere('u.id NOT IN (:exclude)')
+                ->setParameter('exclude', $exclude);
+        }
+        return $queryBuilder
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
     }
 
     /*

@@ -1,63 +1,26 @@
-{{ form_start(form) }}
-        {{ form_widget(form) }}
-        <button class="btn btn-primary">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+{{ form_start(projectForm) }}
+    {{ form_row(projectForm.name) }}
+    {%  if projectForm.machineName is defined %}
+        {{ form_row(projectForm.machineName) }}
+    {% endif %}
+    {{ form_row(projectForm.gitRemoteRepository) }}
+    <div class="js-git-branch-target">
+        {%  if projectForm.gitBranch is defined %}
+            {{ form_row(projectForm.gitBranch) }}
+        {% endif %}
+    </div>
+    {{ form_row(projectForm.drupalDirectory) }}
+    {{ form_row(projectForm.needEmail) }}
+    {{ form_row(projectForm.emailLevel) }}
+    {{ form_row(projectForm.emailExtra) }}
+    {{ form_row(projectForm.hasCron) }}
+    {{ form_row(projectForm.cronFrequency) }}
+    {{ form_row(projectForm.isPublic) }}
+    {{ form_row(projectForm.allowedUsers) }}
+    {{ form_row(projectForm.ignoredModules) }}
+    {{ form_row(projectForm.submit) }}
+{{ form_end(projectForm) }}
 
-<script>
-    $(document).ready(function () {
-        var $needEmail = $('#project_needEmail');
-        $needEmail.change(function() {
-            var $form = $(this).closest('form'),
-                $email = $('.needEmail-group', $form),
-                $emailLevelLabel = $('.emailLevel-group label', $form),
-                $emailLevelValue = $('#project_emailLevel', $form);
-            if($(this).prop('checked')) {
-                $email.removeClass('d-none');
-                $emailLevelLabel.append('<span class="required"> *</span>');
-                $emailLevelValue.attr('required', 'required');
-            }
-            else {
-                $email.addClass('d-none');
-                $('span.required', $emailLevelLabel).remove();
-                $emailLevelValue.val('');
-                $emailLevelValue.removeAttr('required');
-            }
-        });
-
-        var $hasCron = $('#project_hasCron');
-        $hasCron.change(function() {
-            var $form = $(this).closest('form'),
-                $cronFreq = $('.hasCron-group', $form),
-                $cronFreqLabel = $('.hasCron-group label', $form),
-                $cronFrequencyValue = $('#project_cronFrequency', $form);
-            if($(this).prop('checked')) {
-                $cronFreq.removeClass('d-none');
-                $cronFreqLabel.append('<span class="required"> *</span>');
-                $cronFrequencyValue.attr('required', 'required');
-            }
-            else {
-                $cronFreq.addClass('d-none');
-                $('span.required', $cronFreqLabel).remove();
-                $cronFrequencyValue.val('');
-                $cronFrequencyValue.removeAttr('required');
-            }
-        });
-
-        var $gitRemoteRepository = $('#project_gitRemoteRepository');
-        $gitRemoteRepository.blur(function() {
-            $.ajax({
-                url : '/project/ajax/git-branches',
-                type: 'POST',
-                data : {gitRemoteRepository: $gitRemoteRepository.val()},
-                success: function(data) {
-                    var $gitBranches = $('#project_gitBranch');
-                    $gitBranches.empty(); // remove old options
-                    $.each(data, function(key,value) {
-                        $gitBranches.append($("<option></option>")
-                            .attr("value", value).text(key));
-                    });
-                }
-            });
-        });
-    });
-</script>
+{{ encore_entry_link_tags('autocomplete') }}
+{{ encore_entry_script_tags('autocomplete') }}
+{{ encore_entry_script_tags('project_form') }}

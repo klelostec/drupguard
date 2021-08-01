@@ -7,44 +7,31 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\AtLeastOneOf;
-use Symfony\Component\Validator\Constraints\Blank;
-use Symfony\Component\Validator\Constraints\Length;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
 class UserType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+        /** @var User|null $user */
+        $user = $options['data'] ?? null;
         $builder
             ->add('username')
-            ->add('email', EmailType::class)
             ->add('firstname')
             ->add('lastname')
-            ->add('password', PasswordType::class, [
-                // instead of being set onto the object directly,
-                // this is read and encoded in the controller
-                'required' => false,
-                'constraints' => [
-                    new AtLeastOneOf([
-                        'message' => 'Your password should be at least 1 characters',
-                        'includeInternalMessages' => false,
-                        'constraints' => [
-                            new Blank([
-                                'message' => 'Please enter a password',
-                            ]),
-                            new Length([
-                                'min' => 1,
-                                'minMessage' => 'Your password should be at least {{ limit }} characters',
-                                // max length allowed by Symfony for security reasons
-                                'max' => 4096,
-                            ]),
-                        ],
-                    ])
+            ->add('email', EmailType::class)
+            ->add('plainPassword', RepeatedType::class, [
+                'required' => !$user || !$user->getId(),
+                'type' => PasswordType::class,
+                'first_options'  => [
+                    'label' => 'Password',
+                ],
+                'second_options' => [
+                    'label' => 'Repeat password'
                 ],
             ])
             ->add('roles', ChoiceType::class, [
@@ -55,24 +42,27 @@ class UserType extends AbstractType
                 ]
             ])
             ->add('isVerified')
+            ->add('submit', SubmitType::class)
         ;
-
-        $builder->addEventListener(
-            FormEvents::POST_SET_DATA,
-            function (FormEvent $event) {
-              $data = $event->getData();
-              $form = $event->getForm();
-              if ($data->isSuperAdmin()) {
-                  $form->remove('roles');
-              }
-          }
-        );
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => User::class
+            'data_class' => User::class,
+            'validation_groups' => function (FormInterface $form) {
+                $groups = array('Default', 'user_admin');
+                /**
+                 * @var User $data
+                 */
+                $data = $form->getData();
+
+                if (!$data->getId()) {
+                    $groups[] = 'user_admin_add';
+                }
+
+                return $groups;
+            }
         ]);
     }
 }

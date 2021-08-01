@@ -28,7 +28,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\NotBlank(groups={"registration", "user_add", "user_update"})
+     * @Assert\NotBlank(groups={"registration", "user_admin"})
      */
     private $username;
 
@@ -40,32 +40,37 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var string The hashed password
      * @ORM\Column(type="string")
-     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile_password"})
-     * @Assert\Length(
-     *     min=6,
-     *     max=4096,
-     *     minMessage="Your password should be at least {{ limit }} characters",
-     *     groups={"registration", "user_add", "user_update", "profile_password"}
-     * )
      */
     private $password;
 
     /**
+     * @var string The plain password
+     * @Assert\NotBlank(groups={"registration", "user_admin_add", "profile_password", "change_password"})
+     * @Assert\Length(
+     *     min=6,
+     *     max=4096,
+     *     minMessage="Your password should be at least {{ limit }} characters",
+     *     groups={"registration", "user_admin_add", "profile_password", "change_password"}
+     * )
+     */
+    private $plainPassword;
+
+    /**
      * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\Email(groups={"registration", "user_add", "user_update", "profile"})
-     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile"})
+     * @Assert\Email(groups={"registration", "user_admin", "profile"})
+     * @Assert\NotBlank(groups={"registration", "user_admin", "profile"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile"})
+     * @Assert\NotBlank(groups={"registration", "user_admin", "profile"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Assert\NotBlank(groups={"registration", "user_add", "user_update", "profile"})
+     * @Assert\NotBlank(groups={"registration", "user_admin", "profile"})
      */
     private $lastname;
 
@@ -139,6 +144,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): self
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getPlainPassword(): ?string
+    {
+        return $this->plainPassword;
+    }
+
+    public function setPlainPassword(string $plainPassword): self
+    {
+        $this->plainPassword = $plainPassword;
 
         return $this;
     }
