@@ -62,7 +62,7 @@ fin symfony console drupguard:install
 
 ## mise en place d'un rapport
 
-![Screenshot](./screenFolder/exampleConfig.png?raw=true "Screenshot")
+![Screenshot](./exampleConfig.png?raw=true "config")
 
 **Name** : Le libelle du projet s'affichant dans l'interface du site.
 exemple : Tenup D7
@@ -105,19 +105,19 @@ tuto pour rédiger un cron : https://crontab.guru/
 
 Un rapport est constitué de plusieurs lignes de couleurs différentes :
 
-![Screenshot](./screenFolder/exampleRed.png?raw=true "Screenshot")
+![Screenshot](./exampleRed.png?raw=true "red")
 
 Les lignes rouges sont les modules nécéssitant au plus vite au moins un patch de sécurité, elle sont à traiter en priorité par les developpeurs.
 
-![Screenshot](./screenFolder/exampleYellow.png?raw=true "Screenshot")
+![Screenshot](.exampleYellow.png?raw=true "yellow")
 
 Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour 
 
-![Screenshot](./screenFolder/exampleGreen.png?raw=true "Screenshot")
+![Screenshot](.exampleGreen.png?raw=true "green")
 
 Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
 
-![Screenshot](./screenFolder/exampleGrey.png?raw=true "Screenshot")
+![Screenshot](.exampleGrey.png?raw=true "grey")
 
 Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
 
