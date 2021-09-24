@@ -109,15 +109,15 @@ Un rapport est constitué de plusieurs lignes de couleurs différentes :
 
 Les lignes rouges sont les modules nécéssitant au plus vite au moins un patch de sécurité, elle sont à traiter en priorité par les developpeurs.
 
-![Screenshot](.exampleYellow.png?raw=true "yellow")
+![Screenshot](./exampleYellow.png?raw=true "yellow")
 
 Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour 
 
-![Screenshot](.exampleGreen.png?raw=true "green")
+![Screenshot](./exampleGreen.png?raw=true "green")
 
 Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
 
-![Screenshot](.exampleGrey.png?raw=true "grey")
+![Screenshot](./exampleGrey.png?raw=true "grey")
 
 Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
 
