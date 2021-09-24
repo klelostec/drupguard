@@ -62,6 +62,8 @@ fin symfony console drupguard:install
 
 ## mise en place d'un rapport
 
+![Screenshot](./screenFolder/exampleConfig.png?raw=true "Screenshot")
+
 **Name** : Le libelle du projet s'affichant dans l'interface du site.
 exemple : Tenup D7
 
@@ -96,6 +98,28 @@ tuto pour rédiger un cron : https://crontab.guru/
 
 **Ignored modules** : permet d'ajouter la liste des modules à ne pas analyser pour le rapport
 (par défaut la liste prend l'ensemble des modules contrib et les themes).
+
+## Lecture d'un rapport
+
+![Screenshot](./screen.png?raw=true "Screenshot")
+
+Un rapport est constitué de plusieurs lignes de couleurs différentes :
+
+![Screenshot](./screenFolder/exampleRed.png?raw=true "Screenshot")
+
+Les lignes rouges sont les modules nécéssitant au plus vite au moins un patch de sécurité, elle sont à traiter en priorité par les developpeurs.
+
+![Screenshot](./screenFolder/exampleYellow.png?raw=true "Screenshot")
+
+Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour 
+
+![Screenshot](./screenFolder/exampleGreen.png?raw=true "Screenshot")
+
+Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
+
+![Screenshot](./screenFolder/exampleGrey.png?raw=true "Screenshot")
+
+Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
 
 ## Licence
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
