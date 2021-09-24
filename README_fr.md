@@ -60,9 +60,7 @@ fin symfony console drupguard:install
 
 **Répertoire projet** : https://github.com/klelostec/drupguard
 
-## mise en place d'un rapport
-
-![Screenshot](./exampleConfig.png?raw=true "config")
+## Mise en place d'un rapport
 
 **Name** : Le libelle du projet s'affichant dans l'interface du site.
 exemple : Tenup D7
@@ -91,7 +89,8 @@ Succes => envoi le rapport complet généré par le site
 **Has cron** : permet d'activer un build récurent des rapports
 
 **Cron frequency** : permet de gérer la récurrence du build cron
-tuto pour rédiger un cron : https://crontab.guru/
+exemple : 0 8 * * *
+tuto pour rédiger une cron : https://crontab.guru/
 
 **Allowed users** : permet de rajouter des utilisateurs a la liste de diffusion du rapport
 (tuto : ctrl + clic pour ajouter plusieurs personnes)
@@ -100,8 +99,6 @@ tuto pour rédiger un cron : https://crontab.guru/
 (par défaut la liste prend l'ensemble des modules contrib et les themes).
 
 ## Lecture d'un rapport
-
-![Screenshot](./screen.png?raw=true "Screenshot")
 
 Un rapport est constitué de plusieurs lignes de couleurs différentes :
 
