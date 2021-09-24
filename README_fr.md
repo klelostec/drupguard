@@ -107,19 +107,19 @@ Un rapport est constitué de plusieurs lignes de couleurs différentes :
 
 ![Screenshot](./exampleRed.png?raw=true "red")
 
-Les lignes rouges sont les modules nécéssitant au plus vite au moins un patch de sécurité, elle sont à traiter en priorité par les developpeurs.
+Les lignes rouges sont les modules nécéssitant au plus vite au moins un patch de sécurité, elles sont à traiter en priorité par les developpeurs.
 
 ![Screenshot](./exampleYellow.png?raw=true "yellow")
 
-Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour 
+Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour garder le site fonctionnel
 
 ![Screenshot](./exampleGreen.png?raw=true "green")
 
-Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
+Les lignes vertes sont les modules ne nécéssitant aucune mise à jour.
 
 ![Screenshot](./exampleGrey.png?raw=true "grey")
 
-Les lignes jaunes mettent en évidence des modules dont les mises à jour sont disponibles, il est recommandé de mettre à jour ces modules pour
+Les lignes grises montrent les modules que l'outil n'à pas su analyser. 
 
 ## Licence
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
