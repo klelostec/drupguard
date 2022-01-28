@@ -3,9 +3,11 @@ ARG CLI_IMAGE
 FROM $CLI_IMAGE
 
 # Install the symfony CLI.
-RUN \
-   wget https://get.symfony.com/cli/installer -O - | bash && \
-   mv /root/.symfony/bin/symfony /usr/local/bin/symfony
+RUN set -xe; \
+	echo "deb [trusted=yes] https://repo.symfony.com/apt/ /" | tee /etc/apt/sources.list.d/symfony-cli.list; \
+    apt-get update >/dev/null; \
+    apt-get -y --no-install-recommends install >/dev/null symfony-cli; \
+    apt-get clean; rm -rf /var/lib/apt/lists/*
 
 # All further commands will be performed as the docker user.
 USER docker

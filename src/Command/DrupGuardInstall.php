@@ -142,6 +142,13 @@ class DrupGuardInstall extends Command
                 );
                 $composerExecutable = $outputStyle->askQuestion($composerQuestion);
 
+                $composerV1Executable = $composerFinder->find('composer1');
+                $composerV1Question = new Question(
+                    'Composer v1 binary path',
+                    $composerV1Executable ?: null
+                );
+                $composerV1Executable = $outputStyle->askQuestion($composerV1Question);
+
                 $secret = md5(random_bytes(10));
 
                 $envLocal = <<<EOT
@@ -150,6 +157,7 @@ DATABASE_URL={$databaseUrl}
 MAILER_DSN={$mailerDsn}
 PHP_BINARY={$phpExecutable}
 COMPOSER_BINARY={$composerExecutable}
+COMPOSER_V1_BINARY={$composerV1Executable}
 EOT;
                 file_put_contents($this->projectDir.'/.env.local', $envLocal);
                 $outputStyle->success('File .env.local created.');

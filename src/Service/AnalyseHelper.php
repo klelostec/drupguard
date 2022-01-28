@@ -66,29 +66,32 @@ class AnalyseHelper
         try {
             $this->gitCheckout($project, $projectWorkspace);
         } catch (\Exception $e) {
-            $this->stopAnalyse($analyse, Analyse::ERROR);
+            $message = 'Cannot checkout project "'.$project->getMachineName().'".';
+            $this->stopAnalyse($analyse, Analyse::ERROR, $message);
             throw new AnalyseException(
-                'Cannot checkout project "'.$project->getMachineName().'".',
+                $message,
                 AnalyseException::ERROR
             );
         }
         try {
-            $this->build($drupalDir);
+            $this->build($drupalDir, $project->getComposerVersion());
         } catch (\Exception $e) {
-            $this->stopAnalyse($analyse, Analyse::ERROR);
+            $message = 'Cannot build project "'.$project->getMachineName().'".' . PHP_EOL . $e->getMessage();
+            $this->stopAnalyse($analyse, Analyse::ERROR, $message);
             throw new AnalyseException(
-                'Cannot build project "'.$project->getMachineName().'".' . PHP_EOL . $e->getMessage(),
+                $message,
                 AnalyseException::ERROR
             );
         }
         $drupalInfo = $this->getDrupalInfo($drupalDir);
 
         if (empty($drupalInfo['version'])) {
-            $this->stopAnalyse($analyse, Analyse::ERROR);
+            $message = 'Project "'.$project->getMachineName(
+                ).'" directory "'.$project->getDrupalDirectory(
+                ).'" isn\'t a Drupal directory.';
+            $this->stopAnalyse($analyse, Analyse::ERROR, $message);
             throw new AnalyseException(
-                'Project "'.$project->getMachineName(
-              ).'" directory "'.$project->getDrupalDirectory(
-              ).'" isn\'t a Drupal directory.',
+                $message,
                 AnalyseException::ERROR
             );
         }
@@ -180,10 +183,11 @@ class AnalyseHelper
                 }
             }
         } catch (\Exception $exception) {
-            $this->stopAnalyse($analyse, Analyse::ERROR);
+            $message = 'Project "'.$project->getMachineName(
+                ).'" error during analyse run.';
+            $this->stopAnalyse($analyse, Analyse::ERROR, $message);
             throw new AnalyseException(
-                'Project "'.$project->getMachineName(
-                ).'" error during analyse run.',
+                $message,
                 AnalyseException::ERROR
             );
         }
@@ -211,16 +215,19 @@ class AnalyseHelper
         }
     }
 
-    protected function build($drupalDir)
+    protected function build($drupalDir, $composerVersion)
     {
         if ($this->filesystem->exists(
             $drupalDir.'/composer.json'
         ) && $this->filesystem->exists($drupalDir.'/composer.lock')) {
+            $composerBinary = $composerVersion ? $this->params->get(
+                'drupguard.' . $composerVersion
+            ) : $this->params->get(
+                'drupguard.composer_binary'
+            );
             $composerCmd = explode(
                 ' ',
-                $this->params->get(
-                  'drupguard.composer_binary'
-              ).' install --ignore-platform-reqs --no-scripts --no-autoloader --quiet --no-interaction'
+                $composerBinary .' install --ignore-platform-reqs --no-scripts --no-cache --no-autoloader --quiet --no-interaction'
             );
             $composerInstall = new Process($composerCmd, $drupalDir);
             $composerInstall->setTimeout(60*60);
@@ -266,7 +273,7 @@ class AnalyseHelper
                             }
                         }
                     }
-                };
+                }
             }
         }
 
@@ -523,10 +530,13 @@ class AnalyseHelper
         return $info;
     }
 
-    protected function stopAnalyse(Analyse $analyse, $state = Analyse::SUCCESS)
+    protected function stopAnalyse(Analyse $analyse, $state = Analyse::SUCCESS, $message = NULL)
     {
         $analyse->setIsRunning(false);
         $analyse->setState($state);
+        if($message) {
+            $analyse->setMessage($message);
+        }
         $this->entityManager->flush();
 
         $project = $analyse->getProject();

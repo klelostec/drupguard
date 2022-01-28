@@ -31,9 +31,10 @@ class ProjectRepository extends ServiceEntityRepository
     {
         $query = $this->createQueryBuilder('p')
           ->leftJoin('p.allowedUsers', 'pu', Join::WITH)
-          ->andWhere('p.isPublic = 1 OR p.owner = :user OR (pu.id IS NOT NULL AND pu.id = :user)')
+          ->andWhere('p.isPublic = 1 OR 1 = :user OR p.owner = :user OR (pu.id IS NOT NULL AND pu.id = :user)')
           ->setParameter('user', $user->getId())
-          ->orderBy('p.name', 'ASC');
+          ->orderBy('p.name', 'ASC')
+          ->groupBy('p.id');
 
         return new Paginator($query);
     }

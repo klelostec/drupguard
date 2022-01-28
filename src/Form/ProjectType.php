@@ -45,6 +45,10 @@ class ProjectType extends AbstractType
                     'class' => 'js-git-remote-repository'
                 ],
             ])
+            ->add('composerVersion', ChoiceType::class, [
+                'choices' => Project::COMPOSER_VERSION,
+                'row_attr' => ['class' => 'mb-3 row js-composer-version-row'],
+            ])
             ->add('drupalDirectory', null, [
                 'help' => 'For Drupal 8, relates to directory which contain composer.json and composer.lock files. For Drupal 7, relates to directory which contain index.php file. If Drupal directory is located at the root, no need to fill this field.',
             ])
@@ -68,7 +72,7 @@ class ProjectType extends AbstractType
                 'class' => User::class,
                 'url' => '/autocomplete/user'
             ])
-            ->add('ignoredModules', null, [
+            ->add('ignored_modules', null, [
                 'help' => 'Ignored modules will not be taken into account to calculate project status. If you need to ignore some modules, fill this field with modules machine name, one per line.',
             ])
             ->add('submit', SubmitType::class)

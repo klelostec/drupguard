@@ -4,10 +4,10 @@ version: "2.1"
 
 services:
   # Web
-  web:
+  apache:
     extends:
       file: ${HOME}/.docksal/stacks/services.yml
-      service: web
+      service: apache
     depends_on:
       - cli
 

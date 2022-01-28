@@ -61,6 +61,11 @@
         </thead>
         <tbody>
             {% if analyse %}
+                {% if analyse.message is not empty %}
+                    <tr class="text-center project-{{ analyse ? analyse.stateClass : 'other' }}">
+                        <td colspan="6">{{ analyse.message }}</td>
+                    </tr>
+                {% endif %}
                 {% for item in analyse.activeAnalyseItems %}
                     <tr class="table-{{ item.stateClass }}">
                         <td>{{ item.type }}</td>

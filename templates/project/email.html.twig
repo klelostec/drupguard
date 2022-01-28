@@ -17,7 +17,6 @@
         .project-other {
             background-color: #e2e3e5;
         }
-
         .table-success {
             color: #000;
             border-color: #bcd0c7;
@@ -58,6 +57,11 @@
             <th>Recommanded version</th>
             <th>Detail</th>
         </tr>
+        {% if analyse.message is not empty %}
+            <tr class="text-center project-{{ analyse ? analyse.stateClass : 'other' }}">
+                <td colspan="6">{{ analyse.message }}</td>
+            </tr>
+        {% endif %}
         {% for item in analyse.activeAnalyseItems %}
             <tr class="table-{{ item.stateClass }}">
                 <td>{{ item.type }}</td>

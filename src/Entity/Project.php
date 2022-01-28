@@ -23,6 +23,12 @@ class Project
         'Error' => Analyse::ERROR,
     ];
 
+    public const COMPOSER_VERSION = [
+        'Default' => null,
+        'Composer V2' => 'composer_binary',
+        'Composer V1' => 'composer_v1_binary'
+    ];
+
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -53,6 +59,12 @@ class Project
      * @Assert\NotBlank()
      */
     private $gitBranch;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Assert\Regex(pattern="#^(composer_binary|composer_v1_binary)$#i")
+     */
+    private $composerVersion;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
@@ -435,5 +447,17 @@ class Project
         }
 
         return $this->ignored_modules_processed;
+    }
+
+    public function getComposerVersion(): ?string
+    {
+        return $this->composerVersion;
+    }
+
+    public function setComposerVersion(string $composerVersion): self
+    {
+        $this->composerVersion = $composerVersion;
+
+        return $this;
     }
 }

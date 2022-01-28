@@ -9,6 +9,7 @@
             {{ form_row(projectForm.gitBranch) }}
         {% endif %}
     </div>
+    {{ form_row(projectForm.composerVersion) }}
     {{ form_row(projectForm.drupalDirectory) }}
     {{ form_row(projectForm.needEmail) }}
     {{ form_row(projectForm.emailLevel) }}
@@ -17,7 +18,7 @@
     {{ form_row(projectForm.cronFrequency) }}
     {{ form_row(projectForm.isPublic) }}
     {{ form_row(projectForm.allowedUsers) }}
-    {{ form_row(projectForm.ignoredModules) }}
+    {{ form_row(projectForm.ignored_modules) }}
     {{ form_row(projectForm.submit) }}
 {{ form_end(projectForm) }}
 

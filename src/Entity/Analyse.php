@@ -50,6 +50,11 @@ class Analyse
      */
     private $project;
 
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $message;
+
     public function __construct()
     {
         $this->analyseItems = new ArrayCollection();
@@ -182,6 +187,18 @@ class Analyse
     public function setProject(?Project $project): self
     {
         $this->project = $project;
+
+        return $this;
+    }
+
+    public function getMessage(): ?string
+    {
+        return $this->message;
+    }
+
+    public function setMessage(?string $message): self
+    {
+        $this->message = $message;
 
         return $this;
     }
