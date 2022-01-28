@@ -25,8 +25,8 @@ class Project
 
     public const COMPOSER_VERSION = [
         'Default' => null,
-        'Composer V2' => 'composer_binary',
-        'Composer V1' => 'composer_v1_binary'
+        'Composer V1' => 'composer_v1_binary',
+        'Composer V2 (default)' => 'composer_binary'
     ];
 
     /**
@@ -61,8 +61,7 @@ class Project
     private $gitBranch;
 
     /**
-     * @ORM\Column(type="string", length=255)
-     * @Assert\Regex(pattern="#^(composer_binary|composer_v1_binary)$#i")
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $composerVersion;
 
