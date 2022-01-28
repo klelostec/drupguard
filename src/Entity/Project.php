@@ -97,7 +97,8 @@ class Project
     /**
      * @ORM\ManyToMany(targetEntity=User::class, inversedBy="allowedProjects")
      * @ORM\OrderBy({"firstname" = "ASC", "lastname" = "ASC"})
-     * @Assert\Blank(groups={"public"})
+     * @Assert\Count(max = 0,groups={"public"}, maxMessage = "No allowed users needed.")
+     * @Assert\Count(min = 1,groups={"not_public"}, minMessage = "At least one allowed user is needed.")
      */
     private $allowedUsers;
 
@@ -289,6 +290,13 @@ class Project
     public function removeAllowedUser(User $allowedUser): self
     {
         $this->allowedUsers->removeElement($allowedUser);
+
+        return $this;
+    }
+
+    public function removeAllAllowedUser(): self
+    {
+        $this->allowedUsers = new ArrayCollection();
 
         return $this;
     }

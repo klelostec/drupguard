@@ -52,8 +52,13 @@ class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /**
+             * @var Project $project
+             */
             $project = $form->getData();
-
+            if ($project->isPublic() && !empty($project->getAllowedUsers())) {
+                $project->removeAllAllowedUser();
+            }
             if (empty($project->getOwner())) {
                 $project->setOwner($this->getUser());
             }
@@ -140,6 +145,9 @@ class ProjectController extends AbstractController
      */
     public function edit(Request $request, Project $project): Response
     {
+        if ($project->isPublic() && !empty($project->getAllowedUsers())) {
+            $project->removeAllAllowedUser();
+        }
         $form = $this->createForm(ProjectType::class, $project);
         $form->handleRequest($request);
 
