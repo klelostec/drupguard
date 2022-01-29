@@ -46,3 +46,8 @@ fin symfony console drupguard:install
 
 ## Licence
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+## Sponsors
+Many thanks to :  
+[![Screenshot](./sponsor_1.png?raw=true "Sponsor")](https://www.kleegroup.com)  
+[https://www.kleegroup.com](https://www.kleegroup.com)
