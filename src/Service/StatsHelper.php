@@ -77,22 +77,25 @@ class StatsHelper
 
         $ret = [
           'data' => [
-            ['success'],
-            ['warning'],
-            ['other'],
-            ['danger']
+            ['success', 0],
+            ['warning', 0],
+            ['other', 0],
+            ['danger', 0]
           ],
           'categories' => []
         ];
         if (!empty($res = $query->getQuery()->getResult())) {
             $res = array_reverse($res);
             foreach ($res as $current) {
-                $ret['data'][0][] = $current['success'];
-                $ret['data'][1][] = $current['warning'];
-                $ret['data'][2][] = $current['other'];
-                $ret['data'][3][] = $current['danger'];
+                $ret['data'][0][1] = $current['success'];
+                $ret['data'][1][1] = $current['warning'];
+                $ret['data'][2][1] = $current['other'];
+                $ret['data'][3][1] = $current['danger'];
                 $ret['categories'][] = $current["date"]->format('d/m/y H:i:s');
             }
+        }
+        else {
+            $ret['categories'][] = 'Unknown';
         }
 
         return $ret;

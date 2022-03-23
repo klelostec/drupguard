@@ -1,4 +1,10 @@
 {{ form_start(projectForm) }}
+    <div class="mb-3 row">
+        <label class="col-form-label col-sm-2 required" for="project_name">Owner</label>
+        <div class="col-sm-10 pt-2">
+            {{ projectForm.vars.value.owner.username }}
+        </div>
+    </div>
     {{ form_row(projectForm.name) }}
     {%  if projectForm.machineName is defined %}
         {{ form_row(projectForm.machineName) }}
