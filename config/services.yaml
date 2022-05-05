@@ -7,6 +7,13 @@ parameters:
     drupguard.php_binary: '%env(resolve:PHP_BINARY)%'
     drupguard.composer_binary: '%env(resolve:COMPOSER_BINARY)%'
     drupguard.composer_v1_binary: '%env(resolve:COMPOSER_V1_BINARY)%'
+
+    router.request_context.host: '%env(resolve:HOST)%'
+    router.request_context.scheme: 'https'
+    router.request_context.base_url: '/'
+    asset.request_context.base_path: '%router.request_context.base_url%'
+    asset.request_context.secure: true
+
 services:
     # default configuration for services in *this* file
     _defaults:

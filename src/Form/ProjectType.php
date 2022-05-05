@@ -64,6 +64,12 @@ class ProjectType extends AbstractType
             ->add('hasCron')
             ->add('cronFrequency', null, [
                 'row_attr' => ['class' => 'mb-3 row js-cron-frequency-row' . (!$showCron ? ' d-none' : '')],
+                'attr' => [
+                  'placeholder' => '0 5 * * 4',
+                ],
+                'help' => 'Drupal security releases happen between 16:00 UTC and 22:00 UTC every Wednesday, so the value <em>0 5 * * 4</em> is suggested.<br> 
+                           More help at <a href="https://crontab.guru/" target="_blank">crontab.guru</a>',
+                'help_html' => true,
             ])
             ->add('isPublic')
             ->add('allowedUsers', AutocompleteType::class, [
