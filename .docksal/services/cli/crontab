@@ -1,0 +1,1 @@
+* * * * * bash -l -c '/usr/local/bin/php /var/www/bin/console drupguard:cron --cron-only'
