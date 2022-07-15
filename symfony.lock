@@ -510,9 +510,9 @@
         "version": "5.3",
         "recipe": {
             "repo": "github.com/symfony/recipes",
-            "branch": "master",
+            "branch": "main",
             "version": "5.3",
-            "ref": "3dd530739a4284e3272274c128dbb7a8140a66f1"
+            "ref": "ce42aa769cc2edfd9246e5647a3a967afe6387ca"
         },
         "files": [
             "config/packages/twig.yaml",
