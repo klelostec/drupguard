@@ -5,7 +5,7 @@
 {% block body %}
     <h1>Create new Project</h1>
 
-    {{ include('project/_form.html.twig') }}
+    {{ include('project/_form.html.twig', {'operation': 'new'}) }}
 
     <a href="{{ path('project_index') }}">back to list</a>
 {% endblock %}
