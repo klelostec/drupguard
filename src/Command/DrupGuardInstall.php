@@ -149,15 +149,44 @@ class DrupGuardInstall extends Command
                 );
                 $composerV1Executable = $outputStyle->askQuestion($composerV1Question);
 
+                $hostnameQuestion = new Question(
+                  'Hostname, used for mail links (drupguard.docksal.site, mysite.domain.tld, 1.2.3.4)',
+                );
+                $hostnameQuestion->setValidator(
+                  function ($answer) {
+                    if (
+                      !is_string($answer) ||
+                      (
+                        !preg_match(
+                          '#^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$#i',
+                          $answer
+                        )
+                        &&
+                        !preg_match(
+                          '#^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$#i',
+                          $answer
+                        )
+                      )) {
+                      throw new \RuntimeException(
+                        'This should be a valid hostname or IP.'
+                      );
+                    }
+
+                    return $answer;
+                  }
+                );
+                $hostname = $outputStyle->askQuestion($hostnameQuestion);
+
                 $secret = md5(random_bytes(10));
 
                 $envLocal = <<<EOT
-APP_SECRET=${$secret}
+APP_SECRET={$secret}
 DATABASE_URL={$databaseUrl}
 MAILER_DSN={$mailerDsn}
 PHP_BINARY={$phpExecutable}
 COMPOSER_BINARY={$composerExecutable}
 COMPOSER_V1_BINARY={$composerV1Executable}
+HOST={$hostname}
 EOT;
                 file_put_contents($this->projectDir.'/.env.local', $envLocal);
                 $outputStyle->success('File .env.local created.');

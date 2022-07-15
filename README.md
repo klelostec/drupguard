@@ -33,15 +33,14 @@ Add the cron job to cron tab
 For docksal users :
 ```
 fin p up
-fin symfony composer install
-fin yarn install
-fin yarn encore production
-fin symfony console drupguard:install
-#mysql://user:user@db:3306/default?serverVersion=5.7
-#smtp://mail:1025
-#/usr/local/bin/php
-#/usr/local/bin/composer
+fin drupguard/install
 ``` 
+
+Use this command to update project:
+```
+fin drupguard/update
+``` 
+
 
 
 ## Licence
@@ -51,3 +50,5 @@ fin symfony console drupguard:install
 Many thanks to :  
 [![Screenshot](./sponsor_1.png?raw=true "Sponsor")](https://www.kleegroup.com)  
 [https://www.kleegroup.com](https://www.kleegroup.com)
+
+

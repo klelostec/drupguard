@@ -254,11 +254,10 @@ class ProjectController extends AbstractController
     public function check(Request $request, Project $project): Response
     {
         $analyse = $project->getLastAnalyse();
-        $response = new JsonResponse([
+        return new JsonResponse([
           'running' => $analyse && $analyse->isRunning(),
           'pending' => $project->isPending()
         ]);
-        return $response;
     }
 
     /**
