@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\UserType;
 use App\Repository\UserRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +31,7 @@ class UserController extends AbstractController
     /**
      * @Route("/new", name="user_new", methods={"GET","POST"})
      */
-    public function new(Request $request, UserPasswordHasherInterface $passwordEncoder): Response
+    public function new(Request $request, UserPasswordHasherInterface $passwordEncoder, ManagerRegistry $managerRegistry): Response
     {
         $form = $this->createForm(UserType::class);
         $form->handleRequest($request);
@@ -49,7 +50,7 @@ class UserController extends AbstractController
                 )
             );
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $managerRegistry->getManager();
             $entityManager->persist($user);
             $entityManager->flush();
 
@@ -64,7 +65,7 @@ class UserController extends AbstractController
     /**
      * @Route("/{id}/edit", name="user_edit", methods={"GET","POST"})
      */
-    public function edit(Request $request, User $user, UserPasswordHasherInterface $passwordEncoder): Response
+    public function edit(Request $request, User $user, UserPasswordHasherInterface $passwordEncoder, ManagerRegistry $managerRegistry): Response
     {
         $form = $this->createForm(UserType::class, $user);
         $form->handleRequest($request);
@@ -79,7 +80,7 @@ class UserController extends AbstractController
                     )
                 );
             }
-            $this->getDoctrine()->getManager()->flush();
+            $managerRegistry->getManager()->flush();
 
             return $this->redirectToRoute('user_index');
         }
@@ -93,13 +94,13 @@ class UserController extends AbstractController
     /**
      * @Route("/{id}/delete", name="user_delete", methods={"GET","POST"})
      */
-    public function delete(Request $request, User $user): Response
+    public function delete(Request $request, User $user, ManagerRegistry $managerRegistry): Response
     {
         if ($user->isSuperAdmin()) {
             throw new AccessDeniedException('Cannot delete super admin.');
         }
         if ($this->isCsrfTokenValid('delete'.$user->getId(), $request->request->get('_token'))) {
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $managerRegistry->getManager();
             $entityManager->remove($user);
             $entityManager->flush();
             return $this->redirectToRoute('user_index');

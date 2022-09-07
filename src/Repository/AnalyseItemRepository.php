@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\AnalyseItem;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,32 +20,23 @@ class AnalyseItemRepository extends ServiceEntityRepository
         parent::__construct($registry, AnalyseItem::class);
     }
 
-    // /**
-    //  * @return AnalyseItem[] Returns an array of AnalyseItem objects
-    //  */
-    /*
-    public function findByExampleField($value)
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('a.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+    public function findAllStatistics() {
+        $query = $this->createQueryBuilder('ai');
+        $subquery = $this->createQueryBuilder('ai2');
+        $subquery
+            ->select('MAX(a2.id)')
+            ->join('ai2.analyse','a2')
+            ->groupBy('a2.project');
 
-    /*
-    public function findOneBySomeField($value): ?AnalyseItem
-    {
-        return $this->createQueryBuilder('a')
-            ->andWhere('a.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
+        $query
+            ->join('ai.analyse', 'a', Join::WITH)
+            ->join('a.project', 'p', Join::WITH)
+            ->where('a.id IN (' . $subquery->getDQL() . ')')
+            ->andWhere('ai.isIgnored = 0')
+            ->orderBy('ai.type')
+            ->addOrderBy('ai.name')
+            ->addOrderBy('p.name')
         ;
+        return $query->getQuery()->getResult();
     }
-    */
 }

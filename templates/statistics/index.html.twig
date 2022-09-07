@@ -1,0 +1,95 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistics{% endblock %}
+
+{% macro printItem(item) %}
+    <tr>
+        <td class="table-{{ item.stateClass }}">{{ item.analyse.project.name }}</td>
+        <td class="table-{{ item.stateClass }}">{{ item.currentVersion }}</td>
+        <td class="table-{{ item.stateClass }}">{{ item.latestVersion }}</td>
+        <td class="table-{{ item.stateClass }}">{{ item.recommandedVersion }}</td>
+        <td class="table-{{ item.stateClass }}">{{ item.detail|raw }}</td>
+        <td class="table-{{ item.stateClass }}">{{ item.analyse.date|date('d/m/Y H:i:s') }}</td>
+    </tr>
+{% endmacro %}
+
+{% macro printRows(first_item) %}
+    <tr>
+        <td rowspan="{{ first_item.nbItems }}">{{ first_item.type }}</td>
+        <td rowspan="{{ first_item.nbItems }}">
+            <a href="https://www.drupal.org/project/{{ first_item.machineName }}" target="_blank">{{ first_item.name }}</a>
+        </td>
+        <td class="table-{{ first_item.stateClass }}">{{ first_item.projectName }}</td>
+        <td class="table-{{ first_item.stateClass }}">{{ first_item.currentVersion}}</td>
+        <td class="table-{{ first_item.stateClass }}">{{ first_item.latestVersion }}</td>
+        <td class="table-{{ first_item.stateClass }}">{{ first_item.recommandedVersion }}</td>
+        <td class="table-{{ first_item.stateClass }}">{{ first_item.detail|raw }}</td>
+        <td class="table-{{ first_item.stateClass }}">{{ first_item.lastAnalyseDate|date('d/m/Y H:i:s') }}</td>
+    </tr>
+    {{ first_item.rows | raw }}
+{% endmacro %}
+
+{% block body %}
+    <h2>Modules statistics</h2>
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Type</th>
+            <th scope="col">Name</th>
+            <th scope="col">Project Name</th>
+            <th scope="col">Current version</th>
+            <th scope="col">Latest version</th>
+            <th scope="col">Recommanded version</th>
+            <th scope="col">Detail</th>
+            <th scope="col">Last analyse date</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in statistics %}
+            {% if loop.first %}
+                {% set first_item = {
+                    'type': item.type,
+                    'name': item.name,
+                    'machineName': item.machineName,
+                    'nbItems': 1,
+                    'projectName': item.analyse.project.name,
+                    'currentVersion': item.currentVersion,
+                    'latestVersion': item.latestVersion,
+                    'recommandedVersion': item.recommandedVersion,
+                    'lastAnalyseDate': item.analyse.date,
+                    'stateClass': item.stateClass,
+                    'detail': item.detail,
+                    'rows': ''
+                } %}
+            {% else %}
+                {% if first_item.type ~ '_' ~ first_item.machineName != item.type ~ '_' ~ item.machineName %}
+                    {{ _self.printRows(first_item) | raw }}
+                    {% set first_item = {
+                        'type': item.type,
+                        'name': item.name,
+                        'machineName': item.machineName,
+                        'nbItems': 1,
+                        'projectName': item.analyse.project.name,
+                        'currentVersion': item.currentVersion,
+                        'latestVersion': item.latestVersion,
+                        'recommandedVersion': item.recommandedVersion,
+                        'lastAnalyseDate': item.analyse.date,
+                        'stateClass': item.stateClass,
+                        'detail': item.detail,
+                        'rows': ''
+                    } %}
+                {% else  %}
+                    {% set first_item = first_item|merge({
+                        'nbItems': first_item.nbItems + 1,
+                        'rows': first_item.rows ~ _self.printItem(item)
+                    }) %}
+                {% endif %}
+            {% endif %}
+
+            {% if loop.last %}
+                {{ _self.printRows(first_item) | raw }}
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

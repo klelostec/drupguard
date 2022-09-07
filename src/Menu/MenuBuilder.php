@@ -2,14 +2,15 @@
 
 namespace App\Menu;
 
+use App\Entity\User;
 use Knp\Menu\FactoryInterface;
 use Knp\Menu\ItemInterface;
 use Symfony\Component\Security\Core\Security;
 
 class MenuBuilder
 {
-    private $factory;
-    private $security;
+    private FactoryInterface $factory;
+    private Security $security;
 
     /**
      * Add any other dependency you need...
@@ -27,17 +28,26 @@ class MenuBuilder
         $menu->addChild('Home', ['route' => 'app_home']);
 
         if ($this->security->isGranted('ROLE_USER')) {
+            /**
+             * @var User $user
+             */
             $user = $this->security->getUser();
-
-//            $menu->addChild('Project', ['route' => 'project_index']);
-
             // administration
             if ($this->security->isGranted('ROLE_ADMIN')) {
                 $adminMenu = $menu->addChild('Administration', ['attributes' => ['dropdown' => true]]);
+                $adminMenu->addChild('Modules Statistics', ['route' => 'statistics_index']);
                 $adminMenu->addChild('Users', ['route' => 'user_index']);
             }
             $userMenu = $menu->addChild($user->getUsername(), ['attributes' => ['dropdown' => true, 'icon' => 'fas fa-user fa-lg']]);
             $userMenu->addChild('Profile', ['route' => 'app_profile']);
+
+            if (!empty($user->getTokenApi())) {
+                $userMenu->addChild('API Documentation', [
+                    'route' => 'app.swagger_ui',
+                    'linkAttributes' => ['target' => '_blank'],
+                ]);
+            }
+
             $userMenu->addChild('Logout', ['route' => 'app_logout']);
         } else {
             $menu->addChild('Login', ['route' => 'app_login']);

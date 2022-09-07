@@ -1,0 +1,52 @@
+.text-responsive {
+  font-size: calc(50% + 1vw + 1vh);
+}
+
+.text-responsive .h1,
+.text-responsive h1 {
+  font-size: calc(100% + 1vw + 1vh);
+}
+.text-responsive .h2,
+.text-responsive h2 {
+  font-size: calc(90% + 1vw + 1vh);
+}
+.text-responsive .h3,
+.text-responsive h3 {
+  font-size: calc(80% + 1vw + 1vh);
+}
+.text-responsive .h4,
+.text-responsive h4 {
+  font-size: calc(70% + 1vw + 1vh);
+}
+.text-responsive .h5,
+.text-responsive h5 {
+  font-size: calc(60% + 1vw + 1vh);
+}
+.text-responsive .h6,
+.text-responsive h6 {
+  font-size: calc(50% + 1vw + 1vh);
+}
+
+.project-bullet {
+  height: calc(3vh + 3vw);
+  width: calc(3vh + 3vw);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.project-success {
+  background-color: #d1e7dd;
+}
+.project-warning {
+  background-color: #fff3cd;
+}
+.project-danger {
+  background-color: #f8d7da;
+}
+.project-other {
+  background-color: #e2e3e5;
+}
+
+.carousel-indicators [data-bs-target] {
+  background-color: #000;
+}

@@ -66,7 +66,7 @@ class AnalyseHelper
         try {
             $this->gitCheckout($project, $projectWorkspace);
         } catch (\Exception $e) {
-            $message = 'Cannot checkout project "'.$project->getMachineName().'".';
+            $message = 'Cannot checkout project "'.$project->getMachineName().'" in "' . $projectWorkspace . '".';
             $this->stopAnalyse($analyse, Analyse::ERROR, $message);
             throw new AnalyseException(
                 $message,
@@ -86,9 +86,7 @@ class AnalyseHelper
         $drupalInfo = $this->getDrupalInfo($drupalDir);
 
         if (empty($drupalInfo['version'])) {
-            $message = 'Project "'.$project->getMachineName(
-                ).'" directory "'.$project->getDrupalDirectory(
-                ).'" isn\'t a Drupal directory.';
+            $message = 'Project "'.$project->getMachineName(). (!empty($project->getDrupalDirectory()) ? '" directory "'.$project->getDrupalDirectory() : '').'" isn\'t a Drupal directory.';
             $this->stopAnalyse($analyse, Analyse::ERROR, $message);
             throw new AnalyseException(
                 $message,

@@ -10,6 +10,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -23,6 +24,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"show_project", "list_projects"})
      */
     private $id;
 
@@ -83,6 +85,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\ManyToMany(targetEntity=Project::class, mappedBy="allowedUsers")
      */
     private $allowedProjects;
+
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $token_api;
 
     public function __construct()
     {
@@ -266,6 +273,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier()
     {
         return $this->username;
+    }
+
+    public function getTokenApi(): ?string
+    {
+        return $this->token_api;
+    }
+
+    public function setTokenApi(?string $token_api): self
+    {
+        $this->token_api = $token_api;
+
+        return $this;
     }
 
     public function __toString()

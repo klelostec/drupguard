@@ -10,6 +10,18 @@ services:
       service: apache
     depends_on:
       - cli
+  # Web
+  api:
+    extends:
+      file: ${HOME}/.docksal/stacks/services.yml
+      service: apache
+    hostname: api
+    volumes:
+      - api_root:/var/www:ro,nocopy,cached  # Project root volume (read-only)
+    labels:
+      - io.docksal.virtual-host=api.${VIRTUAL_HOST}
+    environment:
+      - APACHE_DOCUMENTROOT=/var/www
 
   # DB
   db:
@@ -41,3 +53,11 @@ services:
       - ADMINER_DESIGN=price # To use a bundled Adminer design
     labels:
       - io.docksal.virtual-host=adminer.${VIRTUAL_HOST}
+
+volumes:
+  api_root:  # Project root volume (bind mount)
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PROJECT_ROOT}/api_example/build
+      o: bind

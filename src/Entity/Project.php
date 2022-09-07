@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=ProjectRepository::class)
@@ -33,52 +34,61 @@ class Project
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"show_project", "list_projects"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank()
+     * @Groups({"show_project", "list_projects"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true)
      * @Assert\Regex(pattern="/^[a-z0-9_]+$/i", groups={"machine_name"})
+     * @Groups({"show_project", "list_projects"})
      */
     private $machineName;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @AppAssert\GitRemote()
+     * @Groups({"show_project", "list_projects"})
      */
     private $gitRemoteRepository;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank()
+     * @Groups({"show_project", "list_projects"})
      */
     private $gitBranch;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"show_project", "list_projects"})
      */
     private $composerVersion;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\Regex(pattern="#^(/[\w-]+)*$#i")
+     * @Groups({"show_project", "list_projects"})
      */
     private $drupalDirectory;
 
     /**
      * @ORM\ManyToOne(targetEntity=User::class)
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"show_project", "list_projects"})
      */
     private $owner;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"show_project", "list_projects"})
      */
     private $hasCron;
 
@@ -86,11 +96,13 @@ class Project
      * @ORM\Column(type="string", length=255, nullable=true)
      * @Assert\Blank(groups={"not_cron"})
      * @AppAssert\CronExpression(groups={"cron"})
+     * @Groups({"show_project", "list_projects"})
      */
     private $cronFrequency;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"show_project", "list_projects"})
      */
     private $isPublic;
 
@@ -99,11 +111,13 @@ class Project
      * @ORM\OrderBy({"firstname" = "ASC", "lastname" = "ASC"})
      * @Assert\Count(max = 0,groups={"public"}, maxMessage = "No allowed users needed.")
      * @Assert\Count(min = 1,groups={"not_public"}, minMessage = "At least one allowed user is needed.")
+     * @Groups({"show_project", "list_projects"})
      */
     private $allowedUsers;
 
     /**
      * @ORM\OneToOne(targetEntity=Analyse::class)
+     * @Groups({"show_project", "list_projects"})
      */
     private $lastAnalyse;
 
@@ -114,6 +128,7 @@ class Project
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"show_project", "list_projects"})
      */
     private $needEmail;
 
@@ -121,6 +136,7 @@ class Project
      * @ORM\Column(type="smallint", nullable=true)
      * @Assert\Blank(groups={"not_email"})
      * @Assert\Choice(callback="getEmailLevelChoices", groups={"email"})
+     * @Groups({"show_project", "list_projects"})
      */
     private $emailLevel;
 
@@ -128,6 +144,7 @@ class Project
      * @ORM\Column(type="text", nullable=true)
      * @Assert\Blank(groups={"not_email"})
      * @AppAssert\MultipleEmail(groups={"email"})
+     * @Groups({"show_project", "list_projects"})
      */
     private $emailExtra;
 
@@ -138,6 +155,7 @@ class Project
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"show_project", "list_projects"})
      */
     private $ignored_modules;
 

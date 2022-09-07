@@ -6,6 +6,7 @@ use App\Repository\AnalyseRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=AnalyseRepository::class)
@@ -20,27 +21,32 @@ class Analyse
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"show_project", "list_projects"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Groups({"show_project", "list_projects"})
      */
     private $date;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"show_project", "list_projects"})
      */
     private $isRunning;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"show_project", "list_projects"})
      */
     private $state;
 
     /**
      * @ORM\OneToMany(targetEntity=AnalyseItem::class, mappedBy="analyse", orphanRemoval=true)
      * @ORM\OrderBy({"type" = "ASC", "name" = "ASC"})
+     * @Groups({"show_project", "list_projects"})
      */
     private $analyseItems;
 
@@ -52,6 +58,7 @@ class Analyse
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"show_project", "list_projects"})
      */
     private $message;
 
@@ -111,7 +118,7 @@ class Analyse
             case self::SUCCESS:
                 return 'success';
             default:
-                return 'secondary';
+                return 'other';
         }
     }
 

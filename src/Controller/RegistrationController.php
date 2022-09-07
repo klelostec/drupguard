@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Form\RegistrationType;
 use App\Security\EmailVerifier;
 use App\Security\LoginFormAuthenticator;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,7 +28,7 @@ class RegistrationController extends AbstractController
     /**
      * @Route("/register", name="app_register")
      */
-    public function register(Request $request, UserPasswordHasherInterface $passwordEncoder, UserAuthenticatorInterface $authenticatorManager, LoginFormAuthenticator $authenticator): Response
+    public function register(Request $request, UserPasswordHasherInterface $passwordEncoder, UserAuthenticatorInterface $authenticatorManager, LoginFormAuthenticator $authenticator, ManagerRegistry $managerRegistry): Response
     {
         $form = $this->createForm(RegistrationType::class);
         $form->handleRequest($request);
@@ -43,7 +44,7 @@ class RegistrationController extends AbstractController
                 )
             );
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $managerRegistry->getManager();
             $entityManager->persist($user);
             $entityManager->flush();
 

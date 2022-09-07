@@ -42,14 +42,25 @@ class ProjectRepository extends ServiceEntityRepository
     /**
      * @return Project[] Returns an array of Project objects
      */
+    public function findAllByAllowedUser(User $user)
+    {
+        return $this->getQueryByAllowedUser($user)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
+
+    /**
+     * @return Project[] Returns an array of Project objects
+     */
     public function findByAllowedUser(User $user, $page = 0, $limit = 10)
     {
         return $this->getQueryByAllowedUser($user)
-          ->getQuery()
-          ->setMaxResults($limit)
-          ->setFirstResult(($page ?: 0)*$limit)
-          ->getResult()
-          ;
+            ->getQuery()
+            ->setMaxResults($limit)
+            ->setFirstResult(($page ?: 0)*$limit)
+            ->getResult()
+            ;
     }
 
     /**

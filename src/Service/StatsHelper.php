@@ -11,6 +11,8 @@ use Symfony\Component\HttpKernel\KernelInterface;
 
 class StatsHelper
 {
+    const PROJECT_HISTORY_LIMIT = 12;
+
     protected $entityManager;
 
     public function __construct(EntityManagerInterface $entityManager, KernelInterface $kernel)
@@ -64,7 +66,7 @@ class StatsHelper
           ->groupBy('a.id')
           ->where('a.project = :project AND ai.isIgnored=0')
           ->setParameter(':project', $project->getId())
-          ->setMaxResults(12)
+          ->setMaxResults(self::PROJECT_HISTORY_LIMIT)
           ->setFirstResult(0)
           ->orderBy('a.date', 'DESC')
         ;
@@ -86,11 +88,11 @@ class StatsHelper
         ];
         if (!empty($res = $query->getQuery()->getResult())) {
             $res = array_reverse($res);
-            foreach ($res as $current) {
-                $ret['data'][0][1] = $current['success'];
-                $ret['data'][1][1] = $current['warning'];
-                $ret['data'][2][1] = $current['other'];
-                $ret['data'][3][1] = $current['danger'];
+            foreach ($res as $key => $current) {
+                $ret['data'][0][$key + 1] = $current['success'] ?? 0;
+                $ret['data'][1][$key + 1] = $current['warning'] ?? 0;
+                $ret['data'][2][$key + 1] = $current['other'] ?? 0;
+                $ret['data'][3][$key + 1] = $current['danger'] ?? 0;
                 $ret['categories'][] = $current["date"]->format('d/m/y H:i:s');
             }
         }

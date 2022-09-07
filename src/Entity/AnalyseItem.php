@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AnalyseItemRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=AnalyseItemRepository::class)
@@ -59,31 +60,37 @@ class AnalyseItem
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"show_project", "list_projects"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show_project", "list_projects"})
      */
     private $type;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show_project", "list_projects"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show_project", "list_projects"})
      */
     private $currentVersion;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show_project", "list_projects"})
      */
     private $latestVersion;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"show_project", "list_projects"})
      */
     private $recommandedVersion;
 
@@ -95,21 +102,25 @@ class AnalyseItem
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show_project", "list_projects"})
      */
     private $state;
 
     /**
      * @ORM\Column(type="text", nullable=true)
+     * @Groups({"show_project", "list_projects"})
      */
     private $detail;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"show_project", "list_projects"})
      */
     private $machine_name;
 
     /**
      * @ORM\Column(type="boolean")
+     * @Groups({"show_project", "list_projects"})
      */
     private $isIgnored;
 

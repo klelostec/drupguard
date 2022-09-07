@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Manage API token{% endblock %}
+
+{% block body %}
+    {% for flashError in app.flashes('verify_email_error') %}
+        <div class="alert alert-danger" role="alert">{{ flashError }}</div>
+    {% endfor %}
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('app_profile') }}">My profile</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ path('app_profile_password') }}">Change my password</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="#">Manage API token</a>
+        </li>
+    </ul>
+    <h1>Manage API token</h1>
+    {{ form(profileTokenForm) }}
+{% endblock %}

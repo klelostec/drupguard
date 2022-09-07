@@ -12,6 +12,7 @@ use App\Service\AnalyseHelper;
 use App\Service\MachineNameHelper;
 use App\Service\StatsHelper;
 use Cz\Git\GitException;
+use Doctrine\Persistence\ManagerRegistry;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
@@ -46,7 +47,7 @@ class ProjectController extends AbstractController
     /**
      * @Route("/new", name="project_new", methods={"GET","POST"})
      */
-    public function new(Request $request, MachineNameHelper $machineNameHelper): Response
+    public function new(Request $request, MachineNameHelper $machineNameHelper, ManagerRegistry $managerRegistry): Response
     {
         $form = $this->createForm(ProjectType::class);
         $form->handleRequest($request);
@@ -66,7 +67,7 @@ class ProjectController extends AbstractController
                 $machineName = $machineNameHelper->getMachineName($project->getName());
                 $project->setMachineName($machineName);
             }
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $managerRegistry->getManager();
             $entityManager->persist($project);
             $entityManager->flush();
 
@@ -143,7 +144,7 @@ class ProjectController extends AbstractController
      * @Route("/{id}/edit", name="project_edit", methods={"GET","POST"})
      * @IsGranted("PROJECT_EDIT", subject="project")
      */
-    public function edit(Request $request, Project $project): Response
+    public function edit(Request $request, Project $project, ManagerRegistry $managerRegistry): Response
     {
         if ($project->isPublic() && !empty($project->getAllowedUsers())) {
             $project->removeAllAllowedUser();
@@ -152,7 +153,7 @@ class ProjectController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->getDoctrine()->getManager()->flush();
+            $managerRegistry->getManager()->flush();
 
             return $this->redirectToRoute('project_index');
         }
@@ -166,7 +167,7 @@ class ProjectController extends AbstractController
      * @Route("/{id}/delete", name="project_delete", methods={"GET","POST"})
      * @IsGranted("PROJECT_DELETE", subject="project")
      */
-    public function delete(Request $request, Project $project, KernelInterface $kernel): Response
+    public function delete(Request $request, Project $project, KernelInterface $kernel, ManagerRegistry $managerRegistry): Response
     {
         if ($this->isCsrfTokenValid('delete'.$project->getId(), $request->request->get('_token'))) {
             $fileSystem = new Filesystem();
@@ -175,7 +176,7 @@ class ProjectController extends AbstractController
                 $fileSystem->remove($workspaceDir);
             }
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $managerRegistry->getManager();
             $entityManager->remove($project);
             $entityManager->flush();
 
@@ -191,7 +192,7 @@ class ProjectController extends AbstractController
      * @Route("/{id}/run", name="project_run", methods={"GET"})
      * @IsGranted("PROJECT_RUN", subject="project")
      */
-    public function run(Project $project, AnalyseHelper $analyseHelper): Response
+    public function run(Project $project, AnalyseHelper $analyseHelper, ManagerRegistry $managerRegistry): Response
     {
         if ($project->isPending() || ($project->getLastAnalyse() && $project->getLastAnalyse()->isRunning())) {
             return new JsonResponse(['return' => false]);
@@ -201,7 +202,7 @@ class ProjectController extends AbstractController
             $queue = new AnalyseQueue();
             $queue->addProject($project);
 
-            $entityManager = $this->getDoctrine()->getManager();
+            $entityManager = $managerRegistry->getManager();
             $entityManager->persist($queue);
             $entityManager->flush();
         }

@@ -1,0 +1,11 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Drupguard
+            description: >
+                Get drupguard server data over secured API.<br/>
+                <b>You need to generate a token from your user profile to access the API.</b>
+            version: 1.0.0
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/api(?!/doc$)

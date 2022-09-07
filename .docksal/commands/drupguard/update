@@ -60,5 +60,6 @@ then
 else
   echo-lavender-bg "* Cache clear"
   fin symfony console cache:clear
+  fin symfony console doctrine:migrations:migrate
 fi
 #-------------------------- END: Execution --------------------------------
