@@ -41,7 +41,7 @@ class DrupGardRun extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repo = $this->entityManager->getRepository("App:Project");
+        $repo = $this->entityManager->getRepository(Project::class);
 
         $projectsMachineNames = $input->getArgument('projects');
         if (count($projectsMachineNames) > 0) {

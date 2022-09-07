@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\Project;
 use App\Exception\AnalyseException;
 use App\Service\AnalyseHelper;
 use Doctrine\ORM\EntityManagerInterface;
@@ -41,7 +42,7 @@ class DrupGardCron extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         //Add needed project to queue
-        $repo = $this->entityManager->getRepository("App:Project");
+        $repo = $this->entityManager->getRepository(Project::class);
         $projects = $repo->findByCronNeeded(boolval($input->getOption('cron-only')));
         foreach ($projects as $project) {
             $command = $this->getApplication()->find('drupguard:run');

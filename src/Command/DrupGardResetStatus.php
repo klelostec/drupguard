@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\Project;
 use App\Service\AnalyseHelper;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -34,7 +35,7 @@ class DrupGardResetStatus extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $repo = $this->entityManager->getRepository("App:Project");
+        $repo = $this->entityManager->getRepository(Project::class);
 
         $projectsMachineNames = $input->getArgument('projects');
         if (count($projectsMachineNames) > 0) {

@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Entity\Project;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Command\Command;
@@ -37,7 +38,7 @@ class DrupGardList extends Command
     {
         $table = new Table($output);
         $table->setHeaders(['Project name', 'Machine name', 'Cron frequency', 'Last analyse', 'Last analyse state', 'Is running', 'Pending']);
-        $repo = $this->entityManager->getRepository("App:Project");
+        $repo = $this->entityManager->getRepository(Project::class);
         if ($filter = $input->getOption('filter')) {
             // Add a not equals parameter to your criteria
             $criteria = new Criteria();
