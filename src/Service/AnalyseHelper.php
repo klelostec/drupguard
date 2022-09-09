@@ -223,6 +223,15 @@ class AnalyseHelper
             ) : $this->params->get(
                 'drupguard.composer_binary'
             );
+            $composerDiscardChangeCmd = explode(
+                ' ',
+                $composerBinary .' config discard-changes true'
+            );
+            $composerDiscardChange = new Process($composerDiscardChangeCmd, $drupalDir);
+            $composerDiscardChange->setTimeout(60*60);
+            if ($composerDiscardChange->run() !== 0) {
+                throw new \Exception($composerDiscardChange->getErrorOutput());
+            }
             $composerCmd = explode(
                 ' ',
                 $composerBinary .' install --ignore-platform-reqs --no-scripts --no-cache --no-autoloader --quiet --no-interaction'

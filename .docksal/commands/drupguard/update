@@ -59,6 +59,7 @@ then
   fin symfony console drupguard:install
 else
   echo-lavender-bg "* Cache clear"
+  fin symfony console assets:install public
   fin symfony console cache:clear
   fin symfony console doctrine:migrations:migrate
 fi
