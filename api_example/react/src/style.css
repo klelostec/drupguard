@@ -26,10 +26,46 @@
 .text-responsive h6 {
   font-size: calc(50% + 1vw + 1vh);
 }
+.text-responsive-small {
+ font-size: calc(5% + 1vw + 1vh);
+}
+
+.scrollable {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-color: #888 #f1f1f1;
+  scrollbar-width: thin;
+}
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 
 .project-bullet {
   height: calc(3vh + 3vw);
   width: calc(3vh + 3vw);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.project-bullet-mini {
+  height: calc(1vh + 1vw);
+  width: calc(1vh + 1vw);
   border-radius: 50%;
   display: inline-block;
 }
