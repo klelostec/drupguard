@@ -118,7 +118,7 @@ const ProjectComponent = props => {
             }
             let data = [];
             if (item.lastAnalyse && item.lastAnalyse.analyseItems) {
-                item.lastAnalyse.analyseItems.map( (analyseItem) => {
+                item.lastAnalyse.analyseItems.forEach( (analyseItem) => {
                     let state;
                     switch (parseInt(analyseItem.state)) {
                         case 1:
@@ -137,13 +137,11 @@ const ProjectComponent = props => {
                             break;
                     }
                     states[state]++;
-                    return undefined;
                 });
-                ['success', 'warning', 'danger', 'other'].map(state => {
+                ['success', 'warning', 'danger', 'other'].forEach(state => {
                     if (states[state] > 0) {
                         data.push([state, states[state]]);
                     }
-                    return undefined;
                 });
             }
             return {
@@ -164,9 +162,13 @@ const ProjectComponent = props => {
                 <div className="row p-0 m-0">
                     <div className="col-2 p-0 m-0 vh-100 scrollable" id="scrollList">
                         {componentData.items.map(item => (
-                            <div className="d-block p-1">
-                                <div className="title-container d-flex">
-                                    <div className={"project-bullet-mini my-1 me-3 project-" + getProjectClass(item)}></div>
+                            <div className="title-container row px-3 py-1">
+                                <div className="col-2 p-0 text-center">
+                                    <div className="project-bullet-mini-container mt-1">
+                                        <div className={"project-bullet-mini project-" + getProjectClass(item)}></div>
+                                    </div>
+                                </div>
+                                <div className="col-10 pl-1 pr-0">
                                     <h2 className="text-responsive-small">{item.name}</h2>
                                 </div>
                             </div>
