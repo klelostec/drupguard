@@ -1,0 +1,9 @@
+install_index:
+    path: /install
+    # the controller value has the format 'controller_class::method_name'
+    controller: App\Controller\InstallController::index
+
+when@dev:
+    _errors:
+        resource: '@FrameworkBundle/Resources/config/routing/errors.xml'
+        prefix: /_error

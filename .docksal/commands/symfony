@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+#: exec_target = cli
+
+## Run project's symfony CLI.
+##
+## https://symfony.com/download
+## Usage: fin symfony [arguments]
+##
+
+# Abort if anything fails
+set -e
+
+cd ${PROJECT_ROOT}
+
+symfony "$@"
