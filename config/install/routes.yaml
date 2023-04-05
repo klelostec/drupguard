@@ -1,4 +1,17 @@
-controllers:
-    resource:
-        path: ../src/Controller/
-        namespace: App\Controller
+install_index:
+  path: /install/{step}
+  controller: App\Controller\InstallController::index
+  defaults:
+    step: db
+    _locale: en
+  requirements:
+    step: '^[a-z0-9]+$'
+
+install_index_locale:
+  path: /{_locale<%app.supported_locales%>}/install/{step}
+  # the controller value has the format 'controller_class::method_name'
+  controller: App\Controller\InstallController::index
+  defaults:
+    step: db
+  requirements:
+    step: '^[a-z0-9]+$'

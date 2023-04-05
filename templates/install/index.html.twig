@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>
-        {% block title %}Installation {{ steps[current_step] }}{% endblock %}
+        {% block title %}Installation {{ steps[currentStep].label }}{% endblock %}
     </title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
     {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
@@ -18,15 +18,15 @@
 <body>
 <div class="container">
     <div class="row">
-        <div class="col-sm">
-            One of three columns
-        </div>
-        <div class="col-sm">
-            One of three columns
-        </div>
-        <div class="col-sm">
-            One of three columns
-        </div>
+        {% for key, step in steps %}
+            <div class="col-sm">
+                {% if step.access and key != currentStep %}
+                    <a href="{{ step.url }}">{{ step.index + 1 }}. {{ step.label }}</a>
+                {% else %}
+                    <span>{{ step.index + 1 }}. {{ step.label }}</span>
+                {% endif %}
+            </div>
+        {% endfor %}
     </div>
 </div>
 <div class="container">

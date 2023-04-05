@@ -32,7 +32,7 @@ DirectoryIndex index.php
     RewriteRule ^ - [E=protossl:s]
 
     # Rewrite install.php during installation to see if mod_rewrite is working
-    RewriteCond %{REQUEST_URI} ^/install
+    RewriteCond %{REQUEST_URI} ^(.*)/install
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ %{ENV:BASE}/install.php [L]
 
