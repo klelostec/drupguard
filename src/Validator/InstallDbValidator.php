@@ -14,6 +14,7 @@ namespace App\Validator;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DatabaseObjectExistsException;
 use Doctrine\DBAL\Exception\MalformedDsnException;
+use Doctrine\DBAL\Exception\TableExistsException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -27,16 +28,19 @@ class InstallDbValidator extends ConstraintValidator
         }
 
         try {
-            $db_url = $value['driver'] . '://' .
-                urlencode($value['user']) . ':' .
-                urlencode($value['password']) . '@' .
-                urlencode($value['host']);
+            $db_url = $value->db_driver . '://' .
+                urlencode($value->db_user) . ':' .
+                urlencode($value->db_password) . '@' .
+                urlencode($value->db_host);
             $conn = DriverManager::getConnection(['url' => $db_url]);
             $databases = $conn->createSchemaManager()->listDatabases();
-            if (in_array($value['database'], $databases)) {
-                $conn = DriverManager::getConnection(['url' => $db_url . '/' . $value['database']]);
+            if (in_array($value->db_database, $databases)) {
+                $conn = DriverManager::getConnection(['url' => $db_url . '/' . $value->db_database]);
                 if (!empty($conn->createSchemaManager()->listTables())) {
-                    throw new DatabaseObjectExistsException();
+                    $this->context
+                        ->buildViolation($constraint->db_exists_message)
+                        ->setTranslationDomain('validators')
+                        ->addViolation();
                 }
             }
         }
@@ -47,12 +51,6 @@ class InstallDbValidator extends ConstraintValidator
                     ->setTranslationDomain('validators')
                     ->addViolation();
             }
-            if ($e instanceof DatabaseObjectExistsException) {
-                $this->context
-                    ->buildViolation($constraint->db_exists_message)
-                    ->setTranslationDomain('validators')
-                    ->addViolation();
-            }
             else {
                 $this->context
                     ->buildViolation($constraint->db_connection_message)
@@ -60,7 +58,6 @@ class InstallDbValidator extends ConstraintValidator
                     ->atPath('host')
                     ->addViolation();
             }
-
         }
     }
 }

@@ -14,7 +14,12 @@ namespace App\Validator;
 use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Validator\Constraint;
 
-#[\Attribute]
+/**
+ * @Annotation
+ * @Target({"CLASS"})
+ *
+ */
+#[\Attribute(\Attribute::TARGET_CLASS)]
 class InstallDb extends Constraint
 {
     public string $malformed_dsn_message;
@@ -23,9 +28,17 @@ class InstallDb extends Constraint
 
     public function __construct(mixed $options = null, array $groups = null, mixed $payload = null)
     {
-        $this->malformed_dsn_message = new TranslatableMessage('Wrong connection data provided.', [], 'validators');
+        $this->malformed_dsn_message = new TranslatableMessage('Wrong databases connection data provided.', [], 'validators');
         $this->db_exists_message = new TranslatableMessage('Database already exists.', [], 'validators');
-        $this->db_connection_message = new TranslatableMessage('Connection failed.', [], 'validators');
+        $this->db_connection_message = new TranslatableMessage('Database connection failed.', [], 'validators');
         parent::__construct($options, $groups, $payload);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function getTargets()
+    {
+        return self::CLASS_CONSTRAINT;
     }
 }

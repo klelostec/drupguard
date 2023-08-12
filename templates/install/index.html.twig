@@ -1,36 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>
-        {% block title %}Installation {{ steps[currentStep].label }}{% endblock %}
-    </title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
-    {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
-    {% block stylesheets %}
-        {{ encore_entry_link_tags('app') }}
-    {% endblock %}
+	<meta charset="utf-8">
+	<title>
+		{% block title %}{% trans %}Install{% endtrans %} - {{ flow.currentStepLabel }}{% endblock %}
+	</title>
+	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+	{% block stylesheets %}
+		{{ encore_entry_link_tags('app') }}
+	{% endblock %}
 
-    {% block javascripts %}
-        {{ encore_entry_script_tags('app') }}
-    {% endblock %}
+	{% block javascripts %}
+		{{ encore_entry_script_tags('app') }}
+		{% if flow.getCurrentStepNumber() == 3 %}
+			{{ encore_entry_script_tags('install_form_email') }}
+		{% endif %}
+	{% endblock %}
 </head>
 <body>
 <div class="container">
-    <div class="row">
-        {% for key, step in steps %}
-            <div class="col-sm">
-                {% if step.access and key != currentStep %}
-                    <a href="{{ step.url }}">{{ step.index + 1 }}. {{ step.label }}</a>
-                {% else %}
-                    <span>{{ step.index + 1 }}. {{ step.label }}</span>
-                {% endif %}
-            </div>
-        {% endfor %}
-    </div>
+	<h1 class="mt-0 mb-1 align-content-center">{% trans %}Install{% endtrans %}</h1>
 </div>
 <div class="container">
-    {{ form(form) }}
+	<div class="row">
+		<!-- TITLE -->
+		<div class="col-md-3">
+			<div class="container position-relative px-0">
+				{% include '@CraueFormFlow/FormFlow/stepList.html.twig' %}
+			</div>
+		</div>
+		<!-- FORMS -->
+		<div class="col-md-9">
+			{{ form_start(form) }}
+				{% if flow.getCurrentStepNumber() == 4 %}
+					<h2>{{ 'Confirmation' | trans({}, 'form') }}</h2>
+					<div class="mb-3">
+						<h3>{{ 'Database' | trans({}, 'form') }}</h3>
+						<div>
+							<label>{{ 'Type' | trans({}, 'form') }} :</label>
+							<span>{{ formData.db_driver }}</span>
+						</div>
+						<div>
+							<label>{{ 'Host' | trans({}, 'form') }} :</label>
+							<span>{{ formData.db_host }}</span>
+						</div>
+						<div>
+							<label>{{ 'User' | trans({}, 'form') }}:</label>
+							<span>{{ formData.db_user }}</span>
+						</div>
+						<div>
+							<label>{{ 'Password' | trans({}, 'form') }}:</label>
+							<span>************</span>
+						</div>
+						<div>
+							<label>{{ 'Database name' | trans({}, 'form') }}:</label>
+							<span>{{ formData.db_database }}</span>
+						</div>
+					</div>
+					<div class="mb-3">
+						<h3>{{ 'Email' | trans({}, 'form') }}</h3>
+						<div>
+							<label>{{ 'Dsn' | trans({}, 'form') }}:</label>
+							<span>{{ formData.emailDsn }}</span>
+						</div>
+					</div>
+				{% else %}
+					{{ form_errors(form) }}
+					{{ form_rest(form) }}
+				{% endif %}
+				{% include '@CraueFormFlow/FormFlow/buttons.html.twig' with {
+					craue_formflow_button_class_last: 'btn btn-primary',
+					craue_formflow_button_class_back: 'btn btn-secondary',
+					craue_formflow_button_class_reset: 'btn btn-danger',
+				} %}
+			{{ form_end(form) }}
+		</div>
+	</div>
 </div>
 </body>
 </html>

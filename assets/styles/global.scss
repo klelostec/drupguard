@@ -1,5 +1,15 @@
-// customize some Bootstrap variables
-$primary: darken(#428bca, 20%);
+/*************************************************************************************
+  Import files scss.
+****************************************************************************************/
 
-// the ~ allows you to reference things in node_modules
-@import "~bootstrap/scss/bootstrap";
+@import '0-init/init';
+
+@import '1-base/base';
+
+@import '2-layout/layout';
+
+@import '3-component/component';
+
+@import '4-navigation/navigation';
+
+@import '5-search/search';

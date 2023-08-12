@@ -1,0 +1,41 @@
+/**
+ * @file
+ * Default Html Tags Styling
+ */
+
+
+/* ---------------- DEFAULT -----------------*/
+html,
+body {
+  //min-height: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+
+/* -------------- HEADINGS -----------------*/
+
+h1 {
+  @extend %heading1;
+}
+
+h2 {
+  @extend %heading1;
+}
+
+h3 {
+  @extend %heading3;
+}
+
+h4 {
+  @extend %heading4;
+}
+
+h5 {
+  @extend %heading5;
+}
+
+h6 {
+  @extend %heading6;
+}
+

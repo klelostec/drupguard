@@ -2,9 +2,12 @@ Previous: Précédent
 Next: Suivant
 Save: Enregistrer
 Database: 'Base de données'
-Check: Vérifier
-Check2: Vérifier2
+'Database name' : 'Nom de la base de données'
+Confirm: Confirmer
 Type: Type
 Host: Serveur
 User: Utilisateur
 Password: 'Mot de passe'
+'PHP binary path': 'Chemin vers le binaire de PHP'
+'Composer v1 binary path': 'Chemin vers le binaire de Composer v1'
+'Composer v2 binary path': 'Chemin vers le binaire de Composer v2'

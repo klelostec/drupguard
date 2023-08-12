@@ -21,6 +21,7 @@ Encore
      * and one CSS file (e.g. global.scss) if your JavaScript imports CSS.
      */
     .addEntry('app', './assets/app.js')
+    .addEntry('install_form_email', './assets/js/install/form/email.js')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     //enableStimulusBridge('./assets/controllers.json')
@@ -60,7 +61,7 @@ Encore
     .enableSassLoader()
 
     // uncomment if you use TypeScript
-    .enableTypeScriptLoader()
+    //.enableTypeScriptLoader()
 
     // uncomment if you use React
     //.enableReactPreset()

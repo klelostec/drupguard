@@ -1,0 +1,51 @@
+/*************************************************************************************
+  Styles typographiques récurrents pouvant être appliqués avec la méthode @extend
+****************************************************************************************/
+
+/************** HEADING **********************/
+.heading1,
+%heading1 {
+  font-weight: 700;
+}
+.heading2,
+%heading2 {
+  font-weight: 700;
+}
+.heading3,
+%heading3 {
+  font-weight: 700;
+}
+.heading4,
+%heading4 {
+  font-weight: 700;
+}
+.heading5,
+%heading5 {
+  font-weight: 700;
+}
+.heading6,
+%heading6 {
+  font-weight: 700;
+}
+
+/************** FORM **********************/
+/*.label,
+%label {}*/
+
+/************** BUTTONS **********************/
+/*.btn {
+  &:hover,
+  &:focus {}
+}
+.btn-default {
+  &:hover,
+  &:focus {}
+}
+.btn-primary {
+  &:hover,
+  &:focus {}
+}*/
+
+/************** ICONS **********************/
+
+/************** CUSTOM SHARED **********************/
