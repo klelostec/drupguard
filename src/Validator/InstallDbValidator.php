@@ -11,6 +11,7 @@
 
 namespace App\Validator;
 
+use App\Form\Model\Install;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception\DatabaseObjectExistsException;
 use Doctrine\DBAL\Exception\MalformedDsnException;
@@ -26,16 +27,19 @@ class InstallDbValidator extends ConstraintValidator
         if (!$constraint instanceof InstallDb) {
             throw new UnexpectedTypeException($constraint, InstallDb::class);
         }
+        if (!$value instanceof Install) {
+            throw new UnexpectedTypeException($value, Install::class);
+        }
 
         try {
-            $db_url = $value->db_driver . '://' .
-                urlencode($value->db_user) . ':' .
-                urlencode($value->db_password) . '@' .
-                urlencode($value->db_host);
+            $db_url = $value->getDbDriver() . '://' .
+                urlencode($value->getDbUser()) . ':' .
+                urlencode($value->getDbPassword()) . '@' .
+                urlencode($value->getDbHost());
             $conn = DriverManager::getConnection(['url' => $db_url]);
             $databases = $conn->createSchemaManager()->listDatabases();
-            if (in_array($value->db_database, $databases)) {
-                $conn = DriverManager::getConnection(['url' => $db_url . '/' . $value->db_database]);
+            if (in_array($value->getDbDatabase(), $databases)) {
+                $conn = DriverManager::getConnection(['url' => $db_url . '/' . $value->getDbDatabase()]);
                 if (!empty($conn->createSchemaManager()->listTables())) {
                     $this->context
                         ->buildViolation($constraint->db_exists_message)

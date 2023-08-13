@@ -2,12 +2,11 @@
 
 namespace App\Form\Type;
 
-use App\Entity\Install;
+use App\Form\Model\Install;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class InstallEmailType extends AbstractType {

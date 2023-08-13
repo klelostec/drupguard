@@ -10,7 +10,7 @@ class InstallKernel extends BaseKernel
     use MicroKernelTrait {
         getConfigDir as private getConfigDirTrait;
         getCacheDir as public getCacheDirTrait;
-        getLogDir as public getLogDirTrait;
+//        getLogDir as public getLogDirTrait;
     }
 
     /**
@@ -18,17 +18,12 @@ class InstallKernel extends BaseKernel
      */
     private function getConfigDir(): string
     {
-        return $this->getConfigDirTrait().'/install';
+        return $this->getProjectDir().'/config_install';
     }
 
     public function getCacheDir(): string
     {
         return $this->getCacheDirTrait().'/install';
-    }
-
-    public function getLogDir(): string
-    {
-        return $this->getLogDirTrait().'/install';
     }
 
 }

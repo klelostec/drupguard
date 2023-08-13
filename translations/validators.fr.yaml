@@ -134,3 +134,5 @@ Error: Erreur
 'Wrong connection data provided.': 'Données de connection non valides.'
 'Database already exists.': 'La base de donnée existe déjà.'
 'Connection failed.': 'Echec de la connection.'
+'Database connection failed.': 'La connexion à la base de donnée a échouée.'
+'Wrong mailer data provided.': 'Les données de configuration de mail sont incorrectes.'

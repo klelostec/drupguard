@@ -11,7 +11,7 @@
 
 namespace App\Validator;
 
-use App\Entity\Install;
+use App\Form\Model\Install;
 use Symfony\Component\Mailer\Exception\InvalidArgumentException;
 use Symfony\Component\Mailer\Transport;
 use Symfony\Component\Validator\Constraint;
@@ -24,6 +24,9 @@ class InstallEmailValidator extends ConstraintValidator
     {
         if (!$constraint instanceof InstallEmail) {
             throw new UnexpectedTypeException($constraint, InstallEmail::class);
+        }
+        if (!$value instanceof Install) {
+            throw new UnexpectedTypeException($value, Install::class);
         }
 
         try {
@@ -47,37 +50,36 @@ class InstallEmailValidator extends ConstraintValidator
     }
 
     public static function buildTransport(Install $value):Transport\TransportInterface {
-        $dsn = $value->email_type_install . '://';
-        switch ($value->email_type_install) {
+        $dsn = $value->getEmailTypeInstall() . '://';
+        switch ($value->getEmailTypeInstall()) {
             case 'sendmail':
                 $dsn .= 'default';
-                if (!empty($value->email_command)) {
-                    $dsn .= '?command=' . urlencode($value->email_command);
+                if (!empty($value->getEmailCommand())) {
+                    $dsn .= '?command=' . urlencode($value->getEmailCommand());
                 }
                 break;
             case 'smtp':
             case 'smtps':
-                if (!empty($value->email_user)) {
-                    $dsn .= urlencode($value->email_user) .
-                        ($value->email_password ? ':' . urlencode($value->email_password) : '') .
+                if (!empty($value->getEmailUser())) {
+                    $dsn .= urlencode($value->getEmailUser()) .
+                        ($value->getEmailPassword() ? ':' . urlencode($value->getEmailPassword()) : '') .
                         '@';
                 }
-                if (!empty($value->email_host)) {
-                    $dsn .= $value->email_host;
+                if (!empty($value->getEmailHost())) {
+                    $dsn .= $value->getEmailHost();
                 }
 
                 $paramsKeys = [
-                    'local_domain',
-                    'restart_threshold',
-                    'restart_threshold_sleep',
-                    'ping_threshold',
-                    'max_per_second'
+                    'local_domain' => 'getEmailLocalDomain',
+                    'restart_threshold' => 'getEmailRestartThreshold',
+                    'restart_threshold_sleep' => 'getEmailRestartThresholdSleep',
+                    'ping_threshold' => 'getEmailPingThreshold',
+                    'max_per_second' => 'getEmailMaxPerSecond'
                 ];
-
                 $dsnParams = '';
                 foreach ($paramsKeys as $k => $v) {
-                    if (!empty($value->{'email_' . $k})) {
-                        $dsnParams .= $k . '=' . urlencode($value->{'email_' . $k});
+                    if (is_callable([$value, $v]) && !empty($paramValue = call_user_func([$value, $v]))) {
+                        $dsnParams .= $k . '=' . urlencode($paramValue);
                     }
                 }
                 if (!empty($dsnParams)) {
@@ -85,7 +87,7 @@ class InstallEmailValidator extends ConstraintValidator
                 }
                 break;
             case 'custom':
-                $dsn = $value->email_dsn_custom ?? '';
+                $dsn = $value->getEmailDsnCustom() ?? '';
                 break;
             case 'null':
                 $dsn .= 'null';
