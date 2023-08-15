@@ -3,7 +3,9 @@
 <head>
 	<meta charset="utf-8">
 	<title>
-{#		{% block title %}{% trans %}Install{% endtrans %} - {{ flow.currentStepLabel }}{% endblock %}#}
+		{% block title %}
+			{% trans from 'install' %}Install{% endtrans %} - {{ steps[current_step] }}
+		{% endblock %}
 	</title>
 	<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
 	{% block stylesheets %}
@@ -12,69 +14,93 @@
 
 	{% block javascripts %}
 		{{ encore_entry_script_tags('app') }}
-{#		{% if flow.getCurrentStepNumber() == 3 %}#}
-{#			{{ encore_entry_script_tags('install_form_email') }}#}
-{#		{% endif %}#}
+		{% if current_step == 'email' %}
+			{{ encore_entry_script_tags('install_form_email') }}
+		{% endif %}
 	{% endblock %}
 </head>
 <body>
 <div class="container">
-	<h1 class="mt-0 mb-1 align-content-center">{% trans %}Install{% endtrans %}</h1>
+	<div class="d-flex justify-content-between">
+		<div class="p-2"><h1 class="p-0 m-0">{% trans from 'install' %}Install{% endtrans %}</h1></div>
+		<div class="p-2">
+			{% include 'components/language_switcher.html.twig' with {route_name: 'install_index_locale'} %}
+		</div>
+	</div>
 </div>
 <div class="container">
 	<div class="row">
 		<!-- TITLE -->
 		<div class="col-md-3">
 			<div class="container position-relative px-0">
-{#				{% include '@CraueFormFlow/FormFlow/stepList.html.twig' %}#}
+				<ol class="list-group">
+					{% for s,sl in steps %}
+						<li class="list-group-item{% if s == current_step %} active{% endif %}">{{ loop.index ~ '. ' ~ sl }}</li>
+					{% endfor %}
+				</ol>
 			</div>
 		</div>
-		<!-- FORMS -->
 		<div class="col-md-9">
-			{{ form(form) }}
-{#			{{ form_start(form) }}#}
-{#				{% if flow.getCurrentStepNumber() == 4 %}#}
-{#					<h2>{{ 'Confirmation' | trans({}, 'form') }}</h2>#}
-{#					<div class="mb-3">#}
-{#						<h3>{{ 'Database' | trans({}, 'form') }}</h3>#}
-{#						<div>#}
-{#							<label>{{ 'Type' | trans({}, 'form') }} :</label>#}
-{#							<span>{{ formData.db_driver }}</span>#}
-{#						</div>#}
-{#						<div>#}
-{#							<label>{{ 'Host' | trans({}, 'form') }} :</label>#}
-{#							<span>{{ formData.db_host }}</span>#}
-{#						</div>#}
-{#						<div>#}
-{#							<label>{{ 'User' | trans({}, 'form') }}:</label>#}
-{#							<span>{{ formData.db_user }}</span>#}
-{#						</div>#}
-{#						<div>#}
-{#							<label>{{ 'Password' | trans({}, 'form') }}:</label>#}
-{#							<span>************</span>#}
-{#						</div>#}
-{#						<div>#}
-{#							<label>{{ 'Database name' | trans({}, 'form') }}:</label>#}
-{#							<span>{{ formData.db_database }}</span>#}
-{#						</div>#}
-{#					</div>#}
-{#					<div class="mb-3">#}
-{#						<h3>{{ 'Email' | trans({}, 'form') }}</h3>#}
-{#						<div>#}
-{#							<label>{{ 'Dsn' | trans({}, 'form') }}:</label>#}
-{#							<span>{{ formData.emailDsn }}</span>#}
-{#						</div>#}
-{#					</div>#}
-{#				{% else %}#}
-{#					{{ form_errors(form) }}#}
-{#					{{ form_rest(form) }}#}
-{#				{% endif %}#}
-{#				{% include '@CraueFormFlow/FormFlow/buttons.html.twig' with {#}
-{#					craue_formflow_button_class_last: 'btn btn-primary',#}
-{#					craue_formflow_button_class_back: 'btn btn-secondary',#}
-{#					craue_formflow_button_class_reset: 'btn btn-danger',#}
-{#				} %}#}
-{#			{{ form_end(form) }}#}
+			{% set form_next = form.next is defined ? form_widget(form.next) : '' %}
+			{% set form_process = form.process is defined ? form_widget(form.process) : '' %}
+			{% set form_previous = form.previous is defined ? form_widget(form.previous) : '' %}
+			{% set form_email = form.email is defined ? form_widget(form.email, {'attr': {'class': 'd-inline w-50'}}) : '' %}
+			{% set form_check_email = form.check_email is defined ? form_widget(form.check_email, {'attr': {'class': 'btn-primary align-top'}}) : '' %}
+			{{ form_start(form) }}
+				{{ form_errors(form) }}
+				{% if current_step == 'confirm' %}
+					<h2>{{ 'Confirm' | trans({}, 'install') }}</h2>
+					<div class="mb-3">
+						<h3>{{ 'Database' | trans({}, 'install') }}</h3>
+						<div>
+							<label>{{ 'Type' | trans({}, 'install') }} :</label>
+							<span>{{ install.dbDriver }}</span>
+						</div>
+						<div>
+							<label>{{ 'Host' | trans({}, 'install') }} :</label>
+							<span>{{ install.dbHost }}</span>
+						</div>
+						<div>
+							<label>{{ 'User' | trans({}, 'install') }}:</label>
+							<span>{{ install.dbUser }}</span>
+						</div>
+						<div>
+							<label>{{ 'Password' | trans({}, 'install') }}:</label>
+							<span>************</span>
+						</div>
+						<div>
+							<label>{{ 'Database name' | trans({}, 'install') }}:</label>
+							<span>{{ install.dbDatabase }}</span>
+						</div>
+						<div>
+							<label>{{ 'Parameters' | trans({}, 'install') }}:</label>
+							<span>{{ install.dbParameters }}</span>
+						</div>
+					</div>
+					<div class="mb-3">
+						<h3>{{ 'Email' | trans({}, 'install') }}</h3>
+						<div>
+							<label>{{ 'Dsn' | trans({}, 'install') }}:</label>
+							<span>{{ install.emailDsn }}</span>
+						</div>
+					</div>
+				{% endif %}
+				{{ form_rest(form) }}
+				{% if form_email is not empty %}
+					<div id="install_email_container" class="mb-3">
+						{{ form_label(form.email, null, {'label_attr': {'class': 'd-inline'}}) }}
+						{{ form_email | raw }}
+						{{ form_check_email | raw }}
+						<div class="row">{{ form_errors(form.email) }}</div>
+						<div class="row">{{ form_help(form.email) }}</div>
+					</div>
+				{% endif %}
+				<div>
+					{{ form_next | raw }}
+					{{ form_process | raw }}
+					{{ form_previous | raw }}
+				</div>
+			{{ form_end(form) }}
 		</div>
 	</div>
 </div>

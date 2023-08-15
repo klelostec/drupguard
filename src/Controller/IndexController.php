@@ -11,11 +11,17 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class IndexController extends AbstractController
 {
-    #[Route('/', name: 'app_index')]
-    public function index(TranslatorInterface $translator): Response
+    #[Route('/')]
+    public function indexNoLocale(): Response
+    {
+        return $this->redirectToRoute('app_index_locale', ['_locale' => $this->getParameter('app.default_locale')]);
+    }
+
+    #[Route('/{_locale<%app.supported_locales%>}/', name: 'app_index_locale')]
+    public function index(): Response
     {
         return $this->render('index/index.html.twig', [
-            'controller_name' => $translator->trans('TOTfdqO %test%', ['%test%'=>'test'], NULL, 'fr'),
+            'controller_name' => 'index',
         ]);
     }
 }

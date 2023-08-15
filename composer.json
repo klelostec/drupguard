@@ -7,9 +7,9 @@
         "php": ">=8.1",
         "ext-ctype": "*",
         "ext-iconv": "*",
-        "doctrine/doctrine-bundle": "^2.9",
+        "doctrine/doctrine-bundle": "^2.10",
         "doctrine/doctrine-migrations-bundle": "^3.2",
-        "doctrine/orm": "^2.14",
+        "doctrine/orm": "^2.16",
         "symfony/apache-pack": "^1.0",
         "symfony/console": "^6.3",
         "symfony/dotenv": "^6.3",
@@ -20,6 +20,7 @@
         "symfony/mailer": "^6.3",
         "symfony/process": "^6.3",
         "symfony/runtime": "^6.3",
+        "symfony/security-bundle": "6.3.*",
         "symfony/serializer": "6.3.*",
         "symfony/translation": "^6.3",
         "symfony/twig-bundle": "^6.3",
@@ -28,6 +29,8 @@
         "symfony/webpack-encore-bundle": "^1.16",
         "symfony/yaml": "^6.3",
         "twig/extra-bundle": "^2.12|^3.0",
+        "twig/intl-extra": "^3.7",
+        "twig/string-extra": "^3.7",
         "twig/twig": "^2.12|^3.0"
     },
     "config": {
@@ -40,7 +43,8 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "App\\": "src/",
+            "Install\\": "apps/install/src/"
         }
     },
     "autoload-dev": {
