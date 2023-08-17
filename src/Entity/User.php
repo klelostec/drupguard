@@ -13,12 +13,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[UniqueEntity(fields: ['username'], message: 'There is already an account with this username')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    final public const ROLE_USER = 'ROLE_USER';
+    final public const ROLE_ADMIN = 'ROLE_ADMIN';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
+    #[Assert\Regex(
+        message: 'The username must contain only lowercase latin characters and underscores.',
+        pattern: '/^[a-z_]+$/',
+        match: true
+    )]
     private ?string $username = null;
 
     #[ORM\Column]

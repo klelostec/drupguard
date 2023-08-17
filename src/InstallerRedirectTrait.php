@@ -18,15 +18,6 @@ trait InstallerRedirectTrait {
         return PHP_SAPI === 'cli';
     }
 
-    /**
-     * Returns whether the current PHP process runs on CLI.
-     *
-     * @return bool
-     */
-    protected function isInstall() {
-        return $this->id === 'install';
-    }
-
   /**
    * Determines if an exception handler should redirect to the installer.
    *
@@ -44,7 +35,7 @@ trait InstallerRedirectTrait {
    */
   protected function shouldRedirectToInstaller(\Exception $exception) {
     // Never redirect on the command line or from install app.
-    if ($this->isCli() || $this->isInstall()) {
+    if ($this->isCli()) {
       return FALSE;
     }
 

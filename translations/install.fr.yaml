@@ -1,13 +1,13 @@
 Database: 'Base de données'
-Email: 'Email'
-Dsn: 'Dsn'
+Email: Email
+Dsn: Dsn
 Requirements: Pré-requis
 Confirm: Confirmation
 Install: Installation
 Previous: Précédent
 Process: Installer
 Next: Suivant
-'Database name' : 'Nom de la base de données'
+'Database name': 'Nom de la base de données'
 Type: Type
 Host: Serveur
 User: Utilisateur
@@ -19,9 +19,9 @@ Parameters: Paramètres
 'Command to be executed by sendmail transport': 'Commande exécutée par le transport sendmail'
 'The domain name to use in HELO command': 'Le nom de domaine utilisé dans la commande HELO'
 'The maximum number of messages to send before re-starting the transport': 'Le nombre maximum de message a envoyé avant de redémarrer le transport'
-'The number of seconds to sleep between stopping and re-starting the transport': 'Le nombre de secondes entre l''arrêt et le redémarrage du transport'
+'The number of seconds to sleep between stopping and re-starting the transport': "Le nombre de secondes entre l'arrêt et le redémarrage du transport"
 'The minimum number of seconds between two messages required to ping the server': 'Le nombre minimum de secondes requis entre deux messages pour ping le serveur'
 'The number of messages to send per second (0 to disable this limitation)': 'Le nombre de messages à envoyer par seconde (0 désactive cette limite)'
 Custom: Personnalisé
 None: Aucun
-'An error occured during installation process. Detail: %detail%.': 'Une erreur s''est produite lors du processus d''installation. Détail : %detail%.'
+'An error occured during installation process. Detail: %detail%.': "Une erreur s'est produite lors du processus d'installation. Détail : %detail%."

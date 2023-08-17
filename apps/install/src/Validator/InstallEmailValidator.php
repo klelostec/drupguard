@@ -30,7 +30,8 @@ class InstallEmailValidator extends ConstraintValidator
         }
 
         try {
-            static::buildTransport($value);
+            $dsn = $value->getEmailDsn();
+            Transport::fromDsn($dsn);
         }
         catch (\Exception $e) {
             if ($e instanceof InvalidArgumentException) {
@@ -47,57 +48,5 @@ class InstallEmailValidator extends ConstraintValidator
             }
 
         }
-    }
-
-    public static function buildTransport(Install $value):Transport\TransportInterface {
-        $dsn = $value->getEmailTypeInstall() . '://';
-        switch ($value->getEmailTypeInstall()) {
-            case 'sendmail':
-                $dsn .= 'default';
-                if (!empty($value->getEmailCommand())) {
-                    $dsn .= '?command=' . urlencode($value->getEmailCommand());
-                }
-                break;
-            case 'smtp':
-            case 'smtps':
-                if (!empty($value->getEmailUser())) {
-                    $dsn .= urlencode($value->getEmailUser()) .
-                        ($value->getEmailPassword() ? ':' . urlencode($value->getEmailPassword()) : '') .
-                        '@';
-                }
-                if (!empty($value->getEmailHost())) {
-                    $dsn .= $value->getEmailHost();
-                }
-
-                $paramsKeys = [
-                    'local_domain' => 'getEmailLocalDomain',
-                    'restart_threshold' => 'getEmailRestartThreshold',
-                    'restart_threshold_sleep' => 'getEmailRestartThresholdSleep',
-                    'ping_threshold' => 'getEmailPingThreshold',
-                    'max_per_second' => 'getEmailMaxPerSecond'
-                ];
-                $dsnParams = '';
-                foreach ($paramsKeys as $k => $v) {
-                    if (is_callable([$value, $v]) && !empty($paramValue = call_user_func([$value, $v]))) {
-                        $dsnParams .= $k . '=' . urlencode($paramValue);
-                    }
-                }
-                if (!empty($dsnParams)) {
-                    $dsn .= '?' . $dsnParams;
-                }
-                break;
-            case 'custom':
-                $dsn = $value->getEmailDsnCustom() ?? '';
-                break;
-            case 'null':
-                $dsn .= 'null';
-                break;
-            case 'native':
-            default:
-                $dsn .= 'default';
-                break;
-        }
-
-        return Transport::fromDsn($dsn);
     }
 }

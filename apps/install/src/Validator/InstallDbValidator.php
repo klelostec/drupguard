@@ -17,6 +17,7 @@ use Doctrine\DBAL\Exception\MalformedDsnException;
 use Doctrine\DBAL\Schema\DefaultSchemaManagerFactory;
 use Doctrine\DBAL\Tools\DsnParser;
 use Install\Entity\Install;
+use Install\Service\InstallManager;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
@@ -33,17 +34,10 @@ class InstallDbValidator extends ConstraintValidator
         }
 
         try {
-            $dsnParser  = new DsnParser(Install::$driverSchemeAliases);
-            $configuration = new Configuration();
-            $configuration->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
-            $conn = DriverManager::getConnection(
-                $dsnParser->parse($value->getDatabaseDsn()),
-                $configuration
-            );
-
+            $conn = InstallManager::getConnection($value->getDatabaseDsn(false));
             $databases = $conn->createSchemaManager()->listDatabases();
             if (in_array($value->getDbDatabase(), $databases)) {
-                $conn = DriverManager::getConnection($dsnParser->parse($value->getDatabaseDsn(true)), $configuration);
+                $conn = InstallManager::getConnection($value->getDatabaseDsn());
                 if (!empty($conn->createSchemaManager()->listTables())) {
                     $this->context
                         ->buildViolation($constraint->db_exists_message)

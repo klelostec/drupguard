@@ -20,20 +20,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[InstallAssert\InstallEmail(groups: ['Default', 'email'])]
 class Install {
 
-    public const TABLE_CHECK_INSTALLER = 'user';
-
-    public static array $driverSchemeAliases = [
-        'db2'        => 'ibm_db2',
-        'mssql'      => 'pdo_sqlsrv',
-        'mysql'      => 'pdo_mysql',
-        'mysql2'     => 'pdo_mysql', // Amazon RDS, for some weird reason
-        'postgres'   => 'pdo_pgsql',
-        'postgresql' => 'pdo_pgsql',
-        'pgsql'      => 'pdo_pgsql',
-        'sqlite'     => 'pdo_sqlite',
-        'sqlite3'    => 'pdo_sqlite',
-    ];
-
     #[InstallAssert\BinaryPath(timeout:2, versionValidationRegex:"(.*\s*)?PHP(\s*.*)?", groups: ['Default', 'requirements'])]
     private ?string $requirement_php_binary = null;
 
@@ -361,7 +347,7 @@ class Install {
         return $this;
     }
 
-    public function getEmailTypeInstall(): string
+    public function getEmailTypeInstall(): ?string
     {
         return $this->email_type_install;
     }
@@ -520,7 +506,7 @@ class Install {
     }
 
     public static function getEmailTypeDefault(): string {
-        return 'null';
+        return '';
     }
 
     public function getDbUrl(): string {
@@ -531,7 +517,7 @@ class Install {
             $this->getDbDatabase() ? '/' . urlencode($this->getDbDatabase()) : '';
     }
 
-    public function getDatabaseDsn(bool $withDatabase = false): string {
+    public function getDatabaseDsn(bool $withDatabase = true): string {
         return $this->getDbDriver() . '://' .
             urlencode($this->getDbUser()) . ':' .
             urlencode($this->getDbPassword()) . '@' .
@@ -541,23 +527,23 @@ class Install {
     }
 
     public function getEmailDsn(): string {
-        $dsn = $this->email_type_install . '://';
-        switch ($this->email_type_install) {
+        $dsn = $this->getEmailTypeInstall() . '://';
+        switch ($this->getEmailTypeInstall()) {
             case 'sendmail':
                 $dsn .= 'default';
-                if (!empty($this->email_command)) {
-                    $dsn .= '?command=' . urlencode($this->email_command);
+                if (!empty($this->getEmailCommand())) {
+                    $dsn .= '?command=' . urlencode($this->getEmailCommand());
                 }
                 break;
             case 'smtp':
             case 'smtps':
-                if (!empty($this->email_user)) {
-                    $dsn .= urlencode($this->email_user) .
-                        ($this->email_password ? ':' . urlencode($this->email_password) : '') .
+                if (!empty($this->getEmailUser())) {
+                    $dsn .= urlencode($this->getEmailUser()) .
+                        ($this->getEmailPassword() ? ':' . urlencode($this->getEmailPassword()) : '') .
                         '@';
                 }
-                if (!empty($this->email_host)) {
-                    $dsn .= $this->email_host;
+                if (!empty($this->getEmailHost())) {
+                    $dsn .= $this->getEmailHost();
                 }
 
                 $paramsKeys = [
@@ -578,15 +564,15 @@ class Install {
                     $dsn .= '?' . $dsnParams;
                 }
                 break;
-            case 'null':
-                $dsn .= 'null';
-                break;
             case 'custom':
-                $dsn = $this->email_dsn_custom;
+                $dsn = $this->getEmailDsnCustom() ?? '';
                 break;
             case 'native':
-            default:
                 $dsn .= 'default';
+                break;
+            default:
+            case 'null':
+                $dsn = 'null://null';
                 break;
         }
 

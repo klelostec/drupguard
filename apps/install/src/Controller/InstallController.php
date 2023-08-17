@@ -38,23 +38,6 @@ class InstallController extends AbstractController
         InstallManager $installManager,
     ): Response
     {
-        if(!empty($_ENV['DATABASE_URL'])) {
-            try {
-                $dsnParser  = new DsnParser(Install::$driverSchemeAliases);
-                $configuration = new Configuration();
-                $configuration->setSchemaManagerFactory(new DefaultSchemaManagerFactory());
-                $conn = DriverManager::getConnection(
-                    $dsnParser->parse($_ENV['DATABASE_URL']),
-                    $configuration
-                );
-                if (!empty($conn->createSchemaManager()->listTables([Install::TABLE_CHECK_INSTALLER]))) {
-                    return $this->redirect('/');
-                }
-            } finally {
-                // Do nothing, if error occured, then database is invalid.
-            }
-        }
-
         /**
          * @var Install $install
          */

@@ -11,7 +11,7 @@ namespace App;
 use App\Exception\InstallException;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Install\Entity\Install;
+use Install\Service\InstallManager;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -125,19 +125,35 @@ class Kernel extends BaseKernel
     public function boot(): void
     {
         parent::boot();
-        if (!$this->isCli() && !$this->isPreventInstallRedirect() && $this->container->has('database_connection')) {
-            /**
-             * @var Connection $connection
-             */
-            $connection = $this->container->get('database_connection');
-            try {
-                if(!$connection->createSchemaManager()->tablesExist([Install::TABLE_CHECK_INSTALLER])) {
-                    throw new InstallException();
+        if (!$this->isCli() && !$this->isPreventInstallRedirect()) {
+            if ($this->container->has('database_connection')) {
+                /**
+                 * @var Connection $connection
+                 */
+                $connection = $this->container->get('database_connection');
+                try {
+                    if(!$connection->createSchemaManager()->tablesExist([InstallManager::TABLE_CHECK_INSTALLER])) {
+                        throw (new InstallException())
+                            ->setRedirect('/install');
+                    }
+                }
+                catch (Exception $e) {
+                    throw (new InstallException())
+                        ->setRedirect('/install');
                 }
             }
-            catch (Exception $e) {
-                throw new InstallException();
+            elseif ($this->id === 'install' && !empty($_ENV['DATABASE_URL'])) {
+                try {
+                    $conn = InstallManager::getConnection($_ENV['DATABASE_URL']);
+                    if ($conn->createSchemaManager()->tablesExist([InstallManager::TABLE_CHECK_INSTALLER])) {
+                        throw (new InstallException())
+                            ->setRedirect('/');
+                    }
+                } catch (Exception $e) {
+                    // Do nothing here.
+                }
             }
+
         }
 
     }
@@ -148,7 +164,7 @@ class Kernel extends BaseKernel
             return parent::handle($request, $type, $catch);
         }
         catch (\Exception $e) {
-            if ($catch === FALSE) {
+            if ($catch === false) {
                 throw $e;
             }
 
@@ -175,7 +191,14 @@ class Kernel extends BaseKernel
      */
     protected function handleException(\Exception $e, $request, $type) {
         if ($this->shouldRedirectToInstaller($e)) {
-            return new RedirectResponse($request->getBasePath() . '/install', 302, ['Cache-Control' => 'no-cache']);
+            /**
+             * @var InstallException $e
+             */
+            return new RedirectResponse(
+                $request->getBasePath() . $e->getRedirect(),
+                302,
+                ['Cache-Control' => 'no-cache']
+            );
         }
 
         throw $e;

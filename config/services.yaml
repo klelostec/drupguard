@@ -6,6 +6,8 @@
 parameters:
     app.supported_locales: 'en|fr'
     app.default_locale: '%env(DEFAULT_LOCALE)%'
+    router.request_context.host: '%env(ROUTER_HOST)%'
+    router.request_context.scheme: '%env(ROUTER_SCHEME)%'
 services:
     # default configuration for services in *this* file
     _defaults:

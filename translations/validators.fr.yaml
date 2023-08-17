@@ -98,6 +98,12 @@ Error: Erreur
 'This value is not a valid CSS color.': "Cette valeur n'est pas une couleur CSS valide."
 'This value is not a valid CIDR notation.': "Cette valeur n'est pas une notation CIDR valide."
 'The value of the netmask should be between {{ min }} and {{ max }}.': 'La valeur du masque de réseau doit être comprise entre {{ min }} et {{ max }}.'
+'The filename is too long. It should have {{ filename_max_length }} character or less.|The filename is too long. It should have {{ filename_max_length }} characters or less.': 'Le nom du fichier est trop long. Il doit contenir au maximum {{ filename_max_length }} caractère.|Le nom de fichier est trop long. Il doit contenir au maximum {{ filename_max_length }} caractères.'
+'The password strength is too low. Please use a stronger password.': 'La force du mot de passe est trop faible. Veuillez utiliser un mot de passe plus fort.'
+'This value contains characters that are not allowed by the current restriction-level.': 'Cette valeur contient des caractères qui ne sont pas autorisés par le niveau de restriction actuel.'
+'Using invisible characters is not allowed.': "Utiliser des caractères invisibles n'est pas autorisé."
+'Mixing numbers from different scripts is not allowed.': "Mélanger des chiffres provenant de différents scripts n'est pas autorisé."
+'Using hidden overlay characters is not allowed.': "Utiliser des caractères de superposition cachés n'est pas autorisé."
 'This form should not contain extra fields.': 'Ce formulaire ne doit pas contenir de champs supplémentaires.'
 'The uploaded file was too large. Please try to upload a smaller file.': "Le fichier téléchargé est trop volumineux. Merci d'essayer d'envoyer un fichier plus petit."
 'The CSRF token is invalid. Please try to resubmit the form.': 'Le jeton CSRF est invalide. Veuillez renvoyer le formulaire.'
@@ -132,7 +138,7 @@ Error: Erreur
 'Please select a valid range.': 'Veuillez sélectionner une plage valide.'
 'Please enter a valid week.': 'Veuillez entrer une semaine valide.'
 'Wrong connection data provided.': 'Données de connection non valides.'
-'Database already exists.': 'La base de donnée existe déjà.'
+'Database already exists and contains data': 'La base de donnée existe déjà et contient des données.'
 'Connection failed.': 'Echec de la connection.'
 'Database connection failed.': 'La connexion à la base de donnée a échouée.'
 'Wrong mailer data provided.': 'Les données de configuration de mail sont incorrectes.'
@@ -143,3 +149,7 @@ Error: Erreur
 'Unknown error during binary "{{ binary_path }}" validation.': 'Une erreur inconnu est survenue lors de la validation du binaire "{{ binary_path }}".'
 'Parameters must contain not empty "serverVersion" parameter.': 'Les paramètres doivent contenir un paramètre "serverVersion" non vide.'
 'Parameters should not begins with "?".': 'Les paramètres ne doivent pas commencer par "?".'
+'You should agree to our terms.': 'Vous devez accepter les CGU.'
+'Please enter a password': 'Merci de renseigner un mot de passe'
+'Your password should be at least {{ limit }} characters': 'Votre mot de passe devrait contenir au moins {{ limit }} caractères'
+'There is already an account with this username': 'Il existe déjà un compte pour cet identifiant'

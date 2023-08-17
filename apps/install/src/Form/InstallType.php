@@ -65,6 +65,7 @@ class InstallType extends AbstractType
                 case 'email':
                     $form->add('email_type_install', InstallEmailType::class, [
                         'label' => 'Type',
+                        'required' => FALSE
                     ]);
                     $form->add('email_dsn_custom', TextType::class, [
                         'label' => 'DSN',
