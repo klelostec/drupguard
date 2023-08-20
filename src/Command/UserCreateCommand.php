@@ -30,6 +30,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Stopwatch\Stopwatch;
 use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Component\Validator\Constraints\Email;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\Validator\Validation;
 use function Symfony\Component\String\u;
 
@@ -39,22 +42,19 @@ use function Symfony\Component\String\u;
  * To use this command, open a terminal window, enter into your project
  * directory and execute the following:
  *
- *     $ php bin/console app:user:create
+ *     $ php bin/console drupguard:user:create
  *
  * To output detailed information, increase the command verbosity:
  *
- *     $ php bin/console app:user:create -vv
+ *     $ php bin/console drupguard:user:create -vv
  *
  * See https://symfony.com/doc/current/console.html
  *
  * We use the default services.yaml configuration, so command classes are registered as services.
  * See https://symfony.com/doc/current/console/commands_as_services.html
- *
- * @author Javier Eguiluz <javier.eguiluz@gmail.com>
- * @author Yonel Ceruto <yonelceruto@gmail.com>
  */
 #[AsCommand(
-    name: 'app:user:create',
+    name: 'drupguard:user:create',
     description: 'Creates users and stores them in the database'
 )]
 final class UserCreateCommand extends Command
@@ -82,6 +82,8 @@ final class UserCreateCommand extends Command
             ->addArgument('email', InputArgument::OPTIONAL, 'The email of the new user')
             ->addOption('admin', null, InputOption::VALUE_NONE, 'If set, the user is created as an administrator')
             ->addOption('verified', null, InputOption::VALUE_NONE, 'If set, the user is considered as verified')
+            ->addOption('password-validation-ignored', null, InputOption::VALUE_NONE, 'If set, the password constraints will not be checked')
+            ->addOption('show-credentials', null, InputOption::VALUE_NONE, 'If set, the user credentials will be print after creation')
         ;
     }
 
@@ -118,7 +120,7 @@ final class UserCreateCommand extends Command
             'If you prefer to not use this interactive wizard, provide the',
             'arguments required by this command as follows:',
             '',
-            ' $ php bin/console app:user:create username password email@example.com',
+            ' $ php bin/console drupguard:user:create username password email@example.com',
             '',
             'Now we\'ll ask you for the value of all the missing command arguments.',
         ]);
@@ -135,11 +137,11 @@ final class UserCreateCommand extends Command
         // Ask for the password if it's not defined
         /** @var string|null $password */
         $password = $input->getArgument('password');
-
+        $isPasswordValidationIgnored = $input->getOption('password-validation-ignored');
         if (null !== $password) {
             $this->io->text(' > <info>Password</info>: '.u('*')->repeat(u($password)->length()));
         } else {
-            $password = $this->io->askHidden('Password (your type will be hidden)', $this->validate_password());
+            $password = $this->io->askHidden('Password (your type will be hidden)', $this->validate_password($isPasswordValidationIgnored));
             $input->setArgument('password', $password);
         }
 
@@ -159,17 +161,50 @@ final class UserCreateCommand extends Command
                 throw new InvalidArgumentException('The username can not be empty.');
             }
 
-            if (1 !== preg_match('/^[a-z_]+$/', $val)) {
-                throw new InvalidArgumentException('The username must contain only lowercase latin characters and underscores.');
+            $validator = Validation::createValidator();
+            $violations = $validator->validate($val, [
+                new Regex(
+                    message: 'The username must contain only lowercase latin characters and underscores.',
+                    pattern: '/^[a-z_]+$/',
+                    match: true
+                ),
+            ]);
+
+            if (0 !== count($violations)) {
+                // there are errors, now you can show them
+                foreach ($violations as $violation) {
+                    throw new InvalidArgumentException($violation->getMessage());
+                }
             }
 
             return $val;
         };
     }
-    protected function validate_password() {
-        return function (string $val):string {
+    protected function validate_password(bool $isPasswordValidationIgnored = false) {
+        return function (string $val) use ($isPasswordValidationIgnored):string {
             if (empty($val)) {
                 throw new InvalidArgumentException('The password can not be empty.');
+            }
+            if (!$isPasswordValidationIgnored) {
+                $validator = Validation::createValidator();
+                $violations = $validator->validate($val, [
+                    new NotBlank(
+                        message: 'Please enter a password',
+                    ),
+                    new Length(
+                        min: 6,
+                        minMessage: 'Your password should be at least {{ limit }} characters',
+                        // max length allowed by Symfony for security reasons
+                        max: 4096,
+                    ),
+                ]);
+
+                if (0 !== count($violations)) {
+                    // there are errors, now you can show them
+                    foreach ($violations as $violation) {
+                        throw new InvalidArgumentException($violation->getMessage());
+                    }
+                }
             }
 
             return $val;
@@ -218,14 +253,19 @@ final class UserCreateCommand extends Command
 
         $isVerified = $input->getOption('verified');
 
+        $isPasswordValidationIgnored = $input->getOption('password-validation-ignored');
+        $showCredentials = $input->getOption('show-credentials');
+
         // make sure to validate the user data is correct
-        $this->validateUserData($username, $plainPassword, $email);
+        $this->validateUserData($username, $plainPassword, $email, $isPasswordValidationIgnored);
 
         // create the user and hash its password
         $user = new User();
         $user->setUsername($username);
         $user->setEmail($email);
-        $user->setRoles([$isAdmin ? User::ROLE_ADMIN : User::ROLE_USER]);
+        if ($isAdmin) {
+            $user->addRole('ROLE_ADMIN');
+        }
         $user->setIsVerified($isVerified);
 
         // See https://symfony.com/doc/5.4/security.html#registering-the-user-hashing-passwords
@@ -246,7 +286,9 @@ final class UserCreateCommand extends Command
         }
 
         $this->io->success(sprintf('%s was successfully created: %s (%s)', $isAdmin ? 'Administrator user' : 'User', $user->getUsername(), $user->getEmail()));
-
+        if ($showCredentials) {
+            $this->io->info(sprintf('Credentials %s : %s', $user->getUsername(), $plainPassword));
+        }
         $event = $stopwatch->stop('add-user-command');
         if ($output->isVerbose()) {
             $this->io->comment(sprintf('New user database id: %d / Elapsed time: %.2f ms / Consumed memory: %.2f MB', $user->getId(), $event->getDuration(), $event->getMemory() / (1024 ** 2)));
@@ -255,18 +297,17 @@ final class UserCreateCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function validateUserData(string $username, string $plainPassword, string $email): void
+    private function validateUserData(string $username, string $plainPassword, string $email, bool $isPasswordValidationIgnored): void
     {
-        // first check if a user with the same username already exists.
-        $existingUser = $this->users->findOneBy(['username' => $username]);
+        call_user_func($this->validate_username(),$username);
+        call_user_func($this->validate_password($isPasswordValidationIgnored),$plainPassword);
+        call_user_func($this->validate_email(), $email);
 
+        // check if a user with the same username already exists.
+        $existingUser = $this->users->findOneBy(['username' => $username]);
         if (null !== $existingUser) {
             throw new RuntimeException(sprintf('There is already a user registered with the "%s" username.', $username));
         }
-
-        // validate password and email if is not this input means interactive.
-        call_user_func($this->validate_password(),$plainPassword);
-        call_user_func($this->validate_email(), $email);
     }
 
     /**

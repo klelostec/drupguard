@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Form\UserType;
 use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -17,46 +18,26 @@ use Symfony\Component\Translation\LocaleSwitcher;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
-class RegistrationController extends AbstractController
+#[Route('/{_locale<%app.supported_locales%>}')]
+class RegistrationController extends AbstractUserController
 {
-    private EmailVerifier $emailVerifier;
-
-    public function __construct(EmailVerifier $emailVerifier)
-    {
-        $this->emailVerifier = $emailVerifier;
-    }
-
-    #[Route('/{_locale<%app.supported_locales%>}/register', name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, LocaleSwitcher $localeSwitcher): Response
+    #[Route('/register', name: 'app_register')]
+    public function register(Request $request, EntityManagerInterface $entityManager, TranslatorInterface $translator): Response
     {
         $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
+        $form = $this->createForm(UserType::class, $user, ['mode' => 'registration']);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             // encode the plain password
-            $user->setPassword(
-                $userPasswordHasher->hashPassword(
-                    $user,
-                    $form->get('plainPassword')->getData()
-                )
-            );
+            $user->setPassword($this->getHashPassword($user, $form->get('plainPassword')->getData()));
 
             $entityManager->persist($user);
             $entityManager->flush();
 
-            // generate a signed url and email it to the user
-            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
-                (new TemplatedEmail())
-                    ->from(new Address('no-reply@drupguard.com', 'Drupguard'))
-                    ->to($user->getEmail())
-                    ->subject('Please Confirm your Email')
-                    ->htmlTemplate('registration/confirmation_email.html.twig'),
-                ['_locale' => $localeSwitcher->getLocale()]
-            );
-            // do anything else you need here, like send an email
-
-            return $this->redirectToRoute('app_index_no_locale');
+            $this->sendRegistrationMail($user);
+            $this->addFlash('success', $translator->trans('An email has been send to your adress "%email". Please check your mail and click on the validation link to login.', ['%email' => $user->getEmail()]));
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('registration/register.html.twig', [
@@ -64,7 +45,7 @@ class RegistrationController extends AbstractController
         ]);
     }
 
-    #[Route('/{_locale<%app.supported_locales%>}/verify/email', name: 'app_verify_email')]
+    #[Route('/verify/email', name: 'app_verify_email')]
     public function verifyUserEmail(Request $request, TranslatorInterface $translator): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');

@@ -13,27 +13,21 @@
         {% endblock %}
     </head>
     <body>
-        <div class="container">
-            <div class="d-flex justify-content-between">
-                <div class="p-2"><h1 class="p-0 m-0">{% trans from 'global' %}Drupguard{% endtrans %}</h1></div>
-                <div class="p-2">
-                    {% include 'components/language_switcher.html.twig' with {route_name: 'install_index_locale'} %}
-                </div>
-            </div>
-        </div>
-        <div class="container">
-            <div class="row">
-                <div class="col-sm">
-                    One of three columns
-                </div>
-                <div class="col-sm">
-                    One of three columns
-                </div>
-                <div class="col-sm">
-                    One of three columns
-                </div>
-            </div>
-        </div>
+        {% include 'components/navbar.html.twig' %}
+{#        <nav class="navbar navbar-expand-lg navbar-light">#}
+{#            <div class="container"><a href="{{ path('app_index') }}" class="navbar-brand">{{ 'Drupguard' |trans }}</a>#}
+{#                <div class="d-flex ml-auto">#}
+{#                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#globalNavbar" aria-controls="globalNavbar" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>#}
+{#                </div>#}
+{#                <div class="collapse navbar-collapse" id="globalNavbar">#}
+{#                    <ul class="navbar-nav mr-auto order-1">#}
+{#                        #}{#main menu#}
+{#                    </ul>#}
+{#                    {% include 'components/language_switcher.html.twig' %}#}
+{#                    {% include 'components/user_menu.html.twig' %}#}
+{#                </div>#}
+{#            </div>#}
+{#        </nav>#}
         <div class="container">
             {% block body %}{% endblock %}
         </div>

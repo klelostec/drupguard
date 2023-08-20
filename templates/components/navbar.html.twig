@@ -1,0 +1,17 @@
+<nav class="navbar navbar-expand-sm navbar-light">
+    <div class="container-fluid ">
+        <span class="navbar-brand">{{ 'Drupguard'|trans }}</span>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link{% if app.current_route == 'app_index' %} active{% endif %}" aria-current="page" href="{{ path('app_index') }}">{{ 'Projects'|trans }}</a>
+                </li>
+            </ul>
+            {% include 'components/user_menu.html.twig' %}
+            {% include 'components/language_switcher.html.twig' %}
+        </div>
+    </div>
+</nav>

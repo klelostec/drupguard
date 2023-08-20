@@ -3,6 +3,7 @@
 namespace Install\Entity;
 
 use App\Kernel;
+use App\Service\ExecutableFinderTrait;
 use Install\Validator as InstallAssert;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -19,6 +20,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[InstallAssert\InstallDb(groups: ['Default', 'database'])]
 #[InstallAssert\InstallEmail(groups: ['Default', 'email'])]
 class Install {
+    use ExecutableFinderTrait;
 
     #[InstallAssert\BinaryPath(timeout:2, versionValidationRegex:"(.*\s*)?PHP(\s*.*)?", groups: ['Default', 'requirements'])]
     private ?string $requirement_php_binary = null;
@@ -218,34 +220,9 @@ class Install {
     private ?string $email = null;
 
     public function __construct() {
-        $phpExecutableFinder = new PhpExecutableFinder();
-        $this->requirement_php_binary = $phpExecutableFinder->find(FALSE) ?? NULL;
-
-        $executableFinder = new ExecutableFinder();
-        foreach (['', 1, 2] as $composer_version) {
-            if ($composer_version !== '' && !empty($this->{'requirement_composer_v' . $composer_version . '_binary'})) {
-                continue;
-            }
-            if ($composer_path = $executableFinder->find('composer' . $composer_version)) {
-                $composer = new Process([$composer_path, '--version']);
-                try {
-                    $composer->setTimeout(5);
-                    $composer->run();
-                    $output = $composer->getOutput();
-                    if (preg_match('/^Composer version (\d)\..*$/i', $output ?? '', $matches)) {
-                        if ($matches[1] === '1') {
-                            $this->requirement_composer_v1_binary = $composer_path;
-                        }
-                        else if ($matches[1] === '2') {
-                            $this->requirement_composer_v2_binary = $composer_path;
-                        }
-                    }
-                }
-                catch (\Exception $e) {
-                    // Only catch exception to prevent fatal errors during binaries detection
-                }
-            }
-        }
+        $this->requirement_php_binary = $this->getPhpBinary();
+        $this->requirement_composer_v1_binary =  $this->getComposerBinary(1);
+        $this->requirement_composer_v2_binary = $this->getComposerBinary(2);
     }
 
     public function getRequirementPhpBinary(): ?string
@@ -517,12 +494,12 @@ class Install {
             $this->getDbDatabase() ? '/' . urlencode($this->getDbDatabase()) : '';
     }
 
-    public function getDatabaseDsn(bool $withDatabase = true): string {
+    public function getDatabaseDsn(): string {
         return $this->getDbDriver() . '://' .
             urlencode($this->getDbUser()) . ':' .
             urlencode($this->getDbPassword()) . '@' .
             urlencode($this->getDbHost()) .
-            ($withDatabase ? '/' . urlencode($this->getDbDatabase()) : '') .
+            '/' . urlencode($this->getDbDatabase()) .
             ($this->getDbParameters() ? '?' . $this->getDbParameters() : '');
     }
 

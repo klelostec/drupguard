@@ -25,12 +25,12 @@ class InstallEmailValidator extends ConstraintValidator
         if (!$constraint instanceof InstallEmail) {
             throw new UnexpectedTypeException($constraint, InstallEmail::class);
         }
-        if (!$value instanceof Install) {
+        if (!$value instanceof Install && !is_string($value)) {
             throw new UnexpectedTypeException($value, Install::class);
         }
 
         try {
-            $dsn = $value->getEmailDsn();
+            $dsn = is_string($value) ? $value : $value->getEmailDsn();
             Transport::fromDsn($dsn);
         }
         catch (\Exception $e) {

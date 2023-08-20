@@ -29,15 +29,30 @@ class InstallDbValidator extends ConstraintValidator
         if (!$constraint instanceof InstallDb) {
             throw new UnexpectedTypeException($constraint, InstallDb::class);
         }
-        if (!$value instanceof Install) {
+        if (!$value instanceof Install && !is_string($value)) {
             throw new UnexpectedTypeException($value, Install::class);
         }
 
         try {
-            $conn = InstallManager::getConnection($value->getDatabaseDsn(false));
+            if ($value instanceof Install) {
+                $dsnWithDatabase = InstallManager::getDsnParsed($value->getDatabaseDsn());
+            }
+            else {
+                $dsnWithDatabase = InstallManager::getDsnParsed($value);
+            }
+
+            $db = $dsnWithDatabase['dbname'] ?? '';
+            $dsnWithoutDatabase = $dsnWithDatabase;
+            unset($dsnWithoutDatabase['dbname']);
+
+            if (empty($db)) {
+                throw new MalformedDsnException();
+            }
+
+            $conn = InstallManager::getConnection($dsnWithoutDatabase);
             $databases = $conn->createSchemaManager()->listDatabases();
-            if (in_array($value->getDbDatabase(), $databases)) {
-                $conn = InstallManager::getConnection($value->getDatabaseDsn());
+            if (in_array($db, $databases)) {
+                $conn = InstallManager::getConnection($dsnWithDatabase);
                 if (!empty($conn->createSchemaManager()->listTables())) {
                     $this->context
                         ->buildViolation($constraint->db_exists_message)

@@ -20,6 +20,9 @@ security:
                 login_path: app_login
                 check_path: app_login
                 enable_csrf: true
+            remember_me:
+                secret: '%kernel.secret%' # required
+                lifetime: 604800 # 1 week in seconds
             logout:
                 path: app_logout
                 # where to redirect after logout
@@ -34,8 +37,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+         - { path: ^/(%app.supported_locales%)/admin, roles: ROLE_ADMIN }
+         - { path: ^/(%app.supported_locales%)/profile, roles: ROLE_USER }
 
 when@test:
     security:
