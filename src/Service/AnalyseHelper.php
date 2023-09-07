@@ -196,14 +196,18 @@ class AnalyseHelper
 
     protected function gitCheckout(Project $project, $projectWorkspace)
     {
-        if ($this->filesystem->exists($projectWorkspace)) {
+        if ($this->filesystem->exists($projectWorkspace) && $this->filesystem->exists($projectWorkspace . '/.git')) {
             $gitClient = new GitHelper($projectWorkspace);
+            $gitClient->fetch(NULL, ['--all', '-p']);
             $gitClient->reset(
                 true
             ); //ensure modified files are restored to prevent errors when checkout
             $gitClient->checkout($project->getGitBranch());
             $gitClient->pull();
         } else {
+            if ($this->filesystem->exists($projectWorkspace)) {
+                $this->filesystem->remove($projectWorkspace);
+            }
             $this->filesystem->mkdir($projectWorkspace);
             $gitClient = GitHelper::cloneRepository(
                 $project->getGitRemoteRepository(),
@@ -322,7 +326,7 @@ class AnalyseHelper
                 }
             }
 
-            if (substr($info['compat'], 0, 1) < substr($info['version'], 0, 1)) {
+            if (preg_match('/^([0-9]+)/', $info['version'], $matches) && substr($info['compat'], 0, 1) < $matches[1]) {
                 $info['compat'] = 'current';
             }
         }

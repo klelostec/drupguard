@@ -270,7 +270,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->getId() ===1;
     }
 
-    public function getUserIdentifier()
+    public function getUserIdentifier(): string
     {
         return $this->username;
     }
