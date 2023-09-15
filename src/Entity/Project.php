@@ -116,7 +116,7 @@ class Project
     private $allowedUsers;
 
     /**
-     * @ORM\OneToOne(targetEntity=Analyse::class)
+     * @ORM\OneToOne(targetEntity=Analyse::class, mappedBy="project", orphanRemoval=true)
      * @Groups({"show_project", "list_projects"})
      */
     private $lastAnalyse;

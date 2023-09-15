@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Analyse;
+use App\Entity\AnalyseItem;
 use App\Entity\AnalyseQueue;
 use App\Entity\Project;
 use App\Form\ProjectType;
@@ -12,6 +13,8 @@ use App\Service\AnalyseHelper;
 use App\Service\MachineNameHelper;
 use App\Service\StatsHelper;
 use Cz\Git\GitException;
+use Doctrine\ORM\Query\Expr\Join;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -177,6 +180,15 @@ class ProjectController extends AbstractController
             }
 
             $entityManager = $managerRegistry->getManager();
+            $entityManager
+                ->createQuery('DELETE App\Entity\AnalyseItem ai WHERE ai.analyse IN (SELECT a.id FROM App\Entity\Analyse a WHERE a.project = :project_id)')
+                ->setParameter('project_id', $project->getId())
+                ->execute();
+            $entityManager
+                ->createQuery('DELETE App\Entity\Analyse a WHERE a.project = :project_id')
+                ->setParameter('project_id', $project->getId())
+                ->execute();
+
             $entityManager->remove($project);
             $entityManager->flush();
 
