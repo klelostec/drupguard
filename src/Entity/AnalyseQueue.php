@@ -20,7 +20,7 @@ class AnalyseQueue
     private $id;
 
     /**
-     * @ORM\OneToMany(targetEntity=Project::class, mappedBy="analyseQueue", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=Project::class, mappedBy="analyseQueue")
      */
     private $project;
 
