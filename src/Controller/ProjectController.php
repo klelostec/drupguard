@@ -181,6 +181,10 @@ class ProjectController extends AbstractController
 
             $entityManager = $managerRegistry->getManager();
             $entityManager
+                ->createQuery('UPDATE App\Entity\Project p SET p.lastAnalyse=NULL WHERE p.id = :project_id')
+                ->setParameter('project_id', $project->getId())
+                ->execute();
+            $entityManager
                 ->createQuery('DELETE App\Entity\AnalyseItem ai WHERE ai.analyse IN (SELECT a.id FROM App\Entity\Analyse a WHERE a.project = :project_id)')
                 ->setParameter('project_id', $project->getId())
                 ->execute();
@@ -189,6 +193,7 @@ class ProjectController extends AbstractController
                 ->setParameter('project_id', $project->getId())
                 ->execute();
 
+            $project->setLastAnalyse(NULL);
             $entityManager->remove($project);
             $entityManager->flush();
 
