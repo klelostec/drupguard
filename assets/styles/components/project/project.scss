@@ -6,38 +6,73 @@
 }
 
 .project-success {
-  background-color: #d1e7dd;
+  background-color: $green-200;
 }
 .project-warning {
-  background-color: #fff3cd;
+  background-color: $yellow-200;
 }
 .project-danger {
-  background-color: #f8d7da;
+  background-color: $red-200;
 }
 .project-other {
-  background-color: #e2e3e5;
+  background-color: $gray-200;
+}
+.icon-toggle {
+  & > span {
+    font-family: var(--bs-body-font-family);
+    text-transform:capitalize;
+    color: var(--bs-body-color);
+  }
+  &:before {padding-right: 0.4rem;}
+  &.icon-state-danger { color: $red-200; }
+  &.icon-state-warning { color: $yellow-200; }
+  &.icon-state-success { color: $green-200; }
+  &.icon-state-other { color: $gray-200; }
+}
+.btn-toggle-up-to-date-grey {
+  & > .icon-toggle {
+    & > span,
+    &.icon-state-danger,
+    &.icon-state-warning,
+    &.icon-state-success,
+    &.icon-state-other {
+      color: $gray-600;
+    }
+  }
 }
 
 .project-item {
   position: relative;
+  h2 {
+    margin-bottom: 1rem;
+  }
+  p {
+    font-size:0.8em;
+    margin-bottom:0;
+  }
 }
 
 .project-action-btn {
-  display: none;
+  opacity: 0;
+  transition: opacity;
+  transition-timing-function: ease-out;
+  transition-duration: 250ms;
   position: absolute;
-  right: 0.5rem;
+  bottom:0.2rem;
   padding: 0;
   &.edit {
-    top: 0.5rem;
+    left:0.4rem;
   }
   &.delete {
-    bottom: 0.5rem;
-    right: 0.75rem;
+    right: 0.45rem;
   }
 }
 
 .project-item:hover .project-action-btn {
-  display: block;
+  opacity:1;
+  transition: opacity;
+  transition-timing-function: ease-out;
+  transition-duration: 250ms;
 }
 
 .project-launcher {

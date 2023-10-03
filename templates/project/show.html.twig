@@ -47,7 +47,13 @@
             </div>
         </div>
     {% endif %}
-    <h2>Detail</h2>
+    <div class="inline-flex flex-row align-self-start">
+        <h2 class="d-inline-block">Detail</h2>
+        <a class="btn btn-toggle-up-to-date" title="Toggle up-to-date extensions display Danger"><i class="fas fa-check-square icon-toggle icon-state-danger"><span>critique</span></i></a>
+        <a class="btn btn-toggle-up-to-date" title="Toggle up-to-date extensions display Warning"><i class="fas fa-check-square icon-toggle icon-state-warning"><span>alerte</span></i></a>
+        <a class="btn btn-toggle-up-to-date" title="Toggle up-to-date extensions display Success"><i class="fas fa-check-square icon-toggle icon-state-success"><span>valide</span></i></a>
+        <a class="btn btn-toggle-up-to-date" title="Toggle up-to-date extensions display Other"><i class="fas fa-check-square icon-toggle icon-state-other"><span>ignoré</span></i></a>
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -104,7 +110,7 @@
             </thead>
             <tbody>
                 {% for item in analyse.ignoredAnalyseItems %}
-                    <tr class="table-secondary">
+                    <tr class="table-other">
                         <td>{{ item.type }}</td>
                         <td>
                             {% if item.state < 0 %}
@@ -192,4 +198,22 @@
             });
         </script>
     {% endif %}
+    <script>
+        $(document).ready(function() {
+            // Toggle Up-to-date extension display to improve table readability
+            // @todo : Do better in V2
+            $(document).on('click', 'a.btn-toggle-up-to-date', function(e) {
+                e.preventDefault();
+                $(this).children('i')[0].classList.forEach(function(value, key, listObj) {
+                    if(value.match(/icon-state-/)) {
+                        var state = value.substr(11);
+                        if (state == 'other') {state = 'secondary';}
+                        $('tr.table-'+state).toggleClass('d-none');
+                    }
+                });
+                $(this).children('i').toggleClass('fa-check-square fa-square');
+                $(this).toggleClass('btn-toggle-up-to-date-grey');
+            });
+        });
+    </script>
 {% endblock %}
