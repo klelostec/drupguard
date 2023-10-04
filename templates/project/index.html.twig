@@ -14,7 +14,7 @@
                     <div class="p-3 col align-self-stretch">
                         <div class="border h-100 project-item project-{{ state }} border-{{ state }} position-relative rounded-3">
                             <a class="btn h-100 w-100 align-middle d-flex flex-column" href="{{ path('project_show', {'id': project.id}) }}">
-                                <h2 class="flex-grow-1">{{ project.name }}</h2>
+                                <h2 class="flex-grow-1 fs-4">{{ project.name }}</h2>
                                 <p>{{ project.lastAnalyse ? project.lastAnalyse.date|date('d M Y - H:i') : 'No analyse available' }}</p>
                             </a>
                             {% if is_granted('PROJECT_EDIT', project) %}
