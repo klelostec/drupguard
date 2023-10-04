@@ -8,13 +8,14 @@
 
     <div class="p-3 container-fluid">
         {% if projects is not empty %}
-            <div class="row display-flex row-cols-1 row-cols-md-2 row-cols-sd-1 row-cols-lg-4">
+            <div class="row display-flex row-cols-1 row-cols-md-2 row-cols-sd-1 row-cols-lg-6">
                 {% for project in projects %}
+                    {%  set state = project.lastAnalyse ? project.lastAnalyse.stateClass : 'other' %}
                     <div class="p-3 col align-self-stretch">
-                        <div class="border h-100 project-item project-{{ project.lastAnalyse ? project.lastAnalyse.stateClass : 'other' }}" style="position:relative;">
-                            <a class="btn h-100 w-100 align-middle" href="{{ path('project_show', {'id': project.id}) }}">
-                                <h2>{{ project.name }}</h2>
-                                <p>{{ project.lastAnalyse ? project.lastAnalyse.date|date('d/m/Y H:i:s') : 'No analyse available' }}</p>
+                        <div class="border h-100 project-item project-{{ state }} border-{{ state }} position-relative rounded-3">
+                            <a class="btn h-100 w-100 align-middle d-flex flex-column" href="{{ path('project_show', {'id': project.id}) }}">
+                                <h2 class="flex-grow-1">{{ project.name }}</h2>
+                                <p>{{ project.lastAnalyse ? project.lastAnalyse.date|date('d M Y - H:i') : 'No analyse available' }}</p>
                             </a>
                             {% if is_granted('PROJECT_EDIT', project) %}
                                 <a class="btn project-action-btn edit" href="{{ path('project_edit', {'id': project.id}) }}"><i class="fas fa-edit"></i></a>
