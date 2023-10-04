@@ -38,7 +38,7 @@ class ProjectController extends AbstractController
     {
         $page = $request->query->get('page', 0);
         $nbItems = $projectRepository->countByAllowedUser($this->getUser());
-        $limit = 12;
+        $limit = 24;
         return $this->render('project/index.html.twig', [
             'currentPage' => $page,
             'nbPages' => ceil($nbItems/$limit),
