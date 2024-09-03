@@ -23,7 +23,7 @@ class ProjectCrudController extends AbstractCrudController
             IdField::new('id')->hideOnForm(),
             TextField::new('name'),
             MachineNameField::new('machine_name')->hideWhenUpdating(),
-            BooleanField::new('isPublic')->,
+            BooleanField::new('isPublic'),
         ];
     }
 }
