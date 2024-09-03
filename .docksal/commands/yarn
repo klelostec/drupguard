@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+#: exec_target = cli
+
+## Run project's yarn CLI.
+##
+## Usage: fin yarn [arguments]
+##
+
+# Abort if anything fails
+set -e
+
+cd ${PROJECT_ROOT}
+
+yarn "$@"
