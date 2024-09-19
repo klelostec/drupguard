@@ -50,13 +50,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @var Collection<int, ProjectMember>
      */
-    #[ORM\ManyToMany(targetEntity: ProjectMember::class, mappedBy: 'users')]
-    private Collection $projects;
+    #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'user')]
+    private Collection $projectMembers;
 
     public function __construct()
     {
         $this->groups = new ArrayCollection();
-        $this->projects = new ArrayCollection();
+        $this->projectMembers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -186,27 +186,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, ProjectMember>
      */
-    public function getProjects(): Collection
+    public function getProjectMembers(): Collection
     {
-        return $this->projects;
+        return $this->projectMembers;
     }
 
-    public function addProject(ProjectMember $project): static
+    public function addProjectMember(ProjectMember $projectMember): static
     {
-        if (!$this->projects->contains($project)) {
-            $this->projects->add($project);
-            $project->addUser($this);
+        if (!$this->projectMembers->contains($projectMember)) {
+            $this->projectMembers->add($projectMember);
+            $projectMember->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeProject(ProjectMember $project): static
+    public function removeProjectMember(ProjectMember $projectMember): static
     {
-        if ($this->projects->removeElement($project)) {
-            $project->removeUser($this);
+        if ($this->projectMembers->removeElement($projectMember)) {
+            // set the owning side to null (unless already changed)
+            if ($projectMember->getUser() === $this) {
+                $projectMember->setUser(null);
+            }
         }
 
         return $this;
+    }
+
+    public function __toString()
+    {
+        return $this->username;
     }
 }

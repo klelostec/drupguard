@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Group;
 use App\Entity\Project;
+use App\Entity\ProjectMember;
 use App\Entity\User;
 use App\Security\Roles;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -35,6 +36,7 @@ class IndexController extends AbstractDashboardController
                 ->setSubItems([
                     MenuItem::linkToCrud('Users', 'fa fa-user', User::class),
                     MenuItem::linkToCrud('Groups', 'fa fa-users', Group::class),
+                    MenuItem::linkToCrud('Project members', 'fa fa-address-card', ProjectMember::class),
                 ])
                 ->setPermission(Roles::ADMIN)
         ];

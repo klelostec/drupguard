@@ -37,13 +37,13 @@ class Group
     /**
      * @var Collection<int, ProjectMember>
      */
-    #[ORM\ManyToMany(targetEntity: ProjectMember::class, mappedBy: 'groups')]
-    private Collection $projects;
+    #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'groups')]
+    private Collection $projectMembers;
 
     public function __construct()
     {
         $this->users = new ArrayCollection();
-        $this->projects = new ArrayCollection();
+        $this->projectMembers = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -110,25 +110,28 @@ class Group
     /**
      * @return Collection<int, ProjectMember>
      */
-    public function getProjects(): Collection
+    public function getProjectMembers(): Collection
     {
-        return $this->projects;
+        return $this->projectMembers;
     }
 
-    public function addProject(ProjectMember $project): static
+    public function addProjectMember(ProjectMember $projectMember): static
     {
-        if (!$this->projects->contains($project)) {
-            $this->projects->add($project);
-            $project->addGroup($this);
+        if (!$this->projectMembers->contains($projectMember)) {
+            $this->projectMembers->add($projectMember);
+            $projectMember->setGroups($this);
         }
 
         return $this;
     }
 
-    public function removeProject(ProjectMember $project): static
+    public function removeProjectMember(ProjectMember $projectMember): static
     {
-        if ($this->projects->removeElement($project)) {
-            $project->removeGroup($this);
+        if ($this->projectMembers->removeElement($projectMember)) {
+            // set the owning side to null (unless already changed)
+            if ($projectMember->getGroups() === $this) {
+                $projectMember->setGroups(null);
+            }
         }
 
         return $this;

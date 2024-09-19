@@ -1,0 +1,9 @@
+{% block machine_name_widget %}
+    {% if errors|length <= 0 and source_field is not empty and form.parent.offsetExists(source_field) %}
+        {% set attr = attr|merge({
+            'data-source-field': form.parent.offsetGet(source_field).vars.full_name
+        }) -%}
+        <div class="field-machine-name-autofill visually-hidden"><span>{{ value }}</span><a href="#">{{ 'Edit'|trans }}</a></div>
+    {% endif %}
+    {{- block('form_widget_simple') -}}
+{% endblock %}

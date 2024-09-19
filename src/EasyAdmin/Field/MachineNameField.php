@@ -2,9 +2,11 @@
 
 namespace App\EasyAdmin\Field;
 
+use App\Form\Type\MachineNameType;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Field\FieldInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FieldTrait;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Asset\Package;
+use Symfony\Component\Asset\VersionStrategy\EmptyVersionStrategy;
 use Symfony\Contracts\Translation\TranslatableInterface;
 
 final class MachineNameField implements FieldInterface
@@ -16,14 +18,13 @@ final class MachineNameField implements FieldInterface
      */
     public static function new(string $propertyName, $label = null): self
     {
+        $assetPackage = new Package(new EmptyVersionStrategy());
         return (new self())
             ->setProperty($propertyName)
             ->setLabel($label)
-            ->setFormType(TextType::class)
-            ->addCssClass('field-machine-name')
+            ->setFormType(MachineNameType::class)
             ->setDefaultColumns('col-md-6 col-xxl-5')
-            ->addCssFiles('styles/admin/modules/machine_name.css')
-            ->addJsFiles('machine_name.js')
-            ;
+            ->addCssClass('field-machine-name')
+        ;
     }
 }

@@ -3,9 +3,10 @@
 namespace App\Entity;
 
 use App\Repository\ProjectMemberRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Security\ProjectRoles;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ProjectMemberRepository::class)]
 class ProjectMember
@@ -15,100 +16,109 @@ class ProjectMember
     #[ORM\Column]
     private ?int $id = null;
 
-    /**
-     * @var list<string> The group roles
-     */
-    #[ORM\Column]
-    private array $roles = [];
+    #[ORM\ManyToOne(inversedBy: 'projectMembers')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Project $project = null;
 
-    /**
-     * @var Collection<int, Group>
-     */
-    #[ORM\ManyToMany(targetEntity: Group::class, inversedBy: 'projects')]
-    private Collection $groups;
+    #[ORM\ManyToOne(inversedBy: 'projectMembers')]
+    private ?User $user = null;
 
-    /**
-     * @var Collection<int, User>
-     */
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'projects')]
-    private Collection $users;
+    #[ORM\ManyToOne(inversedBy: 'projectMembers')]
+    private ?Group $groups = null;
 
-    public function __construct()
-    {
-        $this->groups = new ArrayCollection();
-        $this->users = new ArrayCollection();
-    }
+    #[ORM\Column(length: 255)]
+    private ?string $role = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getRoles(): array
+    public function getProject(): ?Project
     {
-        $roles = $this->roles;
-
-        // guarantee every project member at least has PROJECT_USER
-        $roles[] = 'PROJECT_USER';
-
-        return array_unique($roles);
+        return $this->project;
     }
 
-    /**
-     * @param list<string> $roles
-     */
-    public function setRoles(array $roles): static
+    public function setProject(?Project $project): static
     {
-        $this->roles = $roles;
+        $this->project = $project;
 
         return $this;
     }
 
-    /**
-     * @return Collection<int, Group>
-     */
-    public function getGroups(): Collection
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): static
+    {
+        $this->user = $user;
+
+        return $this;
+    }
+
+    public function getGroups(): ?Group
     {
         return $this->groups;
     }
 
-    public function addGroup(Group $group): static
+    public function setGroups(?Group $groups): static
     {
-        if (!$this->groups->contains($group)) {
-            $this->groups->add($group);
+        $this->groups = $groups;
+
+        return $this;
+    }
+
+    public function getRole(): ?string
+    {
+        return $this->role;
+    }
+
+    public function setRole(string $role): static
+    {
+        $this->role = $role;
+
+        return $this;
+    }
+
+    #[Assert\Callback()]
+    public function validate(ExecutionContextInterface $context): void
+    {
+        if ($this->getGroups() === null && $this->getUser() === null) {
+            $context
+                ->buildViolation("You must select a user or a group.")
+                ->atPath('groups')
+                ->addViolation();
+            $context
+                ->buildViolation("You must select a user or a group.")
+                ->atPath('user')
+                ->addViolation();
+        }
+        elseif ($this->getGroups() !== null && $this->getUser() !== null) {
+            $context
+                ->buildViolation("You must select a user or a group.")
+                ->atPath('groups')
+                ->addViolation();
+            $context
+                ->buildViolation("You must select a user or a group.")
+                ->atPath('user')
+                ->addViolation();
+        }
+    }
+
+    public function __toString()
+    {
+        $str = [];
+        if ($this->getUser() !== null) {
+            $str[] = $this->getUser()->getUsername();
+        }
+        if ($this->getGroups() !== null) {
+            $str[] = $this->getGroups()->getName();
         }
 
-        return $this;
-    }
+        $str[] = array_flip(ProjectRoles::getRoles())[$this->getRole()] ?? 'Unknown';
 
-    public function removeGroup(Group $group): static
-    {
-        $this->groups->removeElement($group);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function getUsers(): Collection
-    {
-        return $this->users;
-    }
-
-    public function addUser(User $user): static
-    {
-        if (!$this->users->contains($user)) {
-            $this->users->add($user);
-        }
-
-        return $this;
-    }
-
-    public function removeUser(User $user): static
-    {
-        $this->users->removeElement($user);
-
-        return $this;
+        return implode(' - ', $str);
     }
 }

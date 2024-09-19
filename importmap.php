@@ -17,7 +17,10 @@ return [
         'entrypoint' => true,
     ],
     'machine_name' => [
-        'path' => './assets/machine_name.js',
+        'path' => './assets/easyadmin/field/machine_name/machine_name.js',
         'entrypoint' => true,
+    ],
+    'transliteration' => [
+        'version' => '2.3.5',
     ],
 ];
