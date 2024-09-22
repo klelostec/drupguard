@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="file.ext">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="v78sY_o" resname="page_title.dashboard">
+        <source>page_title.dashboard</source>
+        <target>Dashboard</target>
+      </trans-unit>
+      <trans-unit id=".CGGHUd" resname="page_title.detail">
+        <source>page_title.detail</source>
+        <target><![CDATA[%entity_label_singular% <small>(#%entity_short_id%)</small>]]></target>
+      </trans-unit>
+      <trans-unit id="ACFBtmY" resname="page_title.edit">
+        <source>page_title.edit</source>
+        <target>Edit %entity_label_singular%</target>
+      </trans-unit>
+      <trans-unit id="1kAr566" resname="page_title.index">
+        <source>page_title.index</source>
+        <target>%entity_label_plural%</target>
+      </trans-unit>
+      <trans-unit id="oFMrjmJ" resname="page_title.new">
+        <source>page_title.new</source>
+        <target>Create %entity_label_singular%</target>
+      </trans-unit>
+      <trans-unit id="nRSzgzm" resname="page_title.exception">
+        <source>page_title.exception</source>
+        <target>Error|Errors</target>
+      </trans-unit>
+      <trans-unit id="GTjPPy9" resname="datagrid.hidden_results">
+        <source>datagrid.hidden_results</source>
+        <target>Some results can't be displayed because you don't have enough permissions</target>
+      </trans-unit>
+      <trans-unit id="CO0E0pU" resname="datagrid.no_results">
+        <source>datagrid.no_results</source>
+        <target>No results found.</target>
+      </trans-unit>
+      <trans-unit id="29d8Vn4" resname="paginator.first">
+        <source>paginator.first</source>
+        <target>First</target>
+      </trans-unit>
+      <trans-unit id="ANpWHHW" resname="paginator.previous">
+        <source>paginator.previous</source>
+        <target>Previous</target>
+      </trans-unit>
+      <trans-unit id="SaZbUiU" resname="paginator.next">
+        <source>paginator.next</source>
+        <target>Next</target>
+      </trans-unit>
+      <trans-unit id="lNsI3aT" resname="paginator.last">
+        <source>paginator.last</source>
+        <target>Last</target>
+      </trans-unit>
+      <trans-unit id="Gw2EjOi" resname="paginator.counter">
+        <source>paginator.counter</source>
+        <target><![CDATA[<strong>%start%</strong> - <strong>%end%</strong> of <strong>%results%</strong>]]></target>
+      </trans-unit>
+      <trans-unit id="ZsypGha" resname="paginator.results">
+        <source>paginator.results</source>
+        <target><![CDATA[{0} No results|{1} <strong>1</strong> result|]1,Inf] <strong>%count%</strong> results]]></target>
+      </trans-unit>
+      <trans-unit id="sS6ch7." resname="label.true">
+        <source>label.true</source>
+        <target>Yes</target>
+      </trans-unit>
+      <trans-unit id="Sct9raH" resname="label.false">
+        <source>label.false</source>
+        <target>No</target>
+      </trans-unit>
+      <trans-unit id="S2q7CDj" resname="label.empty">
+        <source>label.empty</source>
+        <target>Empty</target>
+      </trans-unit>
+      <trans-unit id="fAVSIIs" resname="label.null">
+        <source>label.null</source>
+        <target>Null</target>
+      </trans-unit>
+      <trans-unit id="hC8hTcO" resname="label.object">
+        <source>label.object</source>
+        <target>PHP Object</target>
+      </trans-unit>
+      <trans-unit id="0EqWTob" resname="label.inaccessible">
+        <source>label.inaccessible</source>
+        <target>Inaccessible</target>
+      </trans-unit>
+      <trans-unit id="OLmlP81" resname="label.inaccessible.explanation">
+        <source>label.inaccessible.explanation</source>
+        <target>Getter method does not exist for this field or the field is not public</target>
+      </trans-unit>
+      <trans-unit id="jWtNCZd" resname="label.form.empty_value">
+        <source>label.form.empty_value</source>
+        <target>None</target>
+      </trans-unit>
+      <trans-unit id="MJQ4k4D" resname="field.code_editor.view_code">
+        <source>field.code_editor.view_code</source>
+        <target>View code</target>
+      </trans-unit>
+      <trans-unit id="11gUR_y" resname="field.text_editor.view_content">
+        <source>field.text_editor.view_content</source>
+        <target>View content</target>
+      </trans-unit>
+      <trans-unit id="FI_qUZL" resname="action.entity_actions">
+        <source>action.entity_actions</source>
+        <target>Actions</target>
+      </trans-unit>
+      <trans-unit id="GtNN3_c" resname="action.new">
+        <source>action.new</source>
+        <target>Add %entity_label_singular%</target>
+      </trans-unit>
+      <trans-unit id="tKPecTw" resname="action.search">
+        <source>action.search</source>
+        <target>Search</target>
+      </trans-unit>
+      <trans-unit id="Kl7UCW1" resname="action.detail">
+        <source>action.detail</source>
+        <target>Show</target>
+      </trans-unit>
+      <trans-unit id="SFB94SX" resname="action.edit">
+        <source>action.edit</source>
+        <target>Edit</target>
+      </trans-unit>
+      <trans-unit id="Cd4XVNn" resname="action.delete">
+        <source>action.delete</source>
+        <target>Delete</target>
+      </trans-unit>
+      <trans-unit id="wPEuKmL" resname="action.cancel">
+        <source>action.cancel</source>
+        <target>Cancel</target>
+      </trans-unit>
+      <trans-unit id="fmmRlxg" resname="action.index">
+        <source>action.index</source>
+        <target>Back to listing</target>
+      </trans-unit>
+      <trans-unit id="OKywmwj" resname="action.deselect">
+        <source>action.deselect</source>
+        <target>Deselect</target>
+      </trans-unit>
+      <trans-unit id="ecFC4Sv" resname="action.add_new_item">
+        <source>action.add_new_item</source>
+        <target>Add a new item</target>
+      </trans-unit>
+      <trans-unit id="b5M9sxm" resname="action.remove_item">
+        <source>action.remove_item</source>
+        <target>Remove the item</target>
+      </trans-unit>
+      <trans-unit id="Yy_rDAt" resname="action.choose_file">
+        <source>action.choose_file</source>
+        <target>Choose file</target>
+      </trans-unit>
+      <trans-unit id="PO_UHtX" resname="action.close">
+        <source>action.close</source>
+        <target>Close</target>
+      </trans-unit>
+      <trans-unit id="QZwjCUi" resname="action.create">
+        <source>action.create</source>
+        <target>Create</target>
+      </trans-unit>
+      <trans-unit id="8LdmlQF" resname="action.create_and_add_another">
+        <source>action.create_and_add_another</source>
+        <target>Create and add another</target>
+      </trans-unit>
+      <trans-unit id="_sQc_0h" resname="action.create_and_continue">
+        <source>action.create_and_continue</source>
+        <target>Create and continue editing</target>
+      </trans-unit>
+      <trans-unit id="80bO76v" resname="action.save">
+        <source>action.save</source>
+        <target>Save changes</target>
+      </trans-unit>
+      <trans-unit id="viEpaXN" resname="action.save_and_continue">
+        <source>action.save_and_continue</source>
+        <target>Save and continue editing</target>
+      </trans-unit>
+      <trans-unit id="IvOrJqD" resname="batch_action_modal.title">
+        <source>batch_action_modal.title</source>
+        <target>You are going to apply the "%action_name%" action to %num_items% item(s).</target>
+      </trans-unit>
+      <trans-unit id="HzIn9A_" resname="batch_action_modal.content">
+        <source>batch_action_modal.content</source>
+        <target>There is no undo for this operation.</target>
+      </trans-unit>
+      <trans-unit id="1QzA7HJ" resname="batch_action_modal.action">
+        <source>batch_action_modal.action</source>
+        <target>Proceed</target>
+      </trans-unit>
+      <trans-unit id=".DbNkeY" resname="delete_modal.title">
+        <source>delete_modal.title</source>
+        <target>Do you really want to delete this item?</target>
+      </trans-unit>
+      <trans-unit id="O8SUipq" resname="delete_modal.content">
+        <source>delete_modal.content</source>
+        <target>There is no undo for this operation.</target>
+      </trans-unit>
+      <trans-unit id="VH1tHkH" resname="filter.title">
+        <source>filter.title</source>
+        <target>Filters</target>
+      </trans-unit>
+      <trans-unit id="GapHtez" resname="filter.button.clear">
+        <source>filter.button.clear</source>
+        <target>Clear</target>
+      </trans-unit>
+      <trans-unit id="F7_Hyy1" resname="filter.button.apply">
+        <source>filter.button.apply</source>
+        <target>Apply</target>
+      </trans-unit>
+      <trans-unit id="vjzlNau" resname="filter.label.is_equal_to">
+        <source>filter.label.is_equal_to</source>
+        <target>is equal to</target>
+      </trans-unit>
+      <trans-unit id="OZ6KB0." resname="filter.label.is_not_equal_to">
+        <source>filter.label.is_not_equal_to</source>
+        <target>is not equal to</target>
+      </trans-unit>
+      <trans-unit id="JI.QY3a" resname="filter.label.is_greater_than">
+        <source>filter.label.is_greater_than</source>
+        <target>is greater than</target>
+      </trans-unit>
+      <trans-unit id="9XIK3Tg" resname="filter.label.is_greater_than_or_equal_to">
+        <source>filter.label.is_greater_than_or_equal_to</source>
+        <target>is greater than or equal to</target>
+      </trans-unit>
+      <trans-unit id="pgvCvpx" resname="filter.label.is_less_than">
+        <source>filter.label.is_less_than</source>
+        <target>is less than</target>
+      </trans-unit>
+      <trans-unit id="BHtCKZX" resname="filter.label.is_less_than_or_equal_to">
+        <source>filter.label.is_less_than_or_equal_to</source>
+        <target>is less than or equal to</target>
+      </trans-unit>
+      <trans-unit id="OdSRGV." resname="filter.label.is_between">
+        <source>filter.label.is_between</source>
+        <target>is between</target>
+      </trans-unit>
+      <trans-unit id="g4gIdL3" resname="filter.label.contains">
+        <source>filter.label.contains</source>
+        <target>contains</target>
+      </trans-unit>
+      <trans-unit id="wlQF6T2" resname="filter.label.not_contains">
+        <source>filter.label.not_contains</source>
+        <target>doesn't contain</target>
+      </trans-unit>
+      <trans-unit id="VeJLrqA" resname="filter.label.starts_with">
+        <source>filter.label.starts_with</source>
+        <target>starts with</target>
+      </trans-unit>
+      <trans-unit id="NpfseOl" resname="filter.label.ends_with">
+        <source>filter.label.ends_with</source>
+        <target>ends with</target>
+      </trans-unit>
+      <trans-unit id="lirhme2" resname="filter.label.exactly">
+        <source>filter.label.exactly</source>
+        <target>exactly</target>
+      </trans-unit>
+      <trans-unit id="ubdPK1K" resname="filter.label.not_exactly">
+        <source>filter.label.not_exactly</source>
+        <target>not exactly</target>
+      </trans-unit>
+      <trans-unit id="wcjVhvA" resname="filter.label.is_same">
+        <source>filter.label.is_same</source>
+        <target>is same</target>
+      </trans-unit>
+      <trans-unit id="EN6gBhA" resname="filter.label.is_not_same">
+        <source>filter.label.is_not_same</source>
+        <target>is not same</target>
+      </trans-unit>
+      <trans-unit id="lILPLIW" resname="filter.label.is_after">
+        <source>filter.label.is_after</source>
+        <target>is after</target>
+      </trans-unit>
+      <trans-unit id="N.cYa1i" resname="filter.label.is_after_or_same">
+        <source>filter.label.is_after_or_same</source>
+        <target>is after or same</target>
+      </trans-unit>
+      <trans-unit id="qdKvceS" resname="filter.label.is_before">
+        <source>filter.label.is_before</source>
+        <target>is before</target>
+      </trans-unit>
+      <trans-unit id="88rRJdI" resname="filter.label.is_before_or_same">
+        <source>filter.label.is_before_or_same</source>
+        <target>is before or same</target>
+      </trans-unit>
+      <trans-unit id="dhxWMOj" resname="form.are_you_sure">
+        <source>form.are_you_sure</source>
+        <target>You haven't saved the changes made on this form.</target>
+      </trans-unit>
+      <trans-unit id="3VqDiBO" resname="form.tab.error_badge_title">
+        <source>form.tab.error_badge_title</source>
+        <target>One invalid input|%count% invalid inputs</target>
+      </trans-unit>
+      <trans-unit id="j.bw5pu" resname="form.slug.confirm_text">
+        <source>form.slug.confirm_text</source>
+        <target>If you change the slug, you can break links on other pages.</target>
+      </trans-unit>
+      <trans-unit id="kgatv6N" resname="user.logged_in_as">
+        <source>user.logged_in_as</source>
+        <target>Logged in as</target>
+      </trans-unit>
+      <trans-unit id="WvhDjWI" resname="user.unnamed">
+        <source>user.unnamed</source>
+        <target>Unnamed User</target>
+      </trans-unit>
+      <trans-unit id=".eqAPKs" resname="user.anonymous">
+        <source>user.anonymous</source>
+        <target>Anonymous User</target>
+      </trans-unit>
+      <trans-unit id="py7euFy" resname="user.sign_out">
+        <source>user.sign_out</source>
+        <target>Sign out</target>
+      </trans-unit>
+      <trans-unit id="IqJXXy9" resname="user.exit_impersonation">
+        <source>user.exit_impersonation</source>
+        <target>Exit impersonation</target>
+      </trans-unit>
+      <trans-unit id="JBbrEd7" resname="settings.appearance.label">
+        <source>settings.appearance.label</source>
+        <target>Appearance</target>
+      </trans-unit>
+      <trans-unit id="vxKYCsn" resname="settings.appearance.light">
+        <source>settings.appearance.light</source>
+        <target>Light</target>
+      </trans-unit>
+      <trans-unit id="h3pBR4_" resname="settings.appearance.dark">
+        <source>settings.appearance.dark</source>
+        <target>Dark</target>
+      </trans-unit>
+      <trans-unit id="8ViDiWx" resname="settings.appearance.auto">
+        <source>settings.appearance.auto</source>
+        <target>Auto</target>
+      </trans-unit>
+      <trans-unit id="E5cimFA" resname="settings.locale">
+        <source>settings.locale</source>
+        <target>Language</target>
+      </trans-unit>
+      <trans-unit id="iFP0IOu" resname="login_page.username">
+        <source>login_page.username</source>
+        <target>Username</target>
+      </trans-unit>
+      <trans-unit id="uxJWiMn" resname="login_page.password">
+        <source>login_page.password</source>
+        <target>Password</target>
+      </trans-unit>
+      <trans-unit id="eiGmhDt" resname="login_page.sign_in">
+        <source>login_page.sign_in</source>
+        <target>Sign in</target>
+      </trans-unit>
+      <trans-unit id="IsDUuMi" resname="login_page.forgot_password">
+        <source>login_page.forgot_password</source>
+        <target>Forgot Your Password?</target>
+      </trans-unit>
+      <trans-unit id="GNqK_5o" resname="login_page.remember_me">
+        <source>login_page.remember_me</source>
+        <target>Remember me</target>
+      </trans-unit>
+      <trans-unit id="9HL0Ip7" resname="exception.entity_not_found">
+        <source>exception.entity_not_found</source>
+        <target>This item is no longer available.</target>
+      </trans-unit>
+      <trans-unit id="FM5k7ha" resname="exception.entity_remove">
+        <source>exception.entity_remove</source>
+        <target>This item can't be deleted because other items depend on it.</target>
+      </trans-unit>
+      <trans-unit id="ZtEIXY6" resname="exception.forbidden_action">
+        <source>exception.forbidden_action</source>
+        <target>The requested action can't be performed on this item.</target>
+      </trans-unit>
+      <trans-unit id="9p498i9" resname="exception.insufficient_entity_permission">
+        <source>exception.insufficient_entity_permission</source>
+        <target>You don't have permission to access this item.</target>
+      </trans-unit>
+      <trans-unit id="dc37768" resname="autocomplete.no-results-found">
+        <source>autocomplete.no-results-found</source>
+        <target>No results found</target>
+      </trans-unit>
+      <trans-unit id="Mi9fRIF" resname="autocomplete.no-more-results">
+        <source>autocomplete.no-more-results</source>
+        <target>No more results</target>
+      </trans-unit>
+      <trans-unit id="_EDCsYO" resname="autocomplete.loading-more-results">
+        <source>autocomplete.loading-more-results</source>
+        <target>Loading more results…</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

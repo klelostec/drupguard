@@ -3,7 +3,7 @@
         {% set attr = attr|merge({
             'data-source-field': form.parent.offsetGet(source_field).vars.full_name
         }) -%}
-        <div class="field-machine-name-autofill visually-hidden"><span>{{ value }}</span><a href="#">{{ 'Edit'|trans }}</a></div>
+        <div class="field-machine-name-autofill visually-hidden"><span>{{ value }}</span><a href="#" class="ms-1">{{ 'Edit'|trans }}</a></div>
     {% endif %}
     {{- block('form_widget_simple') -}}
 {% endblock %}

@@ -111,10 +111,10 @@ class ProjectMember
     {
         $str = [];
         if ($this->getUser() !== null) {
-            $str[] = $this->getUser()->getUsername();
+            $str[] = 'User ' . $this->getUser()->getUsername();
         }
         if ($this->getGroups() !== null) {
-            $str[] = $this->getGroups()->getName();
+            $str[] = 'Group ' . $this->getGroups()->getName();
         }
 
         $str[] = array_flip(ProjectRoles::getRoles())[$this->getRole()] ?? 'Unknown';

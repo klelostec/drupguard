@@ -4,13 +4,18 @@ namespace App\Controller\Crud;
 
 use App\Entity\Group;
 use App\Security\Roles;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('ROLE_ADMIN')]
 class GroupCrudController extends AbstractCrudController
 {
     public static function getEntityFqcn(): string
@@ -18,16 +23,20 @@ class GroupCrudController extends AbstractCrudController
         return Group::class;
     }
 
+    public function configureActions(Actions $actions): Actions
+    {
+        return $actions
+            ->add(Crud::PAGE_EDIT, Action::INDEX)
+            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            ->add(Crud::PAGE_EDIT, Action::DELETE)
+        ;
+    }
+
     public function configureFields(string $pageName): iterable
     {
         $fields = [
             IdField::new('id')->hideOnForm(),
             TextField::new('name'),
-            AssociationField::new('projects')
-                ->setSortProperty('name')
-                ->setFormTypeOption('by_reference', false)
-                ->hideOnDetail()
-                ->hideOnIndex(),
         ];
 
         $roles = ChoiceField::new('roles')

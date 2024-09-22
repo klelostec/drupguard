@@ -4,19 +4,32 @@ namespace App\Controller\Crud;
 
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\{Action, Actions, Crud, KeyValueStore};
+use App\Security\EmailVerifier;
 use App\Security\Roles;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\{ArrayField, AssociationField, ChoiceField, IdField, EmailField, TextField};
+use EasyCorp\Bundle\EasyAdminBundle\Field\{ArrayField,
+    AssociationField,
+    BooleanField,
+    ChoiceField,
+    IdField,
+    EmailField,
+    TextField};
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\Form\Extension\Core\Type\{PasswordType, RepeatedType};
 use Symfony\Component\Form\{FormBuilderInterface, FormEvent, FormEvents};
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UserCrudController extends AbstractCrudController
 {
     public function __construct(
-        public UserPasswordHasherInterface $userPasswordHasher
+        public UserPasswordHasherInterface $userPasswordHasher,
+        private EmailVerifier $emailVerifier,
     ) {}
 
     public static function getEntityFqcn(): string
@@ -29,28 +42,65 @@ class UserCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_EDIT, Action::INDEX)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
-            ->add(Crud::PAGE_EDIT, Action::DETAIL)
+            ->add(Crud::PAGE_EDIT, Action::DELETE)
+            ->setPermission(Action::BATCH_DELETE, 'USER_DELETE')
+            ->setPermission(Action::DELETE, 'USER_DELETE')
+            ->setPermission(Action::DETAIL, 'USER_DETAIL')
+            ->setPermission(Action::INDEX, 'USER_INDEX')
+            ->setPermission(Action::EDIT, 'USER_EDIT')
+            ->setPermission(Action::NEW, 'USER_NEW')
             ;
+    }
+
+    protected function getRedirectResponseAfterSave(AdminContext $context, string $action): RedirectResponse
+    {
+        $submitButtonName = $context->getRequest()->request->all()['ea']['newForm']['btn'];
+
+        if ('saveAndReturn' === $submitButtonName) {
+            $url = $this->container->get(AdminUrlGenerator::class)
+                ->setAction(Action::DETAIL)
+                ->setEntityId($context->getEntity()->getPrimaryKeyValue())
+                ->generateUrl();
+
+            return $this->redirect($url);
+        }
+
+        return parent::getRedirectResponseAfterSave($context, $action);
     }
 
     public function configureFields(string $pageName): iterable
     {
         $fields = [
             IdField::new('id')->hideOnForm(),
-            TextField::new('username')->setDisabled(),
+            TextField::new('username')
+                ->setFormTypeOptions([
+                    'attr' => [
+                        'autocomplete' => 'off'
+                    ]
+                ]),
             EmailField::new('email'),
             AssociationField::new('groups')
                 ->setSortProperty('name')
                 ->setFormTypeOption('by_reference', false)
                 ->hideOnDetail()
+                ->hideOnIndex()
+                ->setPermission('ROLE_ADMIN'),
+            ArrayField::new('groups')
+                ->setPermission('ROLE_ADMIN')
+                ->hideOnForm(),
+            BooleanField::new('isVerified')
+                ->setPermission('ROLE_ADMIN')
                 ->hideOnIndex(),
-            ArrayField::new('groups')->hideOnForm()
         ];
+        if ($this->getContext()->getCrud()->getCurrentAction() !== 'new') {
+            $fields[1]->setDisabled();
+        }
 
         $roles = ChoiceField::new('roles')
             ->setCustomOption(ChoiceField::OPTION_ALLOW_MULTIPLE_CHOICES, TRUE)
             ->setCustomOption(ChoiceField::OPTION_CHOICES, Roles::getRoles())
-            ->setRequired(false);
+            ->setRequired(false)
+            ->setPermission('ROLE_ADMIN');
         ;
         $fields[] = $roles;
 
@@ -58,9 +108,19 @@ class UserCrudController extends AbstractCrudController
             ->setFormType(RepeatedType::class)
             ->setFormTypeOptions([
                 'type' => PasswordType::class,
-                'first_options' => ['label' => 'Password'],
-                'second_options' => ['label' => '(Repeat)'],
-                'mapped' => false,
+                'first_options' => [
+                    'label' => 'Password',
+                    'attr' => [
+                        'autocomplete' => 'new-password'
+                    ]
+                ],
+                'second_options' => [
+                    'label' => '(Repeat)',
+                    'attr' => [
+                        'autocomplete' => 'new-password'
+                    ]
+                ],
+                'mapped' => false
             ])
             ->setRequired($pageName === Crud::PAGE_NEW)
             ->onlyOnForms()
@@ -101,5 +161,31 @@ class UserCrudController extends AbstractCrudController
             $hash = $this->userPasswordHasher->hashPassword($this->getUser(), $password);
             $form->getData()->setPassword($hash);
         };
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($this->isGranted('ROLE_ADMIN')) {
+            parent::updateEntity($entityManager, $entityInstance);
+            return;
+        }
+
+        $uow = $entityManager->getUnitOfWork();
+        $uow->computeChangeSets();
+
+        $changeset = $uow->getEntityChangeSet($entityInstance);
+        parent::updateEntity($entityManager, $entityInstance);
+        if (!empty($changeset['email'])) {
+            $entityInstance->setVerified(false);
+            // generate a signed url and email it to the user
+            $this->emailVerifier->sendEmailConfirmation('app_verify_email', $entityInstance,
+                (new TemplatedEmail())
+                    ->from(new Address('no-reply@drupguard.com', 'Drupguard'))
+                    ->to($entityInstance->getEmail())
+                    ->subject('Please Confirm your Email')
+                    ->htmlTemplate('registration/confirmation_email.html.twig')
+            );
+
+        }
     }
 }

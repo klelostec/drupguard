@@ -3,11 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\ProjectRepository;
+use App\Security\ProjectRoles;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_MACHINENAME', fields: ['machine_name'])]
@@ -36,9 +38,17 @@ class Project
     #[Assert\Valid()]
     private Collection $projectMembers;
 
+    /**
+     * @var Collection<int, SourcePlugin>
+     */
+    #[ORM\OneToMany(targetEntity: SourcePlugin::class, mappedBy: 'project', cascade:["persist"], orphanRemoval:true)]
+    #[Assert\Valid()]
+    private Collection $sourcePlugins;
+
     public function __construct()
     {
         $this->projectMembers = new ArrayCollection();
+        $this->sourcePlugins = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -112,8 +122,68 @@ class Project
         return $this;
     }
 
+    #[Assert\Callback()]
+    public function validate(ExecutionContextInterface $context): void
+    {
+        if (!$this->hasOwner()) {
+            $context
+                ->buildViolation("You must add at least one project member as owner.")
+                ->atPath('projectMembers')
+                ->addViolation();
+        }
+    }
+
+    public function hasOwner(ProjectMember $excludedProjectMember = null): bool {
+        if($this->getProjectMembers() === null) {
+            return false;
+        }
+
+        $owner = false;
+        foreach ($this->getProjectMembers() as $projectMember) {
+            if (
+                $projectMember->getRole() === ProjectRoles::OWNER &&
+                (!$excludedProjectMember || ($projectMember->getId() !== $excludedProjectMember->getId()))
+            ) {
+                $owner = true;
+                break;
+            }
+        }
+
+        return $owner;
+    }
+
     public function __toString()
     {
         return $this->name;
+    }
+
+    /**
+     * @return Collection<int, SourcePlugin>
+     */
+    public function getSourcePlugins(): Collection
+    {
+        return $this->sourcePlugins;
+    }
+
+    public function addSourcePlugin(SourcePlugin $sourcePlugin): static
+    {
+        if (!$this->sourcePlugins->contains($sourcePlugin)) {
+            $this->sourcePlugins->add($sourcePlugin);
+            $sourcePlugin->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSourcePlugin(SourcePlugin $sourcePlugin): static
+    {
+        if ($this->sourcePlugins->removeElement($sourcePlugin)) {
+            // set the owning side to null (unless already changed)
+            if ($sourcePlugin->getProject() === $this) {
+                $sourcePlugin->setProject(null);
+            }
+        }
+
+        return $this;
     }
 }
