@@ -50,7 +50,6 @@ class UserCrudVoter extends Voter
             return VoterInterface::ACCESS_GRANTED;
         }
 
-        var_dump($subject ? $subject->getId() : false);
         if (in_array($attribute, ['USER_EDIT', 'USER_DETAIL']) && $subject->getId() === $token->getUser()->getId()) {
             return VoterInterface::ACCESS_GRANTED;
         }
