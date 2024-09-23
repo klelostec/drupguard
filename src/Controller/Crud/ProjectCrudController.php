@@ -36,6 +36,7 @@ class ProjectCrudController extends AbstractCrudController
     {
         return parent::configureAssets($assets)
             ->addAssetMapperEntry('machine_name')
+            ->addAssetMapperEntry('source_plugin')
         ;
     }
 

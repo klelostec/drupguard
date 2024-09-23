@@ -17,10 +17,21 @@ class SourcePluginType extends AbstractType
     {
         $builder
             ->add('type', ChoiceType::class, [
-                'choices' => SourcePluginManager::getTypes()
+                'choices' => SourcePluginManager::getTypes(),
+                'row_attr' => [
+                    'class' => 'source-plugin-type',
+                ]
             ])
-            ->add('localSourceSettings', LocalSourceSettingsType::class)
-            ->add('gitSourceSettings', GitSourceSettingsType::class)
+            ->add('localSourceSettings', LocalSourceSettingsType::class, [
+                'row_attr' => [
+                    'class' => 'local-source-settings source-settings',
+                ]
+            ])
+            ->add('gitSourceSettings', GitSourceSettingsType::class, [
+                'row_attr' => [
+                    'class' => 'git-source-settings source-settings',
+                ]
+            ])
         ;
     }
 

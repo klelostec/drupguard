@@ -57,4 +57,9 @@ class GitSourceSettings extends SourceSettingsAbstract
     {
         $test = TRUE;
     }
+
+    public function __toString()
+    {
+        return ($this->repository ?? '') . ' - ' . ($this->branch ?? '');
+    }
 }

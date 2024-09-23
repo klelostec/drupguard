@@ -20,6 +20,10 @@ return [
         'path' => './assets/easyadmin/field/machine_name/machine_name.js',
         'entrypoint' => true,
     ],
+    'source_plugin' => [
+        'path' => './assets/easyadmin/field/source_plugin/source_plugin.js',
+        'entrypoint' => true,
+    ],
     'transliteration' => [
         'version' => '2.3.5',
     ],
