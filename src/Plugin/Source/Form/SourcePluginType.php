@@ -1,9 +1,11 @@
 <?php
 
-namespace App\Form\Type;
+namespace App\Plugin\Source\Form;
 
-use App\Entity\SourcePlugin;
-use App\Service\SourcePluginManager;
+use App\Plugin\Source\Entity\SourcePlugin;
+use App\Plugin\Source\Form\Settings\GitSourceSettingsType;
+use App\Plugin\Source\Form\Settings\LocalSourceSettingsType;
+use App\Plugin\Source\SourcePluginManager;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -18,6 +20,7 @@ class SourcePluginType extends AbstractType
                 'choices' => SourcePluginManager::getTypes()
             ])
             ->add('localSourceSettings', LocalSourceSettingsType::class)
+            ->add('gitSourceSettings', GitSourceSettingsType::class)
         ;
     }
 

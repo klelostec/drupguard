@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Entity;
+namespace App\Plugin\Source\Entity\Settings;
 
-use App\Repository\GitSourceSettingsRepository;
+use App\Plugin\Source\Repository\GitSourceSettingsRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: GitSourceSettingsRepository::class)]
-class GitSourceSettings
+class GitSourceSettings extends SourceSettingsAbstract
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -14,9 +16,11 @@ class GitSourceSettings
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $repository = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $branch = null;
 
     public function getId(): ?int
@@ -29,7 +33,7 @@ class GitSourceSettings
         return $this->repository;
     }
 
-    public function setRepository(string $repository): static
+    public function setRepository(?string $repository): static
     {
         $this->repository = $repository;
 
@@ -41,10 +45,16 @@ class GitSourceSettings
         return $this->branch;
     }
 
-    public function setBranch(string $branch): static
+    public function setBranch(?string $branch): static
     {
         $this->branch = $branch;
 
         return $this;
+    }
+
+    #[Assert\Callback()]
+    public function validate(ExecutionContextInterface $context): void
+    {
+        $test = TRUE;
     }
 }

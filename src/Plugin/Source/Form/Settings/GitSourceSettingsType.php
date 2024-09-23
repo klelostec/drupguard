@@ -1,19 +1,22 @@
 <?php
 
-namespace App\Form\Type;
+namespace App\Plugin\Source\Form\Settings;
 
-use App\Entity\LocalSourceSettings;
+use App\Plugin\Source\Entity\Settings\GitSourceSettings;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class LocalSourceSettingsType extends AbstractType
+class GitSourceSettingsType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('path', TextType::class, [
+            ->add('repository', TextType::class, [
+                'required' => true
+            ])
+            ->add('branch', TextType::class, [
                 'required' => true
             ])
         ;
@@ -22,7 +25,7 @@ class LocalSourceSettingsType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => LocalSourceSettings::class,
+            'data_class' => GitSourceSettings::class,
         ]);
     }
 }

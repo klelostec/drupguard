@@ -18,6 +18,7 @@ services:
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
+            - '../src/Plugin/Source/Entity/'
             - '../src/Kernel.php'
 
     security.access.role_hierarchy_voter:

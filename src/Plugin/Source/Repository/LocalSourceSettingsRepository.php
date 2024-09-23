@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Repository;
+namespace App\Plugin\Source\Repository;
 
-use App\Entity\LocalSourceSettings;
+use App\Plugin\Source\Entity\Settings\LocalSourceSettings;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<LocalSourceSettings>
+ * @extends ServiceEntityRepository<\App\Plugin\Source\Entity\\App\Plugin\Source\Entity\Settings\LocalSourceSettings>
  */
 class LocalSourceSettingsRepository extends ServiceEntityRepository
 {

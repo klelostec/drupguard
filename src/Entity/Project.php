@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Plugin\Source\Entity\SourcePlugin;
 use App\Repository\ProjectRepository;
 use App\Security\ProjectRoles;
 use Doctrine\Common\Collections\ArrayCollection;

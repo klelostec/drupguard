@@ -1,10 +1,15 @@
 <?php
 
-namespace App\Entity;
+namespace App\Plugin\Source\Entity;
 
-use App\Repository\SourcePluginRepository;
+use App\Entity\Project;
+use App\Plugin\Source\Entity\Settings\GitSourceSettings;
+use App\Plugin\Source\Entity\Settings\LocalSourceSettings;
+use App\Plugin\Source\Entity\Settings\SourceSettingsInterface;
+use App\Plugin\Source\Repository\SourcePluginRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: SourcePluginRepository::class)]
 class SourcePlugin
@@ -15,6 +20,7 @@ class SourcePlugin
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank()]
     private ?string $type = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval:true)]
@@ -91,6 +97,25 @@ class SourcePlugin
         }
 
         return null;
+    }
+
+    #[Assert\Callback()]
+    public function validate(ExecutionContextInterface $context): void
+    {
+        if (empty($this->getType())) {
+            return;
+        }
+
+        $sourcePlugin = $this->getSourceSettings();
+        if (!$sourcePlugin) {
+            $sourceClassName = 'App\\Plugin\\Source\\Entity\\Settings\\' . ucfirst($this->type) . 'SourceSettings';
+            $context
+                ->getValidator()
+                ->inContext($context)
+                ->atPath($this->type . 'SourceSettings')
+                ->validate((new $sourceClassName()), new Assert\Valid())
+            ;
+        }
     }
 
     public function __toString()

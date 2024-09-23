@@ -28,7 +28,6 @@ import { slugify } from 'transliteration';
     }
 
     const showMachineName = (machine_name, elementSpan, elementInput, parent) => {
-        console.log(machine_name);
         if (!machine_name) {
             parent.classList.add("visually-hidden");
         }

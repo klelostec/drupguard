@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Plugin\Source\Entity\Settings;
 
-use App\Repository\LocalSourceSettingsRepository;
+use App\Plugin\Source\Repository\LocalSourceSettingsRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -29,7 +29,7 @@ class LocalSourceSettings extends SourceSettingsAbstract
         return $this->path;
     }
 
-    public function setPath(string $path): static
+    public function setPath(?string $path): static
     {
         $this->path = $path;
 
@@ -40,9 +40,24 @@ class LocalSourceSettings extends SourceSettingsAbstract
     public function validate(ExecutionContextInterface $context): void
     {
         $filesystem = new Filesystem();
-        if (empty($this->getPath()) || !$filesystem->isAbsolutePath($this->getPath()) || !is_writable($this->getPath())) {
+        $path = $this->getPath();
+        if (
+            empty($path) ||
+            !$filesystem->isAbsolutePath($path) ||
+            mb_substr($path, -1) === \DIRECTORY_SEPARATOR
+        ) {
             $context
-                ->buildViolation("Path is required, must be absolute and writable.")
+                ->buildViolation('Path is not valid, it must be absolute and must not end with a "' . \DIRECTORY_SEPARATOR . '".')
+                ->atPath('path')
+                ->addViolation();
+        }
+        elseif (
+            !is_dir($path) ||
+            !$filesystem->exists($path) ||
+            !is_writable($path)
+        ) {
+            $context
+                ->buildViolation("Directory not exists or is not writable.")
                 ->atPath('path')
                 ->addViolation();
         }
@@ -50,6 +65,6 @@ class LocalSourceSettings extends SourceSettingsAbstract
 
     public function __toString()
     {
-        return $this->path;
+        return $this->path ?? '';
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service;
+namespace App\Plugin\Source;
 
 class SourcePluginManager {
     const LOCAL = 'local';
@@ -8,6 +8,7 @@ class SourcePluginManager {
 
     public static function getTypes() :array {
         return [
+            '-- Choose --' => '',
             'Local' => static::LOCAL,
             'Git' => static::GIT
         ];

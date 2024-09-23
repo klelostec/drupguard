@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Entity;
+namespace App\Plugin\Source\Entity\Settings;
 
+use App\Plugin\Source\Entity\SourcePlugin;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -16,6 +17,7 @@ abstract class SourceSettingsAbstract implements SourceSettingsInterface
     {
         return $this->id;
     }
+
     abstract public function validate(ExecutionContextInterface $context): void;
 
     public function __toString()

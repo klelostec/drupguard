@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Repository;
+namespace App\Plugin\Source\Repository;
 
-use App\Entity\GitSourceSettings;
+use App\Plugin\Source\Entity\Settings\GitSourceSettings;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<GitSourceSettings>
+ * @extends ServiceEntityRepository<\App\Plugin\Source\Entity\Settings\GitSourceSettings>
  */
 class GitSourceSettingsRepository extends ServiceEntityRepository
 {

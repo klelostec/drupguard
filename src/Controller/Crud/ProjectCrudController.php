@@ -4,7 +4,7 @@ namespace App\Controller\Crud;
 
 use App\EasyAdmin\Field\MachineNameField;
 use App\Entity\Project;
-use App\Form\Type\SourcePluginType;
+use App\Plugin\Source\Form\SourcePluginType;
 use App\Security\Roles;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -17,7 +17,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
@@ -76,9 +75,10 @@ class ProjectCrudController extends AbstractCrudController
                 ->hideWhenCreating(),
             BooleanField::new('isPublic'),
             FormField::addTab('Plugins'),
-            CollectionField::new('sourcePlugins')
+            CollectionField::new('sourcePlugins', 'Source')
                 ->setEntryType(SourcePluginType::class)
                 ->setEntryIsComplex()
+                ->addCssClass('source-plugins')
                 ->hideOnIndex(),
         ];
     }
