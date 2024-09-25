@@ -2,25 +2,16 @@
 
 namespace App\Controller\Crud;
 
-use App\EasyAdmin\Field\MachineNameField;
-use App\Entity\Project;
 use App\Entity\ProjectMember;
 use App\Security\ProjectRoles;
-use App\Security\Roles;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Exception\EntityRemoveException;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class ProjectMemberCrudController extends AbstractCrudController
@@ -71,7 +62,7 @@ class ProjectMemberCrudController extends AbstractCrudController
          * @var ProjectMember $entityInstance
          */
         if ($entityInstance->getRole() === ProjectRoles::OWNER && !$entityInstance->getProject()->hasOwner($entityInstance)) {
-            $this->addFlash('error', 'Project needs at least one member with owner role.');
+            $this->addFlash('danger', 'Project needs at least one member with owner role.');
             $url = $this->container->get(AdminUrlGenerator::class)->generateUrl();
 
             $this->redirect($url);

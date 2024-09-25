@@ -2,7 +2,8 @@
 
 namespace App\Entity;
 
-use App\Plugin\Source\Entity\SourcePlugin;
+use App\Plugin\Entity\Build;
+use App\Plugin\Entity\Source;
 use App\Repository\ProjectRepository;
 use App\Security\ProjectRoles;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -40,16 +41,24 @@ class Project
     private Collection $projectMembers;
 
     /**
-     * @var Collection<int, SourcePlugin>
+     * @var Collection<int, Source>
      */
-    #[ORM\OneToMany(targetEntity: SourcePlugin::class, mappedBy: 'project', cascade:["persist"], orphanRemoval:true)]
+    #[ORM\OneToMany(targetEntity: Source::class, mappedBy: 'project', cascade:["persist"], orphanRemoval:true)]
     #[Assert\Valid()]
     private Collection $sourcePlugins;
+
+    /**
+     * @var Collection<int, Build>
+     */
+    #[ORM\OneToMany(targetEntity: Build::class, mappedBy: 'project', cascade:["persist"], orphanRemoval:true)]
+    #[Assert\Valid()]
+    private Collection $buildPlugins;
 
     public function __construct()
     {
         $this->projectMembers = new ArrayCollection();
         $this->sourcePlugins = new ArrayCollection();
+        $this->buildPlugins = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,6 +141,27 @@ class Project
                 ->atPath('projectMembers')
                 ->addViolation();
         }
+
+        if ($this->getSourcePlugins()->count() <= 0) {
+            $context
+                ->buildViolation("Source plugin is required.")
+                ->atPath('sourcePlugins')
+                ->addViolation();
+        }
+        elseif ($this->getSourcePlugins()->count() > 1) {
+            $context
+                ->buildViolation("Only one source plugin is allowed.")
+                ->atPath('sourcePlugins')
+                ->addViolation();
+        }
+        else {
+            $context
+                ->getValidator()
+                ->inContext($context)
+                ->atPath('sourcePlugins')
+                ->validate($this->getSourcePlugins(), new Assert\Valid())
+            ;
+        }
     }
 
     public function hasOwner(ProjectMember $excludedProjectMember = null): bool {
@@ -159,14 +189,14 @@ class Project
     }
 
     /**
-     * @return Collection<int, SourcePlugin>
+     * @return Collection<int, Source>
      */
     public function getSourcePlugins(): Collection
     {
         return $this->sourcePlugins;
     }
 
-    public function addSourcePlugin(SourcePlugin $sourcePlugin): static
+    public function addSourcePlugin(Source $sourcePlugin): static
     {
         if (!$this->sourcePlugins->contains($sourcePlugin)) {
             $this->sourcePlugins->add($sourcePlugin);
@@ -176,12 +206,42 @@ class Project
         return $this;
     }
 
-    public function removeSourcePlugin(SourcePlugin $sourcePlugin): static
+    public function removeSourcePlugin(Source $sourcePlugin): static
     {
         if ($this->sourcePlugins->removeElement($sourcePlugin)) {
             // set the owning side to null (unless already changed)
             if ($sourcePlugin->getProject() === $this) {
                 $sourcePlugin->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Build>
+     */
+    public function getBuildPlugins(): Collection
+    {
+        return $this->buildPlugins;
+    }
+
+    public function addBuildPlugin(Build $buildPlugins): static
+    {
+        if (!$this->buildPlugins->contains($buildPlugins)) {
+            $this->buildPlugins->add($buildPlugins);
+            $buildPlugins->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBuildPlugin(Build $buildPlugins): static
+    {
+        if ($this->buildPlugins->removeElement($buildPlugins)) {
+            // set the owning side to null (unless already changed)
+            if ($buildPlugins->getProject() === $this) {
+                $buildPlugins->setProject(null);
             }
         }
 

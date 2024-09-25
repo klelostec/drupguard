@@ -4,8 +4,13 @@ namespace App\Controller\Crud;
 
 use App\EasyAdmin\Field\MachineNameField;
 use App\Entity\Project;
-use App\Plugin\Source\Form\SourcePluginType;
+use App\Plugin\Entity\PluginAbstract;
+use App\Plugin\Form\Build;
+use App\Plugin\Form\Source;
+use App\Plugin\Manager;
 use App\Security\Roles;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
@@ -36,7 +41,7 @@ class ProjectCrudController extends AbstractCrudController
     {
         return parent::configureAssets($assets)
             ->addAssetMapperEntry('machine_name')
-            ->addAssetMapperEntry('source_plugin')
+            ->addAssetMapperEntry('plugin_settings')
         ;
     }
 
@@ -74,12 +79,25 @@ class ProjectCrudController extends AbstractCrudController
                 ->setEntryIsComplex()
                 ->hideOnIndex()
                 ->hideWhenCreating(),
-            BooleanField::new('isPublic'),
+            BooleanField::new('isPublic')
+                ->hideOnIndex(),
+            BooleanField::new('isPublic')
+                ->renderAsSwitch(false)
+                ->hideOnForm(),
             FormField::addTab('Plugins'),
             CollectionField::new('sourcePlugins', 'Source')
-                ->setEntryType(SourcePluginType::class)
+                ->setFormTypeOption('error_bubbling', false)
+                ->setEntryType(Source::class)
                 ->setEntryIsComplex()
+                ->renderExpanded()
                 ->addCssClass('source-plugins')
+                ->hideOnIndex(),
+            CollectionField::new('buildPlugins', 'Build')
+                ->setFormTypeOption('error_bubbling', false)
+                ->setEntryType(Build::class)
+                ->setEntryIsComplex()
+                ->renderExpanded()
+                ->addCssClass('build-plugins')
                 ->hideOnIndex(),
         ];
     }
@@ -110,15 +128,42 @@ class ProjectCrudController extends AbstractCrudController
         }
     }
 
+    protected function removeUselessPluginType($entityInstance): void {
+        $manager = $this->container->get(Manager::class);
+        foreach ($manager->getPluginInfos() as $pluginInfo) {
+            /**
+             * @var Collection<int, PluginAbstract> $pluginCollection
+             */
+            $pluginCollection = $entityInstance->{'get' . mb_ucfirst($pluginInfo->getId()) . 'Plugins'}();
+            foreach ($pluginCollection as $plugin) {
+                $currentType = $plugin->getType();
+                foreach ($pluginInfo->getTypes() as $typeInfo) {
+                    if ($currentType === $typeInfo->getId()) {
+                        continue;
+                    }
+                    $plugin->{'set' . mb_ucfirst($typeInfo->getId())}(null);
+                }
+            }
+        }
+        foreach ($entityInstance->getProjectMembers() as $projectMember) {
+            if ($projectMember->getProject()) {
+                continue;
+            }
+            $projectMember->setProject($entityInstance);
+        }
+    }
+
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         $this->setProjectToProjectMembers($entityInstance);
+        $this->removeUselessPluginType($entityInstance);
         parent::persistEntity($entityManager, $entityInstance);
     }
 
     public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
     {
         $this->setProjectToProjectMembers($entityInstance);
+        $this->removeUselessPluginType($entityInstance);
         parent::updateEntity($entityManager, $entityInstance);
     }
 
@@ -131,5 +176,13 @@ class ProjectCrudController extends AbstractCrudController
             $entityManager->detach($projectMember);
         }
         parent::deleteEntity($entityManager, $entityInstance);
+    }
+
+
+    public static function getSubscribedServices(): array
+    {
+        return array_merge(parent::getSubscribedServices(), [
+           Manager::class => '?' . Manager::class,
+        ]);
     }
 }

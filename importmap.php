@@ -20,8 +20,8 @@ return [
         'path' => './assets/easyadmin/field/machine_name/machine_name.js',
         'entrypoint' => true,
     ],
-    'source_plugin' => [
-        'path' => './assets/easyadmin/field/source_plugin/source_plugin.js',
+    'plugin_settings' => [
+        'path' => './assets/easyadmin/field/plugin_settings/plugin_settings.js',
         'entrypoint' => true,
     ],
     'transliteration' => [
