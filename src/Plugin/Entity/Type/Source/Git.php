@@ -51,13 +51,13 @@ class Git extends TypeAbstract
         $git = new GitClient();
         if (!empty($this->repository) && !$git->isRemoteUrlReadable($this->repository, [])) {
             $context
-                ->buildViolation("Cannot access to repository.")
+                ->buildViolation('Cannot access to repository.')
                 ->atPath('repository')
                 ->addViolation();
         }
         if (!empty($this->repository) && !empty($this->branch) && !$git->isRemoteUrlReadable($this->repository, [$this->branch])) {
             $context
-                ->buildViolation("Branch not founded.")
+                ->buildViolation('Branch not founded.')
                 ->atPath('branch')
                 ->addViolation();
         }
@@ -67,7 +67,7 @@ class Git extends TypeAbstract
     {
         return
             $this->repository && $this->branch ?
-                $this->repository . ' - ' . $this->branch :
+                $this->repository.' - '.$this->branch :
                 '';
     }
 }

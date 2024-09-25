@@ -2,13 +2,15 @@
 
 namespace App\Plugin;
 
-class PluginInfo extends TypeInfo {
+class PluginInfo extends TypeInfo
+{
     /**
      * @var TypeInfo[]
      */
     protected array $types;
 
-    public function __construct(string $id, string $name, string $entity = null, string $form = null, string $repository = null) {
+    public function __construct(string $id, string $name, ?string $entity = null, ?string $form = null, ?string $repository = null)
+    {
         parent::__construct($id, $name, $entity, $form, $repository);
         $this->types = [];
     }
@@ -26,25 +28,31 @@ class PluginInfo extends TypeInfo {
     public function setTypes(array $types): PluginInfo
     {
         $this->types = $types;
+
         return $this;
     }
 
-    public function addType(TypeInfo $typeInfo): PluginInfo {
+    public function addType(TypeInfo $typeInfo): PluginInfo
+    {
         $this->types[$typeInfo->getId()] = $typeInfo;
+
         return $this;
     }
 
-    public function removeType(string $type): PluginInfo {
+    public function removeType(string $type): PluginInfo
+    {
         unset($this->types[$type]);
+
         return $this;
     }
 
-    public function getChoices(): array {
+    public function getChoices(): array
+    {
         $choices = ['-- Choose ' => ''];
         foreach ($this->types as $type) {
             $choices[$type->getName()] = $type->getId();
         }
+
         return $choices;
     }
-
 }

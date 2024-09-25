@@ -51,13 +51,15 @@ abstract class PluginAbstract implements PluginInterface
         return $this;
     }
 
-    public function getTypeEntity(): ?TypeInterface {
+    public function getTypeEntity(): ?TypeInterface
+    {
         if (!empty($this->type)) {
-            $methodCandidate = 'get' . ucfirst($this->type);
+            $methodCandidate = 'get'.ucfirst($this->type);
             if (method_exists($this, $methodCandidate)) {
                 return $this->{$methodCandidate}();
             }
         }
+
         return null;
     }
 
@@ -69,17 +71,17 @@ abstract class PluginAbstract implements PluginInterface
                 ->buildViolation('Type is required.')
                 ->atPath('type')
                 ->addViolation();
+
             return;
         }
 
         $typePlugin = $this->getTypeEntity();
         if (empty($typePlugin)) {
             $context
-                ->buildViolation(ucfirst($this->getType()) . ' is required.')
+                ->buildViolation(ucfirst($this->getType()).' is required.')
                 ->atPath($this->getType())
                 ->addViolation();
-        }
-        else {
+        } else {
             $context
                 ->getValidator()
                 ->inContext($context)
@@ -94,7 +96,7 @@ abstract class PluginAbstract implements PluginInterface
         $label = $this->getType();
         $typePlugin = $this->getTypeEntity();
         if ($typePlugin) {
-            $label .= ' - ' . $typePlugin;
+            $label .= ' - '.$typePlugin;
         }
 
         return $label;

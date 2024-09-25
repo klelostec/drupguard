@@ -5,7 +5,6 @@ namespace App\Plugin\Entity\Type\Build;
 use App\Plugin\Entity\Type\TypeAbstract;
 use App\Plugin\Repository\Type\Build\Composer as ComposerRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 

@@ -43,7 +43,7 @@ class IndexController extends AbstractDashboardController
                     MenuItem::linkToCrud('Groups', 'fa fa-users', Group::class),
                     MenuItem::linkToCrud('Project members', 'fa fa-address-card', ProjectMember::class),
                 ])
-                ->setPermission(Roles::ADMIN)
+                ->setPermission(Roles::ADMIN),
         ];
     }
 

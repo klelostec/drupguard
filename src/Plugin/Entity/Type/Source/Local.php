@@ -39,21 +39,20 @@ class Local extends TypeAbstract
 
         $filesystem = new Filesystem();
         if (
-            !$filesystem->isAbsolutePath($path) ||
-            mb_substr($path, -1) === \DIRECTORY_SEPARATOR
+            !$filesystem->isAbsolutePath($path)
+            || \DIRECTORY_SEPARATOR === mb_substr($path, -1)
         ) {
             $context
-                ->buildViolation('Path is not valid, it must be absolute and must not end with a "' . \DIRECTORY_SEPARATOR . '".')
+                ->buildViolation('Path is not valid, it must be absolute and must not end with a "'.\DIRECTORY_SEPARATOR.'".')
                 ->atPath('path')
                 ->addViolation();
-        }
-        elseif (
-            !is_dir($path) ||
-            !$filesystem->exists($path) ||
-            !is_readable($path)
+        } elseif (
+            !is_dir($path)
+            || !$filesystem->exists($path)
+            || !is_readable($path)
         ) {
             $context
-                ->buildViolation("Directory not exists or is not readable.")
+                ->buildViolation('Directory not exists or is not readable.')
                 ->atPath('path')
                 ->addViolation();
         }

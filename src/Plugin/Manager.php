@@ -8,7 +8,8 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
-class Manager {
+class Manager
+{
     protected CacheInterface $cache;
 
     /**
@@ -21,15 +22,18 @@ class Manager {
         $this->cache = $cache;
     }
 
-    public function getPluginInfo(string $id) :?PluginInfo {
+    public function getPluginInfo(string $id): ?PluginInfo
+    {
         return $this->getPluginInfos()[$id] ?? null;
     }
 
-    public function getTypeInfo(string $type, string $id) :?TypeInfo {
+    public function getTypeInfo(string $type, string $id): ?TypeInfo
+    {
         $plugin = $this->getPluginInfos()[$type] ?? null;
         if (null === $plugin) {
             return null;
         }
+
         return $plugin->getType($id);
     }
 
@@ -42,10 +46,10 @@ class Manager {
             return $this->plugins;
         }
 
-        $this->plugins = $this->cache->get('source_plugin_data', function (ItemInterface $item) : array {
+        $this->plugins = $this->cache->get('source_plugin_data', function (ItemInterface $item): array {
             $finder = new Finder();
             $finder
-                ->in(__DIR__ . '/Entity/')
+                ->in(__DIR__.'/Entity/')
                 ->files()
                 ->name('*.php')
             ;
@@ -53,7 +57,7 @@ class Manager {
             foreach ($finder as $file) {
                 $className = $file->getBasename('.php');
                 $plugin = static::buildInfo($className);
-                $subDir = __DIR__ . '/Entity/Type/' . $className;
+                $subDir = __DIR__.'/Entity/Type/'.$className;
                 if (!($plugin instanceof PluginInfo) || !is_dir($subDir)) {
                     continue;
                 }
@@ -76,23 +80,25 @@ class Manager {
 
                 $data[$plugin->getId()] = $plugin;
             }
+
             return $data;
         });
 
         return $this->plugins;
     }
 
-    protected static function buildInfo(string $className, string $type = null) :null|PluginInfo|TypeInfo {
-        $entityClass = 'App\\Plugin\\Entity\\' . ($type ? 'Type\\' . $type . '\\' : '') . $className;
+    protected static function buildInfo(string $className, ?string $type = null): PluginInfo|TypeInfo|null
+    {
+        $entityClass = 'App\\Plugin\\Entity\\'.($type ? 'Type\\'.$type.'\\' : '').$className;
         if (!class_exists($entityClass)) {
             return null;
         }
 
         $reflector = new \ReflectionClass($entityClass);
         if (
-            !$reflector->implementsInterface($type ? TypeInterface::class : PluginInterface::class) ||
-            $reflector->isAbstract() ||
-            $reflector->isInterface()
+            !$reflector->implementsInterface($type ? TypeInterface::class : PluginInterface::class)
+            || $reflector->isAbstract()
+            || $reflector->isInterface()
         ) {
             return null;
         }
@@ -100,8 +106,7 @@ class Manager {
         $idPlugin = mb_strtolower($className);
         if ($type) {
             $returnClass = new TypeInfo($idPlugin, $className);
-        }
-        else {
+        } else {
             $returnClass = new PluginInfo($idPlugin, $className);
         }
 
@@ -109,11 +114,11 @@ class Manager {
             ->setEntity($entityClass);
 
         foreach (['Form', 'Repository'] as $entityType) {
-            $entityTypeClass = 'App\\Plugin\\' . $entityType . '\\' . ($type ? 'Type\\' . $type . '\\' : '') . $className;
+            $entityTypeClass = 'App\\Plugin\\'.$entityType.'\\'.($type ? 'Type\\'.$type.'\\' : '').$className;
             if (!class_exists($entityClass)) {
                 continue;
             }
-            $returnClass->{'set' . $entityType}($entityTypeClass);
+            $returnClass->{'set'.$entityType}($entityTypeClass);
         }
 
         return $returnClass;

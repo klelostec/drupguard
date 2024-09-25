@@ -38,10 +38,10 @@ class GroupCrudController extends AbstractCrudController
         ];
 
         $roles = ChoiceField::new('roles')
-            ->setCustomOption(ChoiceField::OPTION_ALLOW_MULTIPLE_CHOICES, TRUE)
+            ->setCustomOption(ChoiceField::OPTION_ALLOW_MULTIPLE_CHOICES, true)
             ->setCustomOption(ChoiceField::OPTION_CHOICES, Roles::getRoles())
             ->setRequired(false);
-        ;
+
         $fields[] = $roles;
 
         return $fields;

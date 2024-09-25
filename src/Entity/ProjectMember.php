@@ -85,23 +85,22 @@ class ProjectMember
     #[Assert\Callback()]
     public function validate(ExecutionContextInterface $context): void
     {
-        if ($this->getGroups() === null && $this->getUser() === null) {
+        if (null === $this->getGroups() && null === $this->getUser()) {
             $context
-                ->buildViolation("You must select a user or a group.")
+                ->buildViolation('You must select a user or a group.')
                 ->atPath('groups')
                 ->addViolation();
             $context
-                ->buildViolation("You must select a user or a group.")
+                ->buildViolation('You must select a user or a group.')
                 ->atPath('user')
                 ->addViolation();
-        }
-        elseif ($this->getGroups() !== null && $this->getUser() !== null) {
+        } elseif (null !== $this->getGroups() && null !== $this->getUser()) {
             $context
-                ->buildViolation("You must select a user or a group.")
+                ->buildViolation('You must select a user or a group.')
                 ->atPath('groups')
                 ->addViolation();
             $context
-                ->buildViolation("You must select a user or a group.")
+                ->buildViolation('You must select a user or a group.')
                 ->atPath('user')
                 ->addViolation();
         }
@@ -110,11 +109,11 @@ class ProjectMember
     public function __toString()
     {
         $str = [];
-        if ($this->getUser() !== null) {
-            $str[] = 'User ' . $this->getUser()->getUsername();
+        if (null !== $this->getUser()) {
+            $str[] = 'User '.$this->getUser()->getUsername();
         }
-        if ($this->getGroups() !== null) {
-            $str[] = 'Group ' . $this->getGroups()->getName();
+        if (null !== $this->getGroups()) {
+            $str[] = 'Group '.$this->getGroups()->getName();
         }
 
         $str[] = array_flip(ProjectRoles::getRoles())[$this->getRole()] ?? 'Unknown';

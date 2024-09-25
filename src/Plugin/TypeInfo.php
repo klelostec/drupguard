@@ -2,20 +2,23 @@
 
 namespace App\Plugin;
 
-class TypeInfo {
+class TypeInfo
+{
     protected string $id;
     protected string $name;
     protected ?string $entity;
     protected ?string $form;
     protected ?string $repository;
 
-    public function __construct(string $id, string $name, string $entity = null, string $form = null, string $repository = null) {
+    public function __construct(string $id, string $name, ?string $entity = null, ?string $form = null, ?string $repository = null)
+    {
         $this->id = $id;
         $this->name = $name;
         $this->entity = $entity;
         $this->form = $form;
         $this->repository = $repository;
     }
+
     public function getId(): string
     {
         return $this->id;
@@ -24,6 +27,7 @@ class TypeInfo {
     public function setId(string $id): TypeInfo
     {
         $this->id = $id;
+
         return $this;
     }
 
@@ -35,6 +39,7 @@ class TypeInfo {
     public function setName(string $name): TypeInfo
     {
         $this->name = $name;
+
         return $this;
     }
 
@@ -46,6 +51,7 @@ class TypeInfo {
     public function setEntity(string $entity): TypeInfo
     {
         $this->entity = $entity;
+
         return $this;
     }
 
@@ -57,6 +63,7 @@ class TypeInfo {
     public function setForm(string $form): TypeInfo
     {
         $this->form = $form;
+
         return $this;
     }
 
@@ -68,6 +75,7 @@ class TypeInfo {
     public function setRepository(string $repository): TypeInfo
     {
         $this->repository = $repository;
+
         return $this;
     }
 }

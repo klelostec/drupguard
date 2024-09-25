@@ -29,6 +29,7 @@ class RoleHierarchyVoter extends RoleVoter
             $roles = array_unique($roles);
         }
         $roles = $this->roleHierarchy->getReachableRoleNames($roles);
+
         return $roles;
     }
 }

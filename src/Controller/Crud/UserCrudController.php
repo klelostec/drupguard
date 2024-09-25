@@ -3,24 +3,29 @@
 namespace App\Controller\Crud;
 
 use App\Entity\User;
-use EasyCorp\Bundle\EasyAdminBundle\Config\{Action, Actions, Crud, KeyValueStore};
 use App\Security\EmailVerifier;
 use App\Security\Roles;
 use Doctrine\ORM\EntityManagerInterface;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
-use EasyCorp\Bundle\EasyAdminBundle\Field\{ArrayField,
-    AssociationField,
-    BooleanField,
-    ChoiceField,
-    IdField,
-    EmailField,
-    TextField};
+use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use Symfony\Component\Form\Extension\Core\Type\{PasswordType, RepeatedType};
-use Symfony\Component\Form\{FormBuilderInterface, FormEvent, FormEvents};
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -30,7 +35,8 @@ class UserCrudController extends AbstractCrudController
     public function __construct(
         public UserPasswordHasherInterface $userPasswordHasher,
         private EmailVerifier $emailVerifier,
-    ) {}
+    ) {
+    }
 
     public static function getEntityFqcn(): string
     {
@@ -49,7 +55,7 @@ class UserCrudController extends AbstractCrudController
             ->setPermission(Action::INDEX, 'USER_INDEX')
             ->setPermission(Action::EDIT, 'USER_EDIT')
             ->setPermission(Action::NEW, 'USER_NEW')
-            ;
+        ;
     }
 
     protected function getRedirectResponseAfterSave(AdminContext $context, string $action): RedirectResponse
@@ -75,8 +81,8 @@ class UserCrudController extends AbstractCrudController
             TextField::new('username')
                 ->setFormTypeOptions([
                     'attr' => [
-                        'autocomplete' => 'off'
-                    ]
+                        'autocomplete' => 'off',
+                    ],
                 ]),
             EmailField::new('email'),
             AssociationField::new('groups')
@@ -92,16 +98,16 @@ class UserCrudController extends AbstractCrudController
                 ->setPermission('ROLE_ADMIN')
                 ->hideOnIndex(),
         ];
-        if ($this->getContext()->getCrud()->getCurrentAction() !== 'new') {
+        if ('new' !== $this->getContext()->getCrud()->getCurrentAction()) {
             $fields[1]->setDisabled();
         }
 
         $roles = ChoiceField::new('roles')
-            ->setCustomOption(ChoiceField::OPTION_ALLOW_MULTIPLE_CHOICES, TRUE)
+            ->setCustomOption(ChoiceField::OPTION_ALLOW_MULTIPLE_CHOICES, true)
             ->setCustomOption(ChoiceField::OPTION_CHOICES, Roles::getRoles())
             ->setRequired(false)
             ->setPermission('ROLE_ADMIN');
-        ;
+
         $fields[] = $roles;
 
         $password = TextField::new('password')
@@ -111,18 +117,18 @@ class UserCrudController extends AbstractCrudController
                 'first_options' => [
                     'label' => 'Password',
                     'attr' => [
-                        'autocomplete' => 'new-password'
-                    ]
+                        'autocomplete' => 'new-password',
+                    ],
                 ],
                 'second_options' => [
                     'label' => '(Repeat)',
                     'attr' => [
-                        'autocomplete' => 'new-password'
-                    ]
+                        'autocomplete' => 'new-password',
+                    ],
                 ],
-                'mapped' => false
+                'mapped' => false,
             ])
-            ->setRequired($pageName === Crud::PAGE_NEW)
+            ->setRequired(Crud::PAGE_NEW === $pageName)
             ->onlyOnForms()
         ;
         $fields[] = $password;
@@ -133,12 +139,14 @@ class UserCrudController extends AbstractCrudController
     public function createNewFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
     {
         $formBuilder = parent::createNewFormBuilder($entityDto, $formOptions, $context);
+
         return $this->addPasswordEventListener($formBuilder);
     }
 
     public function createEditFormBuilder(EntityDto $entityDto, KeyValueStore $formOptions, AdminContext $context): FormBuilderInterface
     {
         $formBuilder = parent::createEditFormBuilder($entityDto, $formOptions, $context);
+
         return $this->addPasswordEventListener($formBuilder);
     }
 
@@ -147,14 +155,15 @@ class UserCrudController extends AbstractCrudController
         return $formBuilder->addEventListener(FormEvents::POST_SUBMIT, $this->hashPassword());
     }
 
-    private function hashPassword() {
-        return function($event) {
+    private function hashPassword()
+    {
+        return function ($event) {
             $form = $event->getForm();
             if (!$form->isValid()) {
                 return;
             }
             $password = $form->get('password')->getData();
-            if ($password === null) {
+            if (null === $password) {
                 return;
             }
 
@@ -167,6 +176,7 @@ class UserCrudController extends AbstractCrudController
     {
         if ($this->isGranted('ROLE_ADMIN')) {
             parent::updateEntity($entityManager, $entityInstance);
+
             return;
         }
 
@@ -185,7 +195,6 @@ class UserCrudController extends AbstractCrudController
                     ->subject('Please Confirm your Email')
                     ->htmlTemplate('registration/confirmation_email.html.twig')
             );
-
         }
     }
 }

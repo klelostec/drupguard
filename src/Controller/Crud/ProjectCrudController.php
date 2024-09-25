@@ -9,7 +9,6 @@ use App\Plugin\Form\Build;
 use App\Plugin\Form\Source;
 use App\Plugin\Manager;
 use App\Security\Roles;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -119,7 +118,8 @@ class ProjectCrudController extends AbstractCrudController
         return $queryBuilder;
     }
 
-    protected function setProjectToProjectMembers($entityInstance): void {
+    protected function setProjectToProjectMembers($entityInstance): void
+    {
         foreach ($entityInstance->getProjectMembers() as $projectMember) {
             if ($projectMember->getProject()) {
                 continue;
@@ -128,20 +128,21 @@ class ProjectCrudController extends AbstractCrudController
         }
     }
 
-    protected function removeUselessPluginType($entityInstance): void {
+    protected function removeUselessPluginType($entityInstance): void
+    {
         $manager = $this->container->get(Manager::class);
         foreach ($manager->getPluginInfos() as $pluginInfo) {
             /**
              * @var Collection<int, PluginAbstract> $pluginCollection
              */
-            $pluginCollection = $entityInstance->{'get' . mb_ucfirst($pluginInfo->getId()) . 'Plugins'}();
+            $pluginCollection = $entityInstance->{'get'.mb_ucfirst($pluginInfo->getId()).'Plugins'}();
             foreach ($pluginCollection as $plugin) {
                 $currentType = $plugin->getType();
                 foreach ($pluginInfo->getTypes() as $typeInfo) {
                     if ($currentType === $typeInfo->getId()) {
                         continue;
                     }
-                    $plugin->{'set' . mb_ucfirst($typeInfo->getId())}(null);
+                    $plugin->{'set'.mb_ucfirst($typeInfo->getId())}(null);
                 }
             }
         }
@@ -178,11 +179,10 @@ class ProjectCrudController extends AbstractCrudController
         parent::deleteEntity($entityManager, $entityInstance);
     }
 
-
     public static function getSubscribedServices(): array
     {
         return array_merge(parent::getSubscribedServices(), [
-           Manager::class => '?' . Manager::class,
+            Manager::class => '?'.Manager::class,
         ]);
     }
 }

@@ -10,16 +10,16 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: SourceRepository::class)]
 #[ORM\AssociationOverrides([
-    new ORM\AssociationOverride(name: 'project', inversedBy: 'sourcePlugins')
+    new ORM\AssociationOverride(name: 'project', inversedBy: 'sourcePlugins'),
 ])]
 class Source extends PluginAbstract
 {
-    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval:true)]
-    //#[Assert\Valid()]
+    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval: true)]
+    // #[Assert\Valid()]
     protected ?Local $local = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval:true)]
-    //#[Assert\Valid()]
+    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval: true)]
+    // #[Assert\Valid()]
     protected ?Git $git = null;
 
     public function getLocal(): ?Local
@@ -45,5 +45,4 @@ class Source extends PluginAbstract
 
         return $this;
     }
-
 }

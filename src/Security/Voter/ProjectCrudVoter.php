@@ -25,9 +25,6 @@ class ProjectCrudVoter extends Voter
 
     /**
      * UserVoter constructor.
-     *
-     * @param AccessDecisionManagerInterface $decisionManager
-     * @param EntityManagerInterface $entityManager
      */
     public function __construct(AccessDecisionManagerInterface $decisionManager, EntityManagerInterface $entityManager)
     {
@@ -37,26 +34,22 @@ class ProjectCrudVoter extends Voter
 
     /**
      * @param string $attribute
-     * @param mixed $subject
-     * @return bool
      */
     protected function supports($attribute, $subject): bool
     {
-        return strpos($attribute, 'PROJECT_') === 0;
+        return 0 === strpos($attribute, 'PROJECT_');
     }
 
     /**
      * @param string $attribute
-     * @param User $subject
-     * @param TokenInterface $token
-     * @return bool
+     * @param User   $subject
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {
         if (
-            $this->decisionManager->decide($token, ['ROLE_ADMIN']) ||
-            in_array($attribute, ['PROJECT_NEW', 'PROJECT_INDEX']) ||
-            ($attribute === 'PROJECT_DETAIL' && $subject && $subject->isPublic())
+            $this->decisionManager->decide($token, ['ROLE_ADMIN'])
+            || in_array($attribute, ['PROJECT_NEW', 'PROJECT_INDEX'])
+            || ('PROJECT_DETAIL' === $attribute && $subject && $subject->isPublic())
         ) {
             return VoterInterface::ACCESS_GRANTED;
         }
@@ -86,16 +79,15 @@ class ProjectCrudVoter extends Voter
             if (in_array($pm->getRole(), [ProjectRoles::OWNER, ProjectRoles::MAINTAINER])) {
                 $read = $write = true;
                 break;
-            }
-            elseif ($pm->getRole() === ProjectRoles::USER) {
+            } elseif (ProjectRoles::USER === $pm->getRole()) {
                 $read = true;
             }
         }
 
         if (
-            ($attribute === 'PROJECT_DETAIL' && $read) ||
-            $write
-        ){
+            ('PROJECT_DETAIL' === $attribute && $read)
+            || $write
+        ) {
             $result = VoterInterface::ACCESS_GRANTED;
         }
 

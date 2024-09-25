@@ -19,6 +19,7 @@ final class MachineNameField implements FieldInterface
     public static function new(string $propertyName, $label = null): self
     {
         $assetPackage = new Package(new EmptyVersionStrategy());
+
         return (new self())
             ->setProperty($propertyName)
             ->setLabel($label)

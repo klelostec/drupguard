@@ -27,7 +27,7 @@ class Project
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\Regex(pattern: "/^[a-z0-9_]+$/i")]
+    #[Assert\Regex(pattern: '/^[a-z0-9_]+$/i')]
     private ?string $machine_name = null;
 
     #[ORM\Column]
@@ -36,21 +36,21 @@ class Project
     /**
      * @var Collection<int, ProjectMember>
      */
-    #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project', cascade:["persist"], orphanRemoval:true)]
+    #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
     #[Assert\Valid()]
     private Collection $projectMembers;
 
     /**
      * @var Collection<int, Source>
      */
-    #[ORM\OneToMany(targetEntity: Source::class, mappedBy: 'project', cascade:["persist"], orphanRemoval:true)]
+    #[ORM\OneToMany(targetEntity: Source::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
     #[Assert\Valid()]
     private Collection $sourcePlugins;
 
     /**
      * @var Collection<int, Build>
      */
-    #[ORM\OneToMany(targetEntity: Build::class, mappedBy: 'project', cascade:["persist"], orphanRemoval:true)]
+    #[ORM\OneToMany(targetEntity: Build::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
     #[Assert\Valid()]
     private Collection $buildPlugins;
 
@@ -137,24 +137,22 @@ class Project
     {
         if (!$this->hasOwner()) {
             $context
-                ->buildViolation("You must add at least one project member as owner.")
+                ->buildViolation('You must add at least one project member as owner.')
                 ->atPath('projectMembers')
                 ->addViolation();
         }
 
         if ($this->getSourcePlugins()->count() <= 0) {
             $context
-                ->buildViolation("Source plugin is required.")
+                ->buildViolation('Source plugin is required.')
                 ->atPath('sourcePlugins')
                 ->addViolation();
-        }
-        elseif ($this->getSourcePlugins()->count() > 1) {
+        } elseif ($this->getSourcePlugins()->count() > 1) {
             $context
-                ->buildViolation("Only one source plugin is allowed.")
+                ->buildViolation('Only one source plugin is allowed.')
                 ->atPath('sourcePlugins')
                 ->addViolation();
-        }
-        else {
+        } else {
             $context
                 ->getValidator()
                 ->inContext($context)
@@ -164,16 +162,17 @@ class Project
         }
     }
 
-    public function hasOwner(ProjectMember $excludedProjectMember = null): bool {
-        if($this->getProjectMembers() === null) {
+    public function hasOwner(?ProjectMember $excludedProjectMember = null): bool
+    {
+        if (null === $this->getProjectMembers()) {
             return false;
         }
 
         $owner = false;
         foreach ($this->getProjectMembers() as $projectMember) {
             if (
-                $projectMember->getRole() === ProjectRoles::OWNER &&
-                (!$excludedProjectMember || ($projectMember->getId() !== $excludedProjectMember->getId()))
+                ProjectRoles::OWNER === $projectMember->getRole()
+                && (!$excludedProjectMember || ($projectMember->getId() !== $excludedProjectMember->getId()))
             ) {
                 $owner = true;
                 break;

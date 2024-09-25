@@ -13,24 +13,24 @@ abstract class TypeAbstract extends AbstractType
     private Manager $pluginManager;
     private TypeInfo $typeInfo;
 
-    public function __construct(Manager $pluginManager) {
+    public function __construct(Manager $pluginManager)
+    {
         $this->pluginManager = $pluginManager;
         preg_match('#App\\\\Plugin\\\\Form\\\\Type\\\\([a-z]+)\\\\([a-z]+)#i', get_class($this), $matches);
         $this->typeInfo = $this->pluginManager->getTypeInfo(mb_strtolower($matches[1]), mb_strtolower($matches[2]));
     }
 
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $reflection = new \ReflectionClass($this->typeInfo->getEntity());
         foreach ($reflection->getProperties() as $property) {
-            if ($property->getName() === 'id') {
+            if ('id' === $property->getName()) {
                 continue;
             }
-            $getter = 'get' . ucfirst($property->getName());
+            $getter = 'get'.ucfirst($property->getName());
             if (
-                !$reflection->hasMethod($getter) ||
-                !$reflection->getMethod($getter)->isPublic()
+                !$reflection->hasMethod($getter)
+                || !$reflection->getMethod($getter)->isPublic()
             ) {
                 continue;
             }
@@ -38,7 +38,7 @@ abstract class TypeAbstract extends AbstractType
             $name = $property->getName();
             $type = null;
             $options = [
-                'required' => true
+                'required' => true,
             ];
             $this->alterPropertyFormType($name, $type, $options);
             $builder
@@ -46,11 +46,12 @@ abstract class TypeAbstract extends AbstractType
         }
     }
 
-    public function alterPropertyFormType(string $property, ?string &$type, array &$typeOptions) :void {
+    public function alterPropertyFormType(string $property, ?string &$type, array &$typeOptions): void
+    {
         return;
     }
 
-    public function configureOptions(OptionsResolver $resolver) :void
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => $this->typeInfo->getEntity(),

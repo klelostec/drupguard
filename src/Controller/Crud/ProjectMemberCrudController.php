@@ -42,7 +42,7 @@ class ProjectMemberCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         $fields = [];
-        if ($this->getContext()->getCrud()->getEntityFqcn() !== 'App\Entity\Project') {
+        if ('App\Entity\Project' !== $this->getContext()->getCrud()->getEntityFqcn()) {
             $fields[] = AssociationField::new('project');
         }
         $fields[] = AssociationField::new('user');
@@ -61,11 +61,12 @@ class ProjectMemberCrudController extends AbstractCrudController
         /**
          * @var ProjectMember $entityInstance
          */
-        if ($entityInstance->getRole() === ProjectRoles::OWNER && !$entityInstance->getProject()->hasOwner($entityInstance)) {
+        if (ProjectRoles::OWNER === $entityInstance->getRole() && !$entityInstance->getProject()->hasOwner($entityInstance)) {
             $this->addFlash('danger', 'Project needs at least one member with owner role.');
             $url = $this->container->get(AdminUrlGenerator::class)->generateUrl();
 
             $this->redirect($url);
+
             return;
         }
         parent::deleteEntity($entityManager, $entityInstance);

@@ -9,12 +9,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BuildRepository::class)]
 #[ORM\AssociationOverrides([
-    new ORM\AssociationOverride(name: 'project', inversedBy: 'buildPlugins')
+    new ORM\AssociationOverride(name: 'project', inversedBy: 'buildPlugins'),
 ])]
 class Build extends PluginAbstract
 {
-    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval:true)]
-    //#[Assert\Valid()]
+    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval: true)]
+    // #[Assert\Valid()]
     protected ?Composer $composer = null;
 
     public function getComposer(): ?Composer
@@ -28,5 +28,4 @@ class Build extends PluginAbstract
 
         return $this;
     }
-
 }

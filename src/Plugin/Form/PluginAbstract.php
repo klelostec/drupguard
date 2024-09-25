@@ -13,21 +13,23 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 abstract class PluginAbstract extends AbstractType implements PluginInterface
 {
-
     protected Manager $pluginManager;
     protected PluginInfo $pluginInfo;
 
-    public function __construct(Manager $pluginManager) {
+    public function __construct(Manager $pluginManager)
+    {
         $this->pluginManager = $pluginManager;
         $reflection = new \ReflectionClass($this);
         $this->pluginInfo = $this->pluginManager->getPluginInfo(mb_strtolower($reflection->getShortName()));
     }
 
-    public function getPluginManager(): Manager {
+    public function getPluginManager(): Manager
+    {
         return $this->pluginManager;
     }
 
-    public function getPluginInfo(): PluginInfo {
+    public function getPluginInfo(): PluginInfo
+    {
         return $this->pluginInfo;
     }
 
@@ -37,17 +39,17 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
             ->add('type', ChoiceType::class, [
                 'choices' => $this->pluginInfo->getChoices(),
                 'row_attr' => [
-                    'class' => $this->pluginInfo->getId() . '-plugin-type',
-                ]
+                    'class' => $this->pluginInfo->getId().'-plugin-type',
+                ],
             ])
         ;
-        //$builder->addEventListener(FormEvents::PRE_SET_DATA, array($this, 'onPreSetData'));
+        // $builder->addEventListener(FormEvents::PRE_SET_DATA, array($this, 'onPreSetData'));
         foreach ($this->pluginInfo->getTypes() as $type) {
             $builder
                 ->add($type->getId(), $type->getForm(), [
                     'row_attr' => [
-                        'class' => $type->getId() . '-' . $this->pluginInfo->getId() . '-settings ' . $this->pluginInfo->getId() . '-settings',
-                    ]
+                        'class' => $type->getId().'-'.$this->pluginInfo->getId().'-settings '.$this->pluginInfo->getId().'-settings',
+                    ],
                 ])
             ;
         }
@@ -64,13 +66,13 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                 if ($type->getId() === $data->getType()) {
                     continue;
                 }
-                $data->{'set' . ucfirst($type->getId())}(null);
+                $data->{'set'.ucfirst($type->getId())}(null);
             }
             $event->setData($data);
         }
     }
 
-    public function configureOptions(OptionsResolver $resolver) :void
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => $this->pluginInfo->getEntity(),
