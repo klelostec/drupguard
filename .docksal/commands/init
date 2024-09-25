@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+## Run project's symfony CLI.
+##
+## https://symfony.com/download
+## Usage: fin init
+##
+
+# Abort if anything fails
+set -e
+
+fin p reset
+fin db drop default
+fin db create default
+fin composer install
+fin rebuild-assets
+fin symfony console doctrine:schema:create
+fin symfony console doctrine:fixtures:load
+fin cache-clear

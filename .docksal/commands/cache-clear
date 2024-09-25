@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+#: exec_target = cli
+
+## Run project's symfony CLI.
+##
+## https://symfony.com/download
+## Usage: fin cache-clear
+##
+
+# Abort if anything fails
+set -e
+
+cd ${PROJECT_ROOT}
+
+symfony console cache:clear
+symfony console cache:pool:clear cache.app
