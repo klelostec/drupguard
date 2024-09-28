@@ -2,24 +2,23 @@
 
 namespace App\Validator\Plugin;
 
-use App\Entity\Plugin\PluginAbstract;
 use App\Entity\Project;
 use App\Plugin\Service\Manager;
-use Doctrine\ORM\PersistentCollection;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
-class DependenciesValidator extends ConstraintValidator {
-
+class DependenciesValidator extends ConstraintValidator
+{
     protected Manager $pluginManager;
 
-    public function __construct(Manager $pluginManager) {
+    public function __construct(Manager $pluginManager)
+    {
         $this->pluginManager = $pluginManager;
     }
 
-    public function validate(mixed $value, Constraint $constraint) :void
+    public function validate(mixed $value, Constraint $constraint): void
     {
         if (!$constraint instanceof Dependencies) {
             throw new UnexpectedTypeException($constraint, Dependencies::class);
@@ -37,7 +36,7 @@ class DependenciesValidator extends ConstraintValidator {
         $pluginsDef = $this->pluginManager->getPlugins();
         $currentMap = [];
         foreach ($pluginsDef as $pluginInfo) {
-            $collection = $value->{'get' . mb_ucfirst($pluginInfo->getId()) . 'Plugins'}();
+            $collection = $value->{'get'.mb_ucfirst($pluginInfo->getId()).'Plugins'}();
             $currentMap[$pluginInfo->getId()] = [];
             foreach ($collection as $pluginEntity) {
                 if (empty($pluginEntity->getType())) {
@@ -49,19 +48,18 @@ class DependenciesValidator extends ConstraintValidator {
 
         foreach ($currentMap as $pluginId => $types) {
             foreach ($types as $type) {
-                foreach ($typesDef[$type]->getDependencies()  as $dependencyType => $dependency) {
-                    if ($dependency === '*' && count($currentMap[$dependencyType] ?? []) === 0) {
+                foreach ($typesDef[$type]->getDependencies() as $dependencyType => $dependency) {
+                    if ('*' === $dependency && 0 === count($currentMap[$dependencyType] ?? [])) {
                         $this->context
                             ->buildViolation($constraint->messagePlugin)
-                            ->atPath($pluginId . 'Plugins')
+                            ->atPath($pluginId.'Plugins')
                             ->setParameter('{{ dependencyPlugin }}', $pluginsDef[$dependencyType]->getName())
                             ->setParameter('{{ type }}', $typesDef[$type]->getName())
                             ->addViolation();
-                    }
-                    else if ($dependency !== '*' && !in_array($dependency, $currentMap[$dependencyType])) {
+                    } elseif ('*' !== $dependency && !in_array($dependency, $currentMap[$dependencyType])) {
                         $this->context
                             ->buildViolation($constraint->messageType)
-                            ->atPath($pluginId . 'Plugins')
+                            ->atPath($pluginId.'Plugins')
                             ->setParameter('{{ dependencyPlugin }}', $pluginsDef[$typesDef[$dependency]->getType()]->getName())
                             ->setParameter('{{ dependencyType }}', $typesDef[$dependency]->getName())
                             ->setParameter('{{ type }}', $typesDef[$type]->getName())
@@ -69,7 +67,6 @@ class DependenciesValidator extends ConstraintValidator {
                     }
                 }
             }
-
         }
     }
 }

@@ -68,9 +68,9 @@ class Git extends TypeAbstract
 
     public function __toString()
     {
-        return 'Git' .
+        return 'Git'.
             $this->repository && $this->branch ?
-                ' - ' . $this->repository.' - '.$this->branch :
+                ' - '.$this->repository.' - '.$this->branch :
                 '';
     }
 }

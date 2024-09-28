@@ -88,14 +88,14 @@ class ProjectCrudController extends AbstractCrudController
         $manager = $this->container->get(Manager::class);
         $reflection = new \ReflectionClass(Project::class);
         foreach ($manager->getPlugins() as $pluginInfo) {
-            $property = $pluginInfo->getId() . 'Plugins';
+            $property = $pluginInfo->getId().'Plugins';
             $collection = CollectionField::new($property, $pluginInfo->getName())
                 ->setFormTypeOption('error_bubbling', false)
                 ->setFormTypeOption('delete_empty', true)
                 ->setEntryType($pluginInfo->getFormClass())
                 ->setEntryIsComplex()
                 ->renderExpanded()
-                ->addCssClass($pluginInfo->getId() . '-plugin-collection')
+                ->addCssClass($pluginInfo->getId().'-plugin-collection')
                 ->addCssClass('plugin-collection')
                 ->hideOnIndex();
 
@@ -105,10 +105,10 @@ class ProjectCrudController extends AbstractCrudController
             $attr = ['data-plugin-collection-type' => $pluginInfo->getId()];
             if (!empty($countAttribute)) {
                 $count = $countAttribute[0]->newInstance();
-                if ($count->min !== null) {
+                if (null !== $count->min) {
                     $attr['data-plugin-collection-min'] = $count->min;
                 }
-                if ($count->max !== null) {
+                if (null !== $count->max) {
                     $attr['data-plugin-collection-max'] = $count->max;
                 }
             }

@@ -4,7 +4,6 @@ namespace App\Entity\Plugin;
 
 use App\Entity\Plugin\Type\TypeInterface;
 use App\Entity\Project;
-use App\Plugin\Service\Manager;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;

@@ -5,7 +5,6 @@ namespace App\Entity;
 use App\Entity\Plugin\Analyse;
 use App\Entity\Plugin\Build;
 use App\Entity\Plugin\Source;
-use App\Plugin\Service\Manager;
 use App\Repository\ProjectRepository;
 use App\Security\ProjectRoles;
 use App\Validator\Plugin\Dependencies;

@@ -21,6 +21,7 @@ abstract class PathTypeAbstract extends TypeAbstract
     public function setPath(?string $path): static
     {
         $this->path = $path;
+
         return $this;
     }
 
@@ -37,11 +38,10 @@ abstract class PathTypeAbstract extends TypeAbstract
             || \DIRECTORY_SEPARATOR === mb_substr($path, -1)
         ) {
             $context
-                ->buildViolation('Path is not valid, it must be absolute and must not end with a "' . \DIRECTORY_SEPARATOR . '".')
+                ->buildViolation('Path is not valid, it must be absolute and must not end with a "'.\DIRECTORY_SEPARATOR.'".')
                 ->atPath('path')
                 ->addViolation();
-        }
-        elseif (
+        } elseif (
             $this->checkPathOnFileSystem && (
                 !is_dir($path)
                 || !$filesystem->exists($path)
@@ -55,8 +55,8 @@ abstract class PathTypeAbstract extends TypeAbstract
         }
     }
 
-    function __toString()
+    public function __toString()
     {
-        return !empty($this->getPath()) ? ' - ' . $this->getPath() : '';
+        return !empty($this->getPath()) ? ' - '.$this->getPath() : '';
     }
 }

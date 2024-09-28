@@ -41,7 +41,7 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                     'row_attr' => [
                         'class' => $type->getId().'-'.$this->pluginInfo->getId().'-settings '.$this->pluginInfo->getId().'-settings',
                     ],
-                    'empty_data' => new ($type->getEntityClass())
+                    'empty_data' => new ($type->getEntityClass()),
                 ])
             ;
         }

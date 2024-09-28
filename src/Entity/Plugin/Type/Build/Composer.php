@@ -13,7 +13,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Table(name: 'build_composer')]
 #[ORM\Entity(repositoryClass: ComposerRepository::class)]
 #[TypeInfo(id: 'composer', name: 'Composer', type: 'build', entityClass: Composer::class, repositoryClass: ComposerRepository::class, formClass: ComposerForm::class, dependencies: [
-    'source'=> '*'
+    'source' => '*',
 ])]
 class Composer extends PathTypeAbstract
 {
@@ -30,6 +30,7 @@ class Composer extends PathTypeAbstract
     public function setVersion(?string $version): static
     {
         $this->version = $version;
+
         return $this;
     }
 
@@ -49,7 +50,8 @@ class Composer extends PathTypeAbstract
 
     public function __toString()
     {
-        $version = $this->getVersion() ? ' - ' . array_flip(static::getVersions())[$this->version] : '';
-        return 'Composer' . $version.parent::__toString();
+        $version = $this->getVersion() ? ' - '.array_flip(static::getVersions())[$this->version] : '';
+
+        return 'Composer'.$version.parent::__toString();
     }
 }

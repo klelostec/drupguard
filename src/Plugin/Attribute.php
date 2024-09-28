@@ -7,7 +7,7 @@ use Symfony\Component\Validator\Exception\InvalidArgumentException;
 #[\Attribute(\Attribute::TARGET_CLASS)]
 abstract class Attribute
 {
-    protected string $id ='';
+    protected string $id = '';
     protected string $name = '';
     protected string $entityClass = '';
     protected string $formClass = '';

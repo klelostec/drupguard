@@ -26,9 +26,6 @@ class Manager
      */
     protected array $types;
 
-    /**
-     * @var array
-     */
     protected array $mapClass;
 
     public function __construct(KernelInterface $appKernel, CacheInterface $cache)
@@ -54,7 +51,7 @@ class Manager
              */
             $plugins = [];
             foreach ($finder as $file) {
-                $className = str_replace('/', '\\', 'App/' . preg_replace('#^.*/src/(.*)$#', '$1', $file->getPath())) . '\\' . $file->getFilenameWithoutExtension();
+                $className = str_replace('/', '\\', 'App/'.preg_replace('#^.*/src/(.*)$#', '$1', $file->getPath())).'\\'.$file->getFilenameWithoutExtension();
                 if (!class_exists($className)) {
                     continue;
                 }
@@ -66,27 +63,26 @@ class Manager
                 $typeAttributes = $reflection->getAttributes(TypeInfo::class);
                 $hasTypeAttributes = count($typeAttributes) > 0;
                 if (
-                    !$reflection->isInstantiable() ||
-                    (
-                        !$reflection->implementsInterface(PluginInterface::class) &&
-                        !$reflection->implementsInterface(TypeInterface::class)
-                    ) ||
-                    (
-                        !$hasPluginAttributes &&
-                        !$hasTypeAttributes
+                    !$reflection->isInstantiable()
+                    || (
+                        !$reflection->implementsInterface(PluginInterface::class)
+                        && !$reflection->implementsInterface(TypeInterface::class)
+                    )
+                    || (
+                        !$hasPluginAttributes
+                        && !$hasTypeAttributes
                     )
                 ) {
                     continue;
                 }
 
-                /**
+                /*
                  * @var TypeInfo|PluginInfo $instance
                  */
                 if ($hasTypeAttributes) {
                     $instance = $typeAttributes[0]->newInstance();
                     $types[$instance->getId()] = $instance;
-                }
-                else {
+                } else {
                     $instance = $pluginAttributes[0]->newInstance();
                     $plugins[$instance->getId()] = $instance;
                 }
@@ -118,18 +114,21 @@ class Manager
     /**
      * @return PluginInfo[]
      */
-    public function getPlugins(): array {
+    public function getPlugins(): array
+    {
         return $this->plugins;
     }
 
     /**
      * @return TypeInfo[]
      */
-    public function getTypes(): array {
+    public function getTypes(): array
+    {
         return $this->types;
     }
 
-    public function getRelatedObject(string $className) :null|TypeInfo|PluginInfo {
+    public function getRelatedObject(string $className): TypeInfo|PluginInfo|null
+    {
         return $this->mapClass[$className] ?? null;
     }
 }

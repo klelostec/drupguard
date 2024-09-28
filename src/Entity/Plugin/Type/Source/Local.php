@@ -7,7 +7,6 @@ use App\Form\Plugin\Type\Source\Local as LocalForm;
 use App\Plugin\TypeInfo;
 use App\Repository\Plugin\Type\Source\Local as LocalRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -29,6 +28,7 @@ class Local extends PathTypeAbstract
                 ->atPath('path')
                 ->validate($path, new Assert\NotBlank())
             ;
+
             return;
         }
         parent::validate($context);
@@ -36,6 +36,6 @@ class Local extends PathTypeAbstract
 
     public function __toString()
     {
-        return 'Local' . parent::__toString();
+        return 'Local'.parent::__toString();
     }
 }

@@ -11,13 +11,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'analyse_composer_audit')]
 #[ORM\Entity(repositoryClass: ComposerAuditRepository::class)]
 #[TypeInfo(id: 'composer_audit', name: 'Composer audit', type: 'analyse', entityClass: ComposerAudit::class, repositoryClass: ComposerAuditRepository::class, formClass: ComposerAuditForm::class, dependencies: [
-    'source'=> '*',
-    'build' => 'composer'
+    'source' => '*',
+    'build' => 'composer',
 ])]
 class ComposerAudit extends PathTypeAbstract
 {
     public function __toString()
     {
-        return 'Composer audit' . parent::__toString();
+        return 'Composer audit'.parent::__toString();
     }
 }

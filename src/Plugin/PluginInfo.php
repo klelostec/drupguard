@@ -2,8 +2,6 @@
 
 namespace App\Plugin;
 
-use Symfony\Component\Validator\Exception\InvalidArgumentException;
-
 #[\Attribute(\Attribute::TARGET_CLASS)]
 class PluginInfo extends Attribute
 {
@@ -15,11 +13,13 @@ class PluginInfo extends Attribute
     /**
      * @return TypeInfo[]
      */
-    public function getTypes() :array {
+    public function getTypes(): array
+    {
         return $this->types;
     }
 
-    public function addType(TypeInfo $type) :PluginInfo {
+    public function addType(TypeInfo $type): PluginInfo
+    {
         $this->types[$type->getId()] = $type;
 
         return $this;
