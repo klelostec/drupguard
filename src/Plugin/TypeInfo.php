@@ -2,80 +2,33 @@
 
 namespace App\Plugin;
 
-class TypeInfo
+use Symfony\Component\Validator\Exception\InvalidArgumentException;
+
+#[\Attribute(\Attribute::TARGET_CLASS)]
+class TypeInfo extends Attribute
 {
-    protected string $id;
-    protected string $name;
-    protected ?string $entity;
-    protected ?string $form;
-    protected ?string $repository;
+    protected array $dependencies = [];
+    protected string $type;
 
-    public function __construct(string $id, string $name, ?string $entity = null, ?string $form = null, ?string $repository = null)
+    public function __construct(?array $options = null, ?string $id = null, ?string $name = null, ?string $type = null, ?string $entityClass = null, ?string $formClass = null, ?string $repositoryClass = null, ?array $dependencies = null)
     {
-        $this->id = $id;
-        $this->name = $name;
-        $this->entity = $entity;
-        $this->form = $form;
-        $this->repository = $repository;
+        parent::__construct($options, $id, $name, $entityClass, $formClass, $repositoryClass);
+
+        $this->type = $type ?? $this->type;
+        $this->dependencies = $dependencies ?? $this->dependencies;
+
+        if (empty($this->type)) {
+            throw new InvalidArgumentException(sprintf('The "type" option is required.'));
+        }
     }
 
-    public function getId(): string
+    public function getType(): string
     {
-        return $this->id;
+        return $this->type;
     }
 
-    public function setId(string $id): TypeInfo
+    public function getDependencies(): array
     {
-        $this->id = $id;
-
-        return $this;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): TypeInfo
-    {
-        $this->name = $name;
-
-        return $this;
-    }
-
-    public function getEntity(): string
-    {
-        return $this->entity;
-    }
-
-    public function setEntity(string $entity): TypeInfo
-    {
-        $this->entity = $entity;
-
-        return $this;
-    }
-
-    public function getForm(): string
-    {
-        return $this->form;
-    }
-
-    public function setForm(string $form): TypeInfo
-    {
-        $this->form = $form;
-
-        return $this;
-    }
-
-    public function getRepository(): string
-    {
-        return $this->repository;
-    }
-
-    public function setRepository(string $repository): TypeInfo
-    {
-        $this->repository = $repository;
-
-        return $this;
+        return $this->dependencies;
     }
 }

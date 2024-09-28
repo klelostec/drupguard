@@ -2,10 +2,13 @@
 
 namespace App\Entity;
 
-use App\Plugin\Entity\Build;
-use App\Plugin\Entity\Source;
+use App\Entity\Plugin\Analyse;
+use App\Entity\Plugin\Build;
+use App\Entity\Plugin\Source;
+use App\Plugin\Service\Manager;
 use App\Repository\ProjectRepository;
 use App\Security\ProjectRoles;
+use App\Validator\Plugin\Dependencies;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -16,6 +19,7 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_MACHINENAME', fields: ['machine_name'])]
 #[UniqueEntity(fields: ['machine_name'], message: 'There is already a project with this machine name')]
+#[Dependencies()]
 class Project
 {
     #[ORM\Id]
@@ -44,6 +48,7 @@ class Project
      * @var Collection<int, Source>
      */
     #[ORM\OneToMany(targetEntity: Source::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
+    #[Assert\Count(max: 1)]
     #[Assert\Valid()]
     private Collection $sourcePlugins;
 
@@ -54,11 +59,20 @@ class Project
     #[Assert\Valid()]
     private Collection $buildPlugins;
 
+    /**
+     * @var Collection<int, Analyse>
+     */
+    #[ORM\OneToMany(targetEntity: Analyse::class, mappedBy: 'project', cascade: ['persist'], orphanRemoval: true)]
+    #[Assert\Count(min: 1)]
+    #[Assert\Valid()]
+    private Collection $analysePlugins;
+
     public function __construct()
     {
         $this->projectMembers = new ArrayCollection();
         $this->sourcePlugins = new ArrayCollection();
         $this->buildPlugins = new ArrayCollection();
+        $this->analysePlugins = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -132,36 +146,6 @@ class Project
         return $this;
     }
 
-    #[Assert\Callback()]
-    public function validate(ExecutionContextInterface $context): void
-    {
-        if (!$this->hasOwner()) {
-            $context
-                ->buildViolation('You must add at least one project member as owner.')
-                ->atPath('projectMembers')
-                ->addViolation();
-        }
-
-        if ($this->getSourcePlugins()->count() <= 0) {
-            $context
-                ->buildViolation('Source plugin is required.')
-                ->atPath('sourcePlugins')
-                ->addViolation();
-        } elseif ($this->getSourcePlugins()->count() > 1) {
-            $context
-                ->buildViolation('Only one source plugin is allowed.')
-                ->atPath('sourcePlugins')
-                ->addViolation();
-        } else {
-            $context
-                ->getValidator()
-                ->inContext($context)
-                ->atPath('sourcePlugins')
-                ->validate($this->getSourcePlugins(), new Assert\Valid())
-            ;
-        }
-    }
-
     public function hasOwner(?ProjectMember $excludedProjectMember = null): bool
     {
         if (null === $this->getProjectMembers()) {
@@ -180,11 +164,6 @@ class Project
         }
 
         return $owner;
-    }
-
-    public function __toString()
-    {
-        return $this->name;
     }
 
     /**
@@ -245,5 +224,51 @@ class Project
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, Analyse>
+     */
+    public function getAnalysePlugins(): Collection
+    {
+        return $this->analysePlugins;
+    }
+
+    public function addAnalysePlugin(Analyse $analysePlugin): static
+    {
+        if (!$this->analysePlugins->contains($analysePlugin)) {
+            $this->analysePlugins->add($analysePlugin);
+            $analysePlugin->setProject($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnalysePlugin(Analyse $analysePlugin): static
+    {
+        if ($this->analysePlugins->removeElement($analysePlugin)) {
+            // set the owning side to null (unless already changed)
+            if ($analysePlugin->getProject() === $this) {
+                $analysePlugin->setProject(null);
+            }
+        }
+
+        return $this;
+    }
+
+    #[Assert\Callback()]
+    public function validate(ExecutionContextInterface $context): void
+    {
+        if (!$this->hasOwner()) {
+            $context
+                ->buildViolation('You must add at least one project member as owner.')
+                ->atPath('projectMembers')
+                ->addViolation();
+        }
+    }
+
+    public function __toString()
+    {
+        return $this->name;
     }
 }

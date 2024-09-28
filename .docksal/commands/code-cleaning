@@ -4,7 +4,7 @@
 
 ## Run Symfony Console.
 ##
-## Usage: fin console [arguments]
+## Usage: fin console_install [arguments]
 ##
 
 # Abort if anything fails
@@ -12,4 +12,4 @@ set -e
 
 cd ${PROJECT_ROOT}
 
-bin/console "$@"
+vendor/bin/php-cs-fixer fix src

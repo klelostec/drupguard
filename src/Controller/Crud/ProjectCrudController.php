@@ -3,11 +3,9 @@
 namespace App\Controller\Crud;
 
 use App\EasyAdmin\Field\MachineNameField;
+use App\Entity\Plugin\PluginAbstract;
 use App\Entity\Project;
-use App\Plugin\Entity\PluginAbstract;
-use App\Plugin\Form\Build;
-use App\Plugin\Form\Source;
-use App\Plugin\Manager;
+use App\Plugin\Service\Manager;
 use App\Security\Roles;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,6 +24,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Component\Validator\Constraints\Count;
 
 class ProjectCrudController extends AbstractCrudController
 {
@@ -66,7 +65,7 @@ class ProjectCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        return [
+        $fields = [
             FormField::addTab('General'),
             IdField::new('id')->hideOnForm(),
             TextField::new('name'),
@@ -84,21 +83,40 @@ class ProjectCrudController extends AbstractCrudController
                 ->renderAsSwitch(false)
                 ->hideOnForm(),
             FormField::addTab('Plugins'),
-            CollectionField::new('sourcePlugins', 'Source')
-                ->setFormTypeOption('error_bubbling', false)
-                ->setEntryType(Source::class)
-                ->setEntryIsComplex()
-                ->renderExpanded()
-                ->addCssClass('source-plugins')
-                ->hideOnIndex(),
-            CollectionField::new('buildPlugins', 'Build')
-                ->setFormTypeOption('error_bubbling', false)
-                ->setEntryType(Build::class)
-                ->setEntryIsComplex()
-                ->renderExpanded()
-                ->addCssClass('build-plugins')
-                ->hideOnIndex(),
         ];
+
+        $manager = $this->container->get(Manager::class);
+        $reflection = new \ReflectionClass(Project::class);
+        foreach ($manager->getPlugins() as $pluginInfo) {
+            $property = $pluginInfo->getId() . 'Plugins';
+            $collection = CollectionField::new($property, $pluginInfo->getName())
+                ->setFormTypeOption('error_bubbling', false)
+                ->setFormTypeOption('delete_empty', true)
+                ->setEntryType($pluginInfo->getFormClass())
+                ->setEntryIsComplex()
+                ->renderExpanded()
+                ->addCssClass($pluginInfo->getId() . '-plugin-collection')
+                ->addCssClass('plugin-collection')
+                ->hideOnIndex();
+
+            $countAttribute = $reflection
+                ->getProperty($property)
+                ->getAttributes(Count::class, \ReflectionAttribute::IS_INSTANCEOF);
+            $attr = ['data-plugin-collection-type' => $pluginInfo->getId()];
+            if (!empty($countAttribute)) {
+                $count = $countAttribute[0]->newInstance();
+                if ($count->min !== null) {
+                    $attr['data-plugin-collection-min'] = $count->min;
+                }
+                if ($count->max !== null) {
+                    $attr['data-plugin-collection-max'] = $count->max;
+                }
+            }
+            $collection->setFormTypeOption('row_attr', $attr);
+            $fields[] = $collection;
+        }
+
+        return $fields;
     }
 
     public function createIndexQueryBuilder(SearchDto $searchDto, EntityDto $entityDto, FieldCollection $fields, FilterCollection $filters): QueryBuilder
@@ -131,7 +149,7 @@ class ProjectCrudController extends AbstractCrudController
     protected function removeUselessPluginType($entityInstance): void
     {
         $manager = $this->container->get(Manager::class);
-        foreach ($manager->getPluginInfos() as $pluginInfo) {
+        foreach ($manager->getPlugins() as $pluginInfo) {
             /**
              * @var Collection<int, PluginAbstract> $pluginCollection
              */
