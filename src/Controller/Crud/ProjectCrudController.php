@@ -26,6 +26,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use Symfony\Component\Validator\Constraints\Count;
 
+use function Symfony\Component\String\u;
+
 class ProjectCrudController extends AbstractCrudController
 {
     public function configureCrud(Crud $crud): Crud
@@ -150,17 +152,18 @@ class ProjectCrudController extends AbstractCrudController
     {
         $manager = $this->container->get(Manager::class);
         foreach ($manager->getPlugins() as $pluginInfo) {
+            $fieldIdentifier = mb_ucfirst(u($pluginInfo->getId())->camel());
             /**
              * @var Collection<int, PluginAbstract> $pluginCollection
              */
-            $pluginCollection = $entityInstance->{'get'.mb_ucfirst($pluginInfo->getId()).'Plugins'}();
+            $pluginCollection = $entityInstance->{'get'.$fieldIdentifier.'Plugins'}();
             foreach ($pluginCollection as $plugin) {
                 $currentType = $plugin->getType();
                 foreach ($pluginInfo->getTypes() as $typeInfo) {
                     if ($currentType === $typeInfo->getId()) {
                         continue;
                     }
-                    $plugin->{'set'.mb_ucfirst($typeInfo->getId())}(null);
+                    $plugin->{'set'.mb_ucfirst(u($typeInfo->getId())->camel())}(null);
                 }
             }
         }

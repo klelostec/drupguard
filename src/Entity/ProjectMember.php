@@ -4,11 +4,11 @@ namespace App\Entity;
 
 use App\Repository\ProjectMemberRepository;
 use App\Security\ProjectRoles;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ProjectMemberRepository::class)]
+#[AppAssert\ProjectMember()]
 class ProjectMember
 {
     #[ORM\Id]
@@ -80,30 +80,6 @@ class ProjectMember
         $this->role = $role;
 
         return $this;
-    }
-
-    #[Assert\Callback()]
-    public function validate(ExecutionContextInterface $context): void
-    {
-        if (null === $this->getGroups() && null === $this->getUser()) {
-            $context
-                ->buildViolation('You must select a user or a group.')
-                ->atPath('groups')
-                ->addViolation();
-            $context
-                ->buildViolation('You must select a user or a group.')
-                ->atPath('user')
-                ->addViolation();
-        } elseif (null !== $this->getGroups() && null !== $this->getUser()) {
-            $context
-                ->buildViolation('You must select a user or a group.')
-                ->atPath('groups')
-                ->addViolation();
-            $context
-                ->buildViolation('You must select a user or a group.')
-                ->atPath('user')
-                ->addViolation();
-        }
     }
 
     public function __toString()

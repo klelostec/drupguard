@@ -8,6 +8,7 @@ use App\Entity\Plugin\Type\Analyse\Drupal8;
 use App\Form\Plugin\Analyse as AnalyseForm;
 use App\Plugin\PluginInfo;
 use App\Repository\Plugin\Analyse as AnalyseRepository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AnalyseRepository::class)]
@@ -15,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
     new ORM\AssociationOverride(name: 'project', inversedBy: 'analysePlugins'),
 ])]
 #[PluginInfo(id: 'analyse', name: 'Analyse', entityClass: Analyse::class, repositoryClass: AnalyseRepository::class, formClass: AnalyseForm::class)]
+#[AppAssert\Plugin\Plugin()]
 class Analyse extends PluginAbstract
 {
     #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval: true)]

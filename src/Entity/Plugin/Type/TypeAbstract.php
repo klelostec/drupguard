@@ -3,7 +3,6 @@
 namespace App\Entity\Plugin\Type;
 
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 abstract class TypeAbstract implements TypeInterface
 {
@@ -16,6 +15,4 @@ abstract class TypeAbstract implements TypeInterface
     {
         return $this->id;
     }
-
-    abstract public function validate(ExecutionContextInterface $context): void;
 }

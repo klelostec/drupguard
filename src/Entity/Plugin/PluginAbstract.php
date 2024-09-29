@@ -5,8 +5,8 @@ namespace App\Entity\Plugin;
 use App\Entity\Plugin\Type\TypeInterface;
 use App\Entity\Project;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
+
+use function Symfony\Component\String\u;
 
 abstract class PluginAbstract implements PluginInterface
 {
@@ -16,7 +16,6 @@ abstract class PluginAbstract implements PluginInterface
     protected ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank()]
     protected ?string $type = null;
 
     #[ORM\ManyToOne(inversedBy: 'abstractPlugins')]
@@ -54,36 +53,13 @@ abstract class PluginAbstract implements PluginInterface
     public function getTypeEntity(): ?TypeInterface
     {
         if (!empty($this->type)) {
-            $methodCandidate = 'get'.mb_ucfirst($this->type);
+            $methodCandidate = 'get'.mb_ucfirst(u($this->type)->camel());
             if (method_exists($this, $methodCandidate)) {
                 return $this->{$methodCandidate}();
             }
         }
 
         return null;
-    }
-
-    #[Assert\Callback()]
-    public function validate(ExecutionContextInterface $context): void
-    {
-        if (empty($this->getType())) {
-            return;
-        }
-
-        $typePlugin = $this->getTypeEntity();
-        if (empty($typePlugin)) {
-            $context
-                ->buildViolation(ucfirst($this->getType()).' is required.')
-                ->atPath($this->getType())
-                ->addViolation();
-        } else {
-            $context
-                ->getValidator()
-                ->inContext($context)
-                ->atPath($this->getType())
-                ->validate($typePlugin, new Assert\Valid())
-            ;
-        }
     }
 
     public function __toString()

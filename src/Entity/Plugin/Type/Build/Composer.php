@@ -6,15 +6,16 @@ use App\Entity\Plugin\Type\PathTypeAbstract;
 use App\Form\Plugin\Type\Build\Composer as ComposerForm;
 use App\Plugin\TypeInfo;
 use App\Repository\Plugin\Type\Build\Composer as ComposerRepository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Table(name: 'build_composer')]
 #[ORM\Entity(repositoryClass: ComposerRepository::class)]
 #[TypeInfo(id: 'composer', name: 'Composer', type: 'build', entityClass: Composer::class, repositoryClass: ComposerRepository::class, formClass: ComposerForm::class, dependencies: [
     'source' => '*',
 ])]
+#[AppAssert\Plugin\Path()]
 class Composer extends PathTypeAbstract
 {
     #[ORM\Column(length: 255)]
@@ -32,12 +33,6 @@ class Composer extends PathTypeAbstract
         $this->version = $version;
 
         return $this;
-    }
-
-    #[Assert\Callback()]
-    public function validate(ExecutionContextInterface $context): void
-    {
-        parent::validate($context);
     }
 
     public static function getVersions(): array

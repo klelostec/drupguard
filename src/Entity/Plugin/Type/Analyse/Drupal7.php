@@ -6,6 +6,7 @@ use App\Entity\Plugin\Type\PathTypeAbstract;
 use App\Form\Plugin\Type\Analyse\Drupal7 as Drupal7Form;
 use App\Plugin\TypeInfo;
 use App\Repository\Plugin\Type\Analyse\Drupal7 as Drupal7Repository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Table(name: 'analyse_drupal7')]
@@ -13,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[TypeInfo(id: 'drupal7', name: 'Drupal 7', type: 'analyse', entityClass: Drupal7::class, repositoryClass: Drupal7Repository::class, formClass: Drupal7Form::class, dependencies: [
     'source' => '*',
 ])]
+#[AppAssert\Plugin\Path()]
 class Drupal7 extends PathTypeAbstract
 {
     public function __toString()

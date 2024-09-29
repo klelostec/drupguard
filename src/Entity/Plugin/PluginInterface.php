@@ -4,7 +4,6 @@ namespace App\Entity\Plugin;
 
 use App\Entity\Plugin\Type\TypeInterface;
 use App\Entity\Project;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 interface PluginInterface
 {
@@ -19,8 +18,6 @@ interface PluginInterface
     public function setProject(?Project $project): static;
 
     public function getTypeEntity(): ?TypeInterface;
-
-    public function validate(ExecutionContextInterface $context): void;
 
     public function __toString();
 }

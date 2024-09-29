@@ -9,7 +9,9 @@ use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
 
-class DependenciesValidator extends ConstraintValidator
+use function Symfony\Component\String\u;
+
+class ProjectDependenciesValidator extends ConstraintValidator
 {
     protected Manager $pluginManager;
 
@@ -20,8 +22,8 @@ class DependenciesValidator extends ConstraintValidator
 
     public function validate(mixed $value, Constraint $constraint): void
     {
-        if (!$constraint instanceof Dependencies) {
-            throw new UnexpectedTypeException($constraint, Dependencies::class);
+        if (!$constraint instanceof ProjectDependencies) {
+            throw new UnexpectedTypeException($constraint, ProjectDependencies::class);
         }
 
         if (null === $value || '' === $value) {
@@ -36,7 +38,7 @@ class DependenciesValidator extends ConstraintValidator
         $pluginsDef = $this->pluginManager->getPlugins();
         $currentMap = [];
         foreach ($pluginsDef as $pluginInfo) {
-            $collection = $value->{'get'.mb_ucfirst($pluginInfo->getId()).'Plugins'}();
+            $collection = $value->{'get'.mb_ucfirst(u($pluginInfo->getId())->camel()).'Plugins'}();
             $currentMap[$pluginInfo->getId()] = [];
             foreach ($collection as $pluginEntity) {
                 if (empty($pluginEntity->getType())) {

@@ -8,6 +8,8 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function Symfony\Component\String\u;
+
 abstract class TypeAbstract extends AbstractType
 {
     private Manager $pluginManager;
@@ -26,7 +28,8 @@ abstract class TypeAbstract extends AbstractType
             if ('id' === $property->getName()) {
                 continue;
             }
-            $getter = 'get'.ucfirst($property->getName());
+
+            $getter = 'get'.mb_ucfirst(u($property->getName())->camel());
             if (
                 !$reflection->hasMethod($getter)
                 || !$reflection->getMethod($getter)->isPublic()

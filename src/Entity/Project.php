@@ -7,18 +7,18 @@ use App\Entity\Plugin\Build;
 use App\Entity\Plugin\Source;
 use App\Repository\ProjectRepository;
 use App\Security\ProjectRoles;
-use App\Validator\Plugin\Dependencies;
+use App\Validator as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_MACHINENAME', fields: ['machine_name'])]
 #[UniqueEntity(fields: ['machine_name'], message: 'There is already a project with this machine name')]
-#[Dependencies()]
+#[AppAssert\Plugin\ProjectDependencies()]
+#[AppAssert\ProjectOwner()]
 class Project
 {
     #[ORM\Id]
@@ -253,17 +253,6 @@ class Project
         }
 
         return $this;
-    }
-
-    #[Assert\Callback()]
-    public function validate(ExecutionContextInterface $context): void
-    {
-        if (!$this->hasOwner()) {
-            $context
-                ->buildViolation('You must add at least one project member as owner.')
-                ->atPath('projectMembers')
-                ->addViolation();
-        }
     }
 
     public function __toString()

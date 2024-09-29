@@ -6,6 +6,7 @@ use App\Entity\Plugin\Type\PathTypeAbstract;
 use App\Form\Plugin\Type\Analyse\ComposerAudit as ComposerAuditForm;
 use App\Plugin\TypeInfo;
 use App\Repository\Plugin\Type\Analyse\ComposerAudit as ComposerAuditRepository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Table(name: 'analyse_composer_audit')]
@@ -14,6 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
     'source' => '*',
     'build' => 'composer',
 ])]
+#[AppAssert\Plugin\Path()]
 class ComposerAudit extends PathTypeAbstract
 {
     public function __toString()

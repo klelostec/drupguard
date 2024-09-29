@@ -10,6 +10,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
+use function Symfony\Component\String\u;
+
 abstract class PluginAbstract extends AbstractType implements PluginInterface
 {
     protected Manager $pluginManager;
@@ -29,17 +31,17 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                 'required' => true,
                 'choices' => $this->pluginInfo->getChoices(),
                 'row_attr' => [
-                    'class' => $this->pluginInfo->getId().'-plugin-type',
+                    'class' => u($this->pluginInfo->getId())->snake().'-plugin-type',
                 ],
             ])
         ;
         // $builder->addEventListener(FormEvents::PRE_SET_DATA, array($this, 'onPreSetData'));
         foreach ($this->pluginInfo->getTypes() as $type) {
             $builder
-                ->add($type->getId(), $type->getFormClass(), [
+                ->add(u($type->getId())->camel(), $type->getFormClass(), [
                     'label' => $type->getName(),
                     'row_attr' => [
-                        'class' => $type->getId().'-'.$this->pluginInfo->getId().'-settings '.$this->pluginInfo->getId().'-settings',
+                        'class' => u($type->getId())->snake().'-'.u($this->pluginInfo->getId())->snake().'-settings '.u($this->pluginInfo->getId())->snake().'-settings',
                     ],
                     'empty_data' => new ($type->getEntityClass()),
                 ])
@@ -58,7 +60,7 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                 if ($type->getId() === $data->getType()) {
                     continue;
                 }
-                $data->{'set'.ucfirst($type->getId())}(null);
+                $data->{'set'.mb_ucfirst(u($type->getId())->camel())}(null);
             }
             $event->setData($data);
         }

@@ -6,6 +6,7 @@ use App\Entity\Plugin\Type\Build\Composer;
 use App\Form\Plugin\Build as BuildForm;
 use App\Plugin\PluginInfo;
 use App\Repository\Plugin\Build as BuildRepository;
+use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: BuildRepository::class)]
@@ -13,6 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
     new ORM\AssociationOverride(name: 'project', inversedBy: 'buildPlugins'),
 ])]
 #[PluginInfo(id: 'build', name: 'Build', entityClass: Build::class, repositoryClass: BuildRepository::class, formClass: BuildForm::class)]
+#[AppAssert\Plugin\Plugin()]
 class Build extends PluginAbstract
 {
     #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval: true)]
