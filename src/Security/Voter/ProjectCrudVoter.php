@@ -85,7 +85,7 @@ class ProjectCrudVoter extends Voter
         }
 
         if (
-            ('PROJECT_DETAIL' === $attribute && $read)
+            (in_array($attribute, ['PROJECT_DETAIL', 'PROJECT_ANALYSE']) && $read)
             || $write
         ) {
             $result = VoterInterface::ACCESS_GRANTED;

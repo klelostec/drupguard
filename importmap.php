@@ -24,6 +24,10 @@ return [
         'path' => './assets/easyadmin/field/plugin_settings/plugin_settings.js',
         'entrypoint' => true,
     ],
+    'project_running' => [
+        'path' => './assets/easyadmin/action/project_running/project_running.js',
+        'entrypoint' => true,
+    ],
     'transliteration' => [
         'version' => '2.3.5',
     ],

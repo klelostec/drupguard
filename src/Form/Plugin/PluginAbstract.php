@@ -44,6 +44,7 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                         'class' => u($type->getId())->snake().'-'.u($this->pluginInfo->getId())->snake().'-settings '.u($this->pluginInfo->getId())->snake().'-settings',
                     ],
                     'empty_data' => new ($type->getEntityClass()),
+                    'help' => $type->getHelp()
                 ])
             ;
         }

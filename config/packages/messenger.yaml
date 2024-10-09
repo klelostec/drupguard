@@ -7,23 +7,53 @@ framework:
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
                 options:
+                    queue_name: high
                     use_notify: true
                     check_delayed_interval: 60000
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
             failed: 'doctrine://default?queue_name=failed'
-            # sync: 'sync://'
+
+            analyse_high:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: high
+                retry_strategy:
+                    max_retries: 1
+
+            analyse_low:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    queue_name: low
+                retry_strategy:
+                    max_retries: 1
 
         default_bus: messenger.bus.default
 
         buses:
-            messenger.bus.default: []
+            messenger.bus.default:
+                middleware:
+                    # each time a message is handled, the Doctrine connection
+                    # is "pinged" and reconnected if it's closed. Useful
+                    # if your workers run for a long time and the database
+                    # connection is sometimes lost
+                    - doctrine_ping_connection
+
+                    # After handling, the Doctrine connection is closed,
+                    # which can free up database connections in a worker,
+                    # instead of keeping them open forever
+                    - doctrine_close_connection
+
+                    # logs an error when a Doctrine transaction was opened but not closed
+                    - doctrine_open_transaction_logger
+
+                    # wraps all handlers in a single Doctrine transaction
+                    # handlers do not need to call flush() and an error
+                    # in any handler will cause a rollback
+                    - doctrine_transaction
 
         routing:
             Symfony\Component\Mailer\Messenger\SendEmailMessage: async
-            Symfony\Component\Notifier\Message\ChatMessage: async
-            Symfony\Component\Notifier\Message\SmsMessage: async
-
-            # Route your messages to the transports
-            # 'App\Message\YourMessage': async
+            App\Message\ProjectAnalysePending: analyse_high
+            App\Message\ProjectAnalyseRunning: analyse_low

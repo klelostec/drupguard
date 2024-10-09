@@ -50,7 +50,6 @@ abstract class TypeAbstract extends AbstractType
 
     public function alterPropertyFormType(string $property, ?string &$type, array &$typeOptions): void
     {
-        return;
     }
 
     public function configureOptions(OptionsResolver $resolver): void

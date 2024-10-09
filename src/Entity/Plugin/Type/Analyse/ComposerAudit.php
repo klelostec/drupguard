@@ -13,7 +13,6 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ComposerAuditRepository::class)]
 #[TypeInfo(id: 'composer_audit', name: 'Composer audit', type: 'analyse', entityClass: ComposerAudit::class, repositoryClass: ComposerAuditRepository::class, formClass: ComposerAuditForm::class, dependencies: [
     'source' => '*',
-    'build' => 'composer',
 ])]
 #[AppAssert\Plugin\Path()]
 class ComposerAudit extends PathTypeAbstract

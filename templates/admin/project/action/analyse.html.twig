@@ -1,0 +1,16 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var action \EasyCorp\Bundle\EasyAdminBundle\Dto\ActionDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% if entity is defined %}
+    {% set project = entity.instance %}
+{% else %}
+    {% set project = ea.entity.instance %}
+{% endif %}
+<a class="project-running-action visually-hidden {{ isIncludedInDropdown|default(false) ? 'dropdown-item' }} {{ action.cssClass }}"
+   data-href="{{ action.linkUrl }}"
+   href="#"
+   data-project="{{ project.id }}"
+    {% for name, value in action.htmlAttributes %}{{ name }}="{{ (value.trans is defined ? value|trans : value)|e('html_attr') }}" {% endfor %}>
+    <i class="action-icon fa-solid"></i>&nbsp;
+    {%- if action.label is not empty -%}<span class="action-label">{{ action.label|trans|raw }}</span>{%- endif -%}
+</a>

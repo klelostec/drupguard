@@ -5,11 +5,14 @@ namespace App\Entity;
 use App\Entity\Plugin\Analyse;
 use App\Entity\Plugin\Build;
 use App\Entity\Plugin\Source;
+use App\ProjectEmailLevelState;
+use App\ProjectState;
 use App\Repository\ProjectRepository;
 use App\Security\ProjectRoles;
 use App\Validator as AppAssert;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -65,6 +68,19 @@ class Project
     #[Assert\Count(min: 1)]
     #[Assert\Valid()]
     private Collection $analysePlugins;
+
+    #[ORM\Column(type: 'integer', enumType: ProjectState::class)]
+    private ProjectState $state = ProjectState::IDLE;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[AppAssert\CronExpression()]
+    private ?string $periodicity = null;
+
+    #[ORM\Column(type: 'integer', enumType: ProjectEmailLevelState::class)]
+    private ProjectEmailLevelState $emailLevel = ProjectEmailLevelState::NONE;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $emailExtra = null;
 
     public function __construct()
     {
@@ -258,5 +274,58 @@ class Project
     public function __toString()
     {
         return $this->name;
+    }
+
+    public function getState(): ProjectState
+    {
+        return $this->state;
+    }
+
+    public function setState(ProjectState $state): static
+    {
+        $this->state = $state;
+
+        return $this;
+    }
+
+    public function isRunning(): bool
+    {
+        return $this->state !== ProjectState::IDLE;
+    }
+
+    public function getPeriodicity(): ?string
+    {
+        return $this->periodicity;
+    }
+
+    public function setPeriodicity(?string $periodicity): static
+    {
+        $this->periodicity = $periodicity;
+
+        return $this;
+    }
+
+    public function getEmailLevel(): ?ProjectEmailLevelState
+    {
+        return $this->emailLevel;
+    }
+
+    public function setEmailLevel(ProjectEmailLevelState $emailLevel): static
+    {
+        $this->emailLevel = $emailLevel;
+
+        return $this;
+    }
+
+    public function getEmailExtra(): ?string
+    {
+        return $this->emailExtra;
+    }
+
+    public function setEmailExtra(?string $emailExtra): static
+    {
+        $this->emailExtra = $emailExtra;
+
+        return $this;
     }
 }
