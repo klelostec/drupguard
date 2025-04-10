@@ -179,6 +179,8 @@ class ProjectCrudController extends AbstractCrudController
         }
         $entityInstance = $context->getEntity()->getInstance();
 
+        $res = false;
+
         try {
 //            $entityInstance->setState(ProjectState::PENDING);
 //            $this->updateEntity($this->container->get('doctrine')->getManagerForClass($context->getEntity()->getFqcn()), $entityInstance);
@@ -187,8 +189,9 @@ class ProjectCrudController extends AbstractCrudController
              * @var Project $entityInstance
              */
             $bus->dispatch(new ProjectAnalysePending($entityInstance->getId()));
+            $res = true;
         } catch (ForeignKeyConstraintViolationException $e) {
-            $res = FALSE;
+            $res = false;
         }
 
         return new JsonResponse([
