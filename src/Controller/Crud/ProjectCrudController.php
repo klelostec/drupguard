@@ -40,6 +40,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Count;
+use App\ProjectState;
 use function Symfony\Component\String\u;
 use function Symfony\Component\Translation\t;
 
@@ -169,35 +170,39 @@ class ProjectCrudController extends AbstractCrudController
         if ($event->isPropagationStopped()) {
             return $event->getResponse();
         }
-
+    
         if (!$this->isGranted(Permission::EA_EXECUTE_ACTION, ['action' => 'analyse', 'entity' => $context->getEntity()])) {
             throw new ForbiddenActionException($context);
         }
-
+    
         if (!$context->getEntity()->isAccessible()) {
             throw new InsufficientEntityPermissionException($context);
         }
+    
         $entityInstance = $context->getEntity()->getInstance();
+    
+        // Ajout d'une vérification ici pour empêcher l'analyse si le projet est dans l'état IDLE
+        /*if ($entityInstance->getState() === ProjectState::IDLE) {
+            $this->addFlash('error', 'L analyse ne peut pas etre lancee pour un projet dans l etat IDLE.');
 
-        $res = false;
-
-        try {
-//            $entityInstance->setState(ProjectState::PENDING);
-//            $this->updateEntity($this->container->get('doctrine')->getManagerForClass($context->getEntity()->getFqcn()), $entityInstance);
-//            $bus->dispatch(new ProjectAnalyseRunning($entityInstance->getId()));
-            /**
-             * @var Project $entityInstance
-             */
-            $bus->dispatch(new ProjectAnalysePending($entityInstance->getId()));
-            $res = true;
-        } catch (ForeignKeyConstraintViolationException $e) {
-            $res = false;
+            return new JsonResponse([
+                'success' => false,
+                'message' => 'L analyse ne peut pas etre lancee pour un projet dans l etat IDLE.',
+            ]);
         }
-
-        return new JsonResponse([
-            'result' => $res
-        ]);
+    */
+        $this->addFlash('info', 'Avant traitement : Statut du projet = ' . $entityInstance->getState()->value);
+    
+        try {
+            $bus->dispatch(new ProjectAnalysePending($entityInstance->getId()));
+            $this->addFlash('info', 'Après traitement : Statut du projet = ' . $entityInstance->getState()->value);
+            return new JsonResponse(['result' => true]);
+        } catch (ForeignKeyConstraintViolationException $e) {
+            $this->addFlash('error', 'Erreur pendant l\'analyse. Statut du projet = ' . $entityInstance->getState()->value);
+            return new JsonResponse(['result' => false]);
+        }
     }
+    
 
     #[Route('/project/check-running', name: 'app_project_check_running', format: 'json', methods: ['POST'], )]
     function checkIsRunning(Request $request) {
