@@ -12,7 +12,6 @@ use App\Plugin\Service\Source;
 use App\ProjectState;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerInterface;
-use Symfony\Component\VarDumper\VarDumper;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use function Symfony\Component\String\u;
@@ -128,12 +127,10 @@ class AnalyseService
         $this->logger->debug('Analysing project ' . $project->getId());
         fwrite(STDOUT, "==== Project state set to ANALYSING\n");
     
-        // Initialisation de l'état comme étant SUCCESS (le moins grave)
         $state = AnalyseLevelState::SUCCESS;
         $this->logger->debug('Initial report state: ' . $state->name);
         fwrite(STDOUT, "==== Initial report state: {$state->name}\n");
     
-        // On parcourt tous les plugins d'analyse
         foreach ($project->getAnalysePlugins() as $plugin) {
             $pluginType = $plugin->getType();
             fwrite(STDOUT, "==== Processing plugin: {$pluginType}\n");
@@ -152,17 +149,14 @@ class AnalyseService
             $this->logger->debug(sprintf('Plugin %s returned state: %s', $pluginType, $pluginState->name));
             fwrite(STDOUT, "==== Plugin {$pluginType} returned state: {$pluginState->name}\n");
     
-            // Persistance du rapport du plugin
             $this->entityManager->persist($currentReport);
             $this->entityManager->flush();
            fwrite(STDOUT, "==== Report saved in DB with state: " );
     
-            // Ajout au rapport global
             $report->{'set' . mb_ucfirst(u($pluginType)->camel())}($currentReport);
     
             fwrite(STDOUT, "==== Current report state: {$state->name}, checking plugin state: {$pluginState->name}\n");
     
-            // Mise à jour si l'état du plugin est plus grave
             if ($pluginState->value < $state->value) {
                 $state = $pluginState;
                 fwrite(STDOUT, "==== Updated report state: {$state->name}\n");
@@ -171,7 +165,6 @@ class AnalyseService
             }
         }
     
-        // Finalisation du rapport avec l'état déterminé
         $report->setState($state);
         $this->logger->debug('Final report state: ' . $report->getState()->name);
         fwrite(STDOUT, "==== Final report state: {$report->getState()->name}\n");
