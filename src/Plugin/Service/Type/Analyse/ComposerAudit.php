@@ -15,6 +15,7 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 use function Symfony\Component\Translation\t;
 
+
 #[TypeInfo(
     id: 'composer_audit',
     name: 'Composer audit',
@@ -92,9 +93,24 @@ class ComposerAudit extends Analyse
             }
             $item->setState($itemState);
             $reportAnalyse->addItem($item);
-            $state = min($state, $itemState);
+            if ($itemState->value < $state->value) {
+                $state = $itemState;
+            }
+            dump($name, $itemState->name, $state->name);
         }
+
+        $details = [];
+
+        foreach ($reportAnalyse->getItems() as $item) {
+            if ($item->getDetail()) {
+                $details[] = $item->getName() . ': ' . $item->getDetail();
+            }
+        }
+        if (!empty($details)) {
+            $reportAnalyse->setDetail(implode("\n\n", $details)); 
+            }
         $reportAnalyse->setState($state);
+        //$this->logger->debug('ComposerAudit report state: ' . $reportAnalyse->getState()->name);
         return $reportAnalyse;
     }
 }
