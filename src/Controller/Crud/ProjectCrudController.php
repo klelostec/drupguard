@@ -170,27 +170,16 @@ class ProjectCrudController extends AbstractCrudController
         if ($event->isPropagationStopped()) {
             return $event->getResponse();
         }
-    
+
         if (!$this->isGranted(Permission::EA_EXECUTE_ACTION, ['action' => 'analyse', 'entity' => $context->getEntity()])) {
             throw new ForbiddenActionException($context);
         }
-    
+
         if (!$context->getEntity()->isAccessible()) {
             throw new InsufficientEntityPermissionException($context);
-        }
-    
+        }    
         $entityInstance = $context->getEntity()->getInstance();
     
-        // Ajout d'une vérification ici pour empêcher l'analyse si le projet est dans l'état IDLE
-        /*if ($entityInstance->getState() === ProjectState::IDLE) {
-            $this->addFlash('error', 'L analyse ne peut pas etre lancee pour un projet dans l etat IDLE.');
-
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'L analyse ne peut pas etre lancee pour un projet dans l etat IDLE.',
-            ]);
-        }
-    */
         $this->addFlash('info', 'Avant traitement : Statut du projet = ' . $entityInstance->getState()->value);
     
         try {
