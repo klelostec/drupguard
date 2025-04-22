@@ -37,30 +37,21 @@ class AnalyseService
     }
 
     public function process(Project $project): void {
-        $this->logger->debug('==== Analyse start for project ' . $project->getId());
-        fwrite(STDOUT, "==== Analyse start for project ID " . $project->getId() . "\n");
-    
+        $this->logger->debug('Process project ' . $project->getId());
+
         $report = new Report();
         $report->setDatetime(new \DateTime());
     
         try {
-            fwrite(STDOUT, "==== Starting sourcing for project ID " . $project->getId() . "\n");
             $paths = $this->source($project);
-            fwrite(STDOUT, "==== Sourcing completed for project ID " . $project->getId() . "\n");
-    
             foreach ($paths as $path) {
-                fwrite(STDOUT, "==== Starting build for path: " . $path . "\n");
                 $this->build($project, $path);
-                fwrite(STDOUT, "==== Build completed for path: " . $path . "\n");
-    
-                fwrite(STDOUT, "==== Starting analysis for path: " . $path . "\n");
                 $this->analyse($project, $report, $path);
-                fwrite(STDOUT, "==== Analysis completed for path: " . $path . "\n");
             }
         } catch (\Exception $e) {
             $report->setState(AnalyseLevelState::FAILURE);
-            $report->setDetail($e->getMessage());
-            fwrite(STDOUT, "==== ERROR during analysis: " . $e->getMessage() . "\n");
+            $report->setDetail($e->getMessage(). PHP_EOL . $e->getTraceAsString());
+            $this->logger->debug('Error during process project ' . $project->getId() . ':' . PHP_EOL . $e->getMessage());
         }
     
         $this->entityManager->persist($report);
@@ -70,19 +61,19 @@ class AnalyseService
         $this->entityManager->persist($project);
         $this->entityManager->flush();
     
-        $this->logger->debug('==== Analyse end for project ' . $project->getId());
-        fwrite(STDOUT, "==== Analyse end for project ID " . $project->getId() . "\n");
+        $this->logger->debug('End process for project ' . $project->getId());
     }
     
 
     protected function source(Project $project): array {
+        $this->logger->debug('Sourcing project ' . $project->getId());
         $project->setState(ProjectState::SOURCING);
         $this->entityManager->persist($project);
         $this->entityManager->flush();
-        $this->logger->debug('Sourcing project ' . $project->getId());
 
         $paths = [];
         foreach ($project->getSourcePlugins() as $plugin) {
+            $this->logger->debug('Source type: ' . $plugin->getType());
             $sourceEntity = $plugin->getTypeEntity();
             $classMetadata = $this->entityManager->getClassMetadata(get_class($sourceEntity));
             $typeInfo = $this->manager->getRelatedObject($classMetadata->getName());
@@ -93,18 +84,20 @@ class AnalyseService
             $service = $this->serviceLocator->get($typeInfo->getServiceClass());
             $paths[] = $service->source($project, $sourceEntity);
         }
+        $this->logger->debug('End sourcing project ' . $project->getId());
 
         return array_unique($paths);
     }
 
     protected function build(Project $project, string $path): void
     {
+        $this->logger->debug('Building project ' . $project->getId());
         $project->setState(ProjectState::BUILDING);
         $this->entityManager->persist($project);
         $this->entityManager->flush();
-        $this->logger->debug('Building project ' . $project->getId());
 
         foreach ($project->getBuildPlugins() as $plugin) {
+            $this->logger->debug('Build type: ' . $plugin->getType());
             $buildEntity = $plugin->getTypeEntity();
             $classMetadata = $this->entityManager->getClassMetadata(get_class($buildEntity));
             $typeInfo = $this->manager->getRelatedObject($classMetadata->getName());
@@ -115,25 +108,20 @@ class AnalyseService
             $service = $this->serviceLocator->get($typeInfo->getServiceClass());
             $service->build($project, $buildEntity, $path);
         }
+        $this->logger->debug('End building project ' . $project->getId());
     }
 
     public function analyse(Project $project, Report $report, string $path): void
     {
-        fwrite(STDOUT, "==== Starting analyse() for project ID: {$project->getId()} with path: {$path}\n");
-    
+        $this->logger->debug('Analysing project ' . $project->getId());
         $project->setState(ProjectState::ANALYSING);
         $this->entityManager->persist($project);
         $this->entityManager->flush();
-        $this->logger->debug('Analysing project ' . $project->getId());
-        fwrite(STDOUT, "==== Project state set to ANALYSING\n");
     
         $state = AnalyseLevelState::SUCCESS;
-        $this->logger->debug('Initial report state: ' . $state->name);
-        fwrite(STDOUT, "==== Initial report state: {$state->name}\n");
-    
         foreach ($project->getAnalysePlugins() as $plugin) {
             $pluginType = $plugin->getType();
-            fwrite(STDOUT, "==== Processing plugin: {$pluginType}\n");
+            $this->logger->debug('Analyse type: ' . $pluginType);
     
             $analyseEntity = $plugin->getTypeEntity();
             $classMetadata = $this->entityManager->getClassMetadata(get_class($analyseEntity));
@@ -146,30 +134,16 @@ class AnalyseService
             $currentReport = $service->analyse($project, $analyseEntity, $path);
     
             $pluginState = $currentReport->getState();
-            $this->logger->debug(sprintf('Plugin %s returned state: %s', $pluginType, $pluginState->name));
-            fwrite(STDOUT, "==== Plugin {$pluginType} returned state: {$pluginState->name}\n");
-    
             $this->entityManager->persist($currentReport);
             $this->entityManager->flush();
-           fwrite(STDOUT, "==== Report saved in DB with state: " );
-    
             $report->{'set' . mb_ucfirst(u($pluginType)->camel())}($currentReport);
-    
-            fwrite(STDOUT, "==== Current report state: {$state->name}, checking plugin state: {$pluginState->name}\n");
-    
             if ($pluginState->value < $state->value) {
                 $state = $pluginState;
-                fwrite(STDOUT, "==== Updated report state: {$state->name}\n");
-            } else {
-                fwrite(STDOUT, "==== Report state remains: {$state->name}\n");
             }
         }
     
         $report->setState($state);
-        $this->logger->debug('Final report state: ' . $report->getState()->name);
-        fwrite(STDOUT, "==== Final report state: {$report->getState()->name}\n");
-        fwrite(STDOUT, "==== Analysis completed for path: {$path}\n");
+        $this->logger->debug('End analysing project ' . $project->getId() . ' with state ' . $state->name);
     }
-    
     
 }

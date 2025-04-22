@@ -160,7 +160,6 @@ class ProjectCrudController extends AbstractCrudController
         $fields[] = TextareaField::new('emailExtra')
             ->hideOnIndex();
 
-
         return $fields;
     }
 
@@ -177,21 +176,18 @@ class ProjectCrudController extends AbstractCrudController
 
         if (!$context->getEntity()->isAccessible()) {
             throw new InsufficientEntityPermissionException($context);
-        }    
+        }
         $entityInstance = $context->getEntity()->getInstance();
-    
-        $this->addFlash('info', 'Avant traitement : Statut du projet = ' . $entityInstance->getState()->value);
-    
+        $res = TRUE;
         try {
             $bus->dispatch(new ProjectAnalysePending($entityInstance->getId()));
-            $this->addFlash('info', 'Après traitement : Statut du projet = ' . $entityInstance->getState()->value);
-            return new JsonResponse(['result' => true]);
         } catch (ForeignKeyConstraintViolationException $e) {
-            $this->addFlash('error', 'Erreur pendant l\'analyse. Statut du projet = ' . $entityInstance->getState()->value);
-            return new JsonResponse(['result' => false]);
+            $res = FALSE;
         }
+        return new JsonResponse([
+            'result' => $res
+        ]);
     }
-    
 
     #[Route('/project/check-running', name: 'app_project_check_running', format: 'json', methods: ['POST'], )]
     function checkIsRunning(Request $request) {
