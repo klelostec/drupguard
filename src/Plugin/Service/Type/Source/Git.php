@@ -11,7 +11,6 @@ use App\Plugin\Service\Source;
 use App\Repository\Plugin\Type\Source\Git as GitRepository;
 use CzProject\GitPhp\Git as GitClient;
 use Symfony\Component\Filesystem\Filesystem;
-use function Symfony\Component\Translation\t;
 
 #[TypeInfo(
     id: 'git',
@@ -26,7 +25,7 @@ class Git extends Source
     public function source(Project $project, mixed $source): string
     {
         /**
-         * @var \App\Entity\Plugin\Type\Source\Git $source
+         * @var GitEntity $source
          */
         $path = $this->getPath($project, $source);
         $fileSystem = new Filesystem();
@@ -34,22 +33,20 @@ class Git extends Source
         $dirExists = $fileSystem->exists($path);
         $gitClient = new GitClient();
         try {
-            if ($dirExists && $fileSystem->exists($path . '/.git')) {
+            if ($dirExists && $fileSystem->exists($path.'/.git')) {
                 $repo = $gitClient->open($path);
-                $repo->fetch(NULL, ['--all', '-p']);
+                $repo->fetch(null, ['--all', '-p']);
                 if ($repo->hasChanges()) {
-                    $repo->run('reset', '--hard', 'origin/' . $source->getBranch());
+                    $repo->run('reset', '--hard', 'origin/'.$source->getBranch());
                     $repo->run('clean', '-fd');
                     $repo->run('checkout', '.');
                 }
                 if ($repo->getCurrentBranchName() !== $source->getBranch()) {
                     $repo->checkout($source->getBranch());
-                }
-                else {
+                } else {
                     $repo->pull();
                 }
-            }
-            else {
+            } else {
                 if ($dirExists) {
                     $fileSystem->remove($path);
                 }
@@ -57,8 +54,7 @@ class Git extends Source
                 $repo = $gitClient->cloneRepository($source->getRepository(), $path);
                 $repo->checkout($source->getBranch());
             }
-        }
-        catch (\Exception $e) {
+        } catch (\Exception $e) {
             throw new SourceException($this->translator->trans('Error during git operations.'), $e);
         }
 

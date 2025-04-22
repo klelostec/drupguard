@@ -5,7 +5,6 @@ namespace App\Controller\Crud;
 use App\EasyAdmin\Field\MachineNameField;
 use App\Entity\Plugin\PluginAbstract;
 use App\Entity\Project;
-use App\Message\ProjectAnalyse;
 use App\Message\ProjectAnalysePending;
 use App\Plugin\Manager;
 use App\Security\Roles;
@@ -40,7 +39,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Count;
-use App\ProjectState;
+
 use function Symfony\Component\String\u;
 use function Symfony\Component\Translation\t;
 
@@ -74,6 +73,7 @@ class ProjectCrudController extends AbstractCrudController
             ->displayAsButton()
             ->setTemplatePath('admin/project/action/analyse.html.twig')
         ;
+
         return $actions
             ->add(Crud::PAGE_EDIT, Action::INDEX)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
@@ -103,7 +103,7 @@ class ProjectCrudController extends AbstractCrudController
                 ->useEntryCrudForm(ProjectMemberCrudController::class)
                 ->setEntryIsComplex()
                 ->hideOnIndex()
-                //->hideWhenCreating()
+            // ->hideWhenCreating()
             ,
             BooleanField::new('isPublic')
                 ->hideOnIndex(),
@@ -144,7 +144,6 @@ class ProjectCrudController extends AbstractCrudController
             $fields[] = $collection;
         }
 
-
         $fields[] = FormField::addTab('Analyse settings');
         $fields[] = TextField::new('periodicity')
             ->setFormTypeOptions([
@@ -163,7 +162,8 @@ class ProjectCrudController extends AbstractCrudController
         return $fields;
     }
 
-    public function analyse(AdminContext $context, MessageBusInterface $bus) {
+    public function analyse(AdminContext $context, MessageBusInterface $bus)
+    {
         $event = new BeforeCrudActionEvent($context);
         $this->container->get('event_dispatcher')->dispatch($event);
         if ($event->isPropagationStopped()) {
@@ -178,19 +178,21 @@ class ProjectCrudController extends AbstractCrudController
             throw new InsufficientEntityPermissionException($context);
         }
         $entityInstance = $context->getEntity()->getInstance();
-        $res = TRUE;
+        $res = true;
         try {
             $bus->dispatch(new ProjectAnalysePending($entityInstance->getId()));
         } catch (ForeignKeyConstraintViolationException $e) {
-            $res = FALSE;
+            $res = false;
         }
+
         return new JsonResponse([
-            'result' => $res
+            'result' => $res,
         ]);
     }
 
     #[Route('/project/check-running', name: 'app_project_check_running', format: 'json', methods: ['POST'], )]
-    function checkIsRunning(Request $request) {
+    public function checkIsRunning(Request $request)
+    {
         /**
          * @var EntityManagerInterface $em
          */
@@ -207,8 +209,9 @@ class ProjectCrudController extends AbstractCrudController
             }
             $ret[$entityInstance->getId()] = $entityInstance->isRunning();
         }
+
         return new JsonResponse([
-            'result' => $ret
+            'result' => $ret,
         ]);
     }
 

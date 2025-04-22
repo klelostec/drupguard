@@ -2,5 +2,6 @@
 
 namespace App\Plugin\Exception;
 
-class Analyse extends PluginTypeException{
+class Analyse extends PluginTypeException
+{
 }

@@ -71,6 +71,7 @@ abstract class Attribute
     public function setServiceClass(string $serviceClass): self
     {
         $this->serviceClass = $serviceClass;
+
         return $this;
     }
 }

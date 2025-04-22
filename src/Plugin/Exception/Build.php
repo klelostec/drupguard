@@ -2,5 +2,6 @@
 
 namespace App\Plugin\Exception;
 
-class Build extends PluginTypeException{
+class Build extends PluginTypeException
+{
 }

@@ -8,6 +8,7 @@ use Symfony\Component\Form\CallbackTransformer;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+
 use function Symfony\Component\String\u;
 
 abstract class PluginAbstract extends AbstractType implements PluginInterface
@@ -41,7 +42,7 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                         'class' => u($type->getId())->snake().'-'.u($this->pluginInfo->getId())->snake().'-settings '.u($this->pluginInfo->getId())->snake().'-settings',
                     ],
                     'empty_data' => new ($type->getEntityClass()),
-                    'help' => $type->getHelp()
+                    'help' => $type->getHelp(),
                 ])
             ;
         }
@@ -55,6 +56,7 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                         $value->{'set'.mb_ucfirst(u($type->getId())->camel())}(null);
                     }
                 }
+
                 return $value;
             },
             function ($value) {
@@ -66,6 +68,7 @@ abstract class PluginAbstract extends AbstractType implements PluginInterface
                         $value->{'set'.mb_ucfirst(u($type->getId())->camel())}(null);
                     }
                 }
+
                 return $value;
             }
         ));

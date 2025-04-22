@@ -12,7 +12,7 @@ class TypeInfo extends Attribute
     protected string $type;
     protected string|TranslatableMessage $help = '';
 
-    public function __construct(?array $options = null, ?string $id = null, ?string $name = null, ?string $type = null, ?string $entityClass = null, ?string $formClass = null, ?string $repositoryClass = null, ?array $dependencies = null, string|TranslatableMessage $help = null)
+    public function __construct(?array $options = null, ?string $id = null, ?string $name = null, ?string $type = null, ?string $entityClass = null, ?string $formClass = null, ?string $repositoryClass = null, ?array $dependencies = null, string|TranslatableMessage|null $help = null)
     {
         parent::__construct($options, $id, $name, $entityClass, $formClass, $repositoryClass);
 

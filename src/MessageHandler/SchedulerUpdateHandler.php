@@ -2,9 +2,7 @@
 
 namespace App\MessageHandler;
 
-use App\Message\ProjectAnalyseRunning;
 use App\Message\SchedulerUpdate;
-use App\ProjectState;
 use App\Scheduler\ProjectAnalysePendingSchedule;
 use App\Service\SchedulerUpdateService;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -17,7 +15,7 @@ class SchedulerUpdateHandler
 
     public function __construct(
         ProjectAnalysePendingSchedule $projectAnalysePendingSchedule,
-        SchedulerUpdateService $schedulerUpdateService
+        SchedulerUpdateService $schedulerUpdateService,
     ) {
         $this->projectAnalysePendingSchedule = $projectAnalysePendingSchedule;
         $this->schedulerUpdateService = $schedulerUpdateService;

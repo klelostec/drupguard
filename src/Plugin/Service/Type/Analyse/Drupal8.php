@@ -2,7 +2,6 @@
 
 namespace App\Plugin\Service\Type\Analyse;
 
-use App\Entity\Plugin\Analyse as AnalyseEntity;
 use App\Entity\Plugin\Type\Analyse\Drupal8 as Drupal8Entity;
 use App\Entity\Project;
 use App\Form\Plugin\Type\Analyse\Drupal8 as Drupal8Form;
@@ -26,7 +25,7 @@ use Symfony\Component\Translation\TranslatableMessage;
 )]
 class Drupal8 extends Analyse
 {
-    public function analyse(Project $project, mixed $analyse, string $path): mixed {
-
+    public function analyse(Project $project, mixed $analyse, string $path): mixed
+    {
     }
 }

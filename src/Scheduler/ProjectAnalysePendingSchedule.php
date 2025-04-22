@@ -3,7 +3,6 @@
 namespace App\Scheduler;
 
 use App\Entity\Project;
-use App\Entity\ScheduleUpdate;
 use App\Message\ProjectAnalysePending;
 use App\Message\SchedulerUpdate;
 use App\ProjectState;
@@ -69,9 +68,9 @@ final class ProjectAnalysePendingSchedule implements ScheduleProviderInterface
     {
         $message = $event->getMessage();
         if (
-            !($message instanceof RedispatchMessage) ||
-            !($message->envelope->getMessage() instanceof ProjectAnalysePending) ||
-            empty($message->envelope->getMessage()->getProjectId())
+            !($message instanceof RedispatchMessage)
+            || !($message->envelope->getMessage() instanceof ProjectAnalysePending)
+            || empty($message->envelope->getMessage()->getProjectId())
         ) {
             return;
         }
@@ -79,7 +78,7 @@ final class ProjectAnalysePendingSchedule implements ScheduleProviderInterface
         $project = $this->em
             ->getRepository(Project::class)
             ->find($message->envelope->getMessage()->getProjectId());
-        if (!$project || $project->getState() !== ProjectState::IDLE) {
+        if (!$project || ProjectState::IDLE !== $project->getState()) {
             $event->shouldCancel(true);
         }
     }

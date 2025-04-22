@@ -4,7 +4,6 @@ namespace App\EventListener;
 
 use App\Entity\Project;
 use App\Service\SchedulerUpdateService;
-use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityDeletedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\AfterEntityPersistedEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeEntityUpdatedEvent;
@@ -17,11 +16,13 @@ final class ProjectEventListener
 {
     private SchedulerUpdateService $schedulerUpdateService;
 
-    public function __construct(SchedulerUpdateService $schedulerUpdateService) {
+    public function __construct(SchedulerUpdateService $schedulerUpdateService)
+    {
         $this->schedulerUpdateService = $schedulerUpdateService;
     }
 
-    public function onEntityDeletePersistedEvent(AfterEntityDeletedEvent|AfterEntityPersistedEvent $event) {
+    public function onEntityDeletePersistedEvent(AfterEntityDeletedEvent|AfterEntityPersistedEvent $event)
+    {
         $entity = $event->getEntityInstance();
         if (!$entity instanceof Project) {
             return;
@@ -29,7 +30,8 @@ final class ProjectEventListener
         $this->schedulerUpdateService->append($entity);
     }
 
-    public function onEntityUpdatedEvent(BeforeEntityUpdatedEvent $event) {
+    public function onEntityUpdatedEvent(BeforeEntityUpdatedEvent $event)
+    {
         $entity = $event->getEntityInstance();
         if (!$entity instanceof Project) {
             return;

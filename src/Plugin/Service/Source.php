@@ -22,18 +22,20 @@ abstract class Source extends Plugin
 {
     protected KernelInterface $appKernel;
 
-    public function __construct(TranslatorInterface $translator, KernelInterface $appKernel) {
+    public function __construct(TranslatorInterface $translator, KernelInterface $appKernel)
+    {
         parent::__construct($translator);
         $this->appKernel = $appKernel;
     }
 
     abstract public function source(Project $project, mixed $source): string;
 
-    protected function getPath(Project $project, mixed $source): string {
+    protected function getPath(Project $project, mixed $source): string
+    {
         if ($source instanceof PathTypeAbstract && !empty($source->getPath())) {
             return $source->getPath();
         }
 
-        return $this->appKernel->getProjectDir() . '/workspace/' . $project->getMachineName();
+        return $this->appKernel->getProjectDir().'/workspace/'.$project->getMachineName();
     }
 }

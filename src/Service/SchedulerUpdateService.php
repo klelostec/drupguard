@@ -14,7 +14,8 @@ class SchedulerUpdateService
     private EntityManagerInterface $em;
     private MarshallerInterface $marshaller;
 
-    public function __construct(EntityManagerInterface $em, string $dsn) {
+    public function __construct(EntityManagerInterface $em, string $dsn)
+    {
         $this->marshaller = new DefaultMarshaller();
         $this->em = $em;
         $this->cache = new DoctrineDbalAdapter(
@@ -22,12 +23,13 @@ class SchedulerUpdateService
             '',
             0,
             [
-                'db_table' => 'schedule_update_items'
+                'db_table' => 'schedule_update_items',
             ]
         );
     }
 
-    public function append(Project $entity, $check = false) {
+    public function append(Project $entity, $check = false)
+    {
         if ($check) {
             $uow = $this->em->getUnitOfWork();
             $uow->computeChangeSets();
@@ -44,12 +46,15 @@ class SchedulerUpdateService
         $this->cache->save($item);
     }
 
-    public function getAll(): iterable {
+    public function getAll(): iterable
+    {
         $item = $this->cache->getItem('projects');
+
         return $item->get() ?? [];
     }
 
-    public function clear(): void {
+    public function clear(): void
+    {
         $item = $this->cache->getItem('projects');
         $item->set([]);
         $this->cache->save($item);

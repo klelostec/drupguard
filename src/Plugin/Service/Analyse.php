@@ -7,7 +7,6 @@ use App\Entity\Project;
 use App\Form\Plugin\Analyse as AnalyseForm;
 use App\Plugin\Annotation\PluginInfo;
 use App\Repository\Plugin\Analyse as AnalyseRepository;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[PluginInfo(
     id: 'analyse',

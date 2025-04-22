@@ -2,10 +2,9 @@
 
 namespace App\MessageHandler;
 
-use App\Entity\Project;
 use App\Message\ProjectAnalyseRunning;
-use App\Service\AnalyseService;
 use App\ProjectState;
+use App\Service\AnalyseService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\Messenger\MessageBusInterface;
@@ -26,14 +25,13 @@ class ProjectAnalyseRunningHandler extends ProjectAnalyseHandlerAbstract
         if (empty($message->getProjectId())) {
             return;
         }
-    
+
         $project = $this->repository->find($message->getProjectId());
-    
-        if (!$project || $project->getState() !== ProjectState::PENDING) {
+
+        if (!$project || ProjectState::PENDING !== $project->getState()) {
             return;
         }
-    
+
         $this->analyseService->process($project);
     }
-    
 }

@@ -26,7 +26,7 @@ class ReportComposerAudit
     /**
      * @var Collection<int, ReportComposerAuditItem>
      */
-    #[ORM\OneToMany(targetEntity: ReportComposerAuditItem::class, mappedBy: 'reportComposerAudit', cascade: [ 'persist', 'remove' ], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: ReportComposerAuditItem::class, mappedBy: 'reportComposerAudit', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $items;
 
     public function __construct()

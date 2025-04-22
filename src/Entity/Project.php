@@ -2,10 +2,10 @@
 
 namespace App\Entity;
 
+use App\AnalyseLevelState;
 use App\Entity\Plugin\Analyse;
 use App\Entity\Plugin\Build;
 use App\Entity\Plugin\Source;
-use App\AnalyseLevelState;
 use App\ProjectState;
 use App\Repository\ProjectRepository;
 use App\Security\ProjectRoles;
@@ -297,7 +297,7 @@ class Project
 
     public function isRunning(): bool
     {
-        return $this->state !== ProjectState::IDLE;
+        return ProjectState::IDLE !== $this->state;
     }
 
     public function getPeriodicity(): ?string

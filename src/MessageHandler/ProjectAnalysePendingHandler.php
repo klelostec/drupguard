@@ -10,8 +10,8 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Stamp\DispatchAfterCurrentBusStamp;
 
 #[AsMessageHandler]
-class ProjectAnalysePendingHandler extends ProjectAnalyseHandlerAbstract {
-
+class ProjectAnalysePendingHandler extends ProjectAnalyseHandlerAbstract
+{
     public function __invoke(ProjectAnalysePending $message)
     {
         if (empty($message->getProjectId())) {
@@ -24,8 +24,8 @@ class ProjectAnalysePendingHandler extends ProjectAnalyseHandlerAbstract {
             return;
         }
 
-        if ($project->getState() !== ProjectState::IDLE) {
-            return; 
+        if (ProjectState::IDLE !== $project->getState()) {
+            return;
         }
 
         $project->setState(ProjectState::PENDING);

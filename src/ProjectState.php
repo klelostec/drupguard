@@ -2,7 +2,8 @@
 
 namespace App;
 
-enum ProjectState: int {
+enum ProjectState: int
+{
     case IDLE = 0;
     case PENDING = 1;
     case SOURCING = 2;

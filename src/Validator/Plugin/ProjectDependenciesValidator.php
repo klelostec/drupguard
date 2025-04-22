@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 use Symfony\Component\Validator\Exception\UnexpectedValueException;
+
 use function Symfony\Component\String\u;
 
 class ProjectDependenciesValidator extends ConstraintValidator

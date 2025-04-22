@@ -13,6 +13,7 @@ use App\Plugin\Service\Analyse;
 use App\Repository\Plugin\Type\Analyse\ComposerAudit as ComposerAuditRepository;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
+
 use function Symfony\Component\Translation\t;
 
 #[TypeInfo(
@@ -28,21 +29,22 @@ use function Symfony\Component\Translation\t;
 )]
 class ComposerAudit extends Analyse
 {
-    public function analyse(Project $project, mixed $analyse, string $path): mixed {
-
+    public function analyse(Project $project, mixed $analyse, string $path): mixed
+    {
         $fileSystem = new Filesystem();
         $reportAnalyse = new ReportComposerAudit();
 
         /**
-         * @var \App\Entity\Plugin\Type\Analyse\ComposerAudit $analyse
+         * @var ComposerAuditEntity $analyse
          */
         if (!empty($analyse->getPath())) {
             $path .= $analyse->getPath();
         }
 
-        if (!$fileSystem->exists($path . '/composer.lock')) {
+        if (!$fileSystem->exists($path.'/composer.lock')) {
             $reportAnalyse->setState(AnalyseLevelState::FAILURE);
             $reportAnalyse->setDetail($this->translator->trans('Composer files not found.'));
+
             return $reportAnalyse;
         }
 
@@ -52,23 +54,23 @@ class ComposerAudit extends Analyse
         );
 
         $composerAuditCmd = new Process($composerCmd, $path);
-        $composerAuditCmd->setTimeout(60*60);
+        $composerAuditCmd->setTimeout(60 * 60);
         $res = $composerAuditCmd->run();
         $composerAudit = [];
-        if ($res !== 0) {
+        if (0 !== $res) {
             try {
                 $output = $composerAuditCmd->getOutput();
                 $composerAudit = json_decode($output, true);
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 $reportAnalyse->setState(AnalyseLevelState::FAILURE);
                 $reportAnalyse->setDetail($this->translator->trans('Composer audit failed. Detail: %detail%', ['detail' => $composerAuditCmd->getErrorOutput()]));
+
                 return $reportAnalyse;
             }
         }
         unset($composerAuditCmd);
 
-        $composerLock = json_decode($fileSystem->readFile($path . '/composer.lock'), true) ?? [];
+        $composerLock = json_decode($fileSystem->readFile($path.'/composer.lock'), true) ?? [];
         $state = AnalyseLevelState::SUCCESS;
         foreach ($composerLock['packages'] as $package) {
             $item = new ReportComposerAuditItem();
@@ -81,12 +83,11 @@ class ComposerAudit extends Analyse
             if (isset($composerAudit['abandoned'][$name])) {
                 $itemState = AnalyseLevelState::WARNING;
                 $item->setDetail(t('Abandoned package.'));
-            }
-            else if (isset($composerAudit['advisories'][$name])) {
+            } elseif (isset($composerAudit['advisories'][$name])) {
                 $itemState = AnalyseLevelState::SECURITY;
                 $advisories = [];
                 foreach ($composerAudit['advisories'][$name] as $advisory) {
-                    $advisories[] = $advisory['title'] . '<br><a href="' . $advisory['link'] . '" target="_blank">' . $advisory['cve'] . '</a>';
+                    $advisories[] = $advisory['title'].'<br><a href="'.$advisory['link'].'" target="_blank">'.$advisory['cve'].'</a>';
                 }
                 $item->setDetail($this->translator->trans('Security advisories: %advisories%', ['advisories' => implode('<br><br>', $advisories)]));
             }
@@ -98,6 +99,7 @@ class ComposerAudit extends Analyse
         }
 
         $reportAnalyse->setState($state);
+
         return $reportAnalyse;
     }
 }
