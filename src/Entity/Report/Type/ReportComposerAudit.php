@@ -1,66 +1,30 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity\Report\Type;
 
-use App\AnalyseLevelState;
-use App\Repository\ReportComposerAuditRepository;
+use App\Entity\Report;
+use App\Entity\Report\ReportAbstract;
+use App\Repository\Report\ReportComposerAuditRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReportComposerAuditRepository::class)]
-class ReportComposerAudit
+class ReportComposerAudit extends ReportAbstract
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
-
-    #[ORM\Column(enumType: AnalyseLevelState::class)]
-    private ?AnalyseLevelState $state = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $detail = null;
+    #[ORM\ManyToOne(inversedBy: 'composerAudit')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    protected ?Report $report = null;
 
     /**
      * @var Collection<int, ReportComposerAuditItem>
      */
     #[ORM\OneToMany(targetEntity: ReportComposerAuditItem::class, mappedBy: 'reportComposerAudit', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $items;
+    protected Collection $items;
 
     public function __construct()
     {
         $this->items = new ArrayCollection();
-    }
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getState(): ?AnalyseLevelState
-    {
-        return $this->state;
-    }
-
-    public function setState(AnalyseLevelState $state): static
-    {
-        $this->state = $state;
-
-        return $this;
-    }
-
-    public function getDetail(): ?string
-    {
-        return $this->detail;
-    }
-
-    public function setDetail(?string $detail): static
-    {
-        $this->detail = $detail;
-
-        return $this;
     }
 
     /**

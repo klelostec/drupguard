@@ -72,7 +72,9 @@ class ProjectCrudController extends AbstractCrudController
             ->linkToCrudAction('analyse')
             ->displayAsButton()
             ->setTemplatePath('admin/project/action/analyse.html.twig')
-        ;
+            ->displayIf(static function (Project $entity) {
+                return !$entity->getAnalysePlugins()->isEmpty();
+            });
 
         return $actions
             ->add(Crud::PAGE_EDIT, Action::INDEX)

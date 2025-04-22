@@ -2,8 +2,8 @@
 
 namespace App\Security\Voter;
 
+use App\Entity\Project;
 use App\Entity\ProjectMember;
-use App\Entity\User;
 use App\Security\ProjectRoles;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -41,8 +41,8 @@ class ProjectCrudVoter extends Voter
     }
 
     /**
-     * @param string $attribute
-     * @param User   $subject
+     * @param string  $attribute
+     * @param Project $subject
      */
     protected function voteOnAttribute($attribute, $subject, TokenInterface $token): bool
     {

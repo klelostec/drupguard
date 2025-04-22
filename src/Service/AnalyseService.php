@@ -121,6 +121,7 @@ class AnalyseService
         $this->entityManager->flush();
 
         $state = AnalyseLevelState::SUCCESS;
+        $weight = 0;
         foreach ($project->getAnalysePlugins() as $plugin) {
             $pluginType = $plugin->getType();
             $this->logger->debug('Analyse type: '.$pluginType);
@@ -134,14 +135,14 @@ class AnalyseService
              */
             $service = $this->serviceLocator->get($typeInfo->getServiceClass());
             $currentReport = $service->analyse($project, $analyseEntity, $path);
-
+            $currentReport->setWeight($weight);
             $pluginState = $currentReport->getState();
-            $this->entityManager->persist($currentReport);
-            $this->entityManager->flush();
-            $report->{'set'.mb_ucfirst(u($pluginType)->camel())}($currentReport);
+            $reportType = $typeInfo->getReportType() ?: $pluginType;
+            $report->{'add'.mb_ucfirst(u($reportType)->camel())}($currentReport);
             if ($pluginState->value < $state->value) {
                 $state = $pluginState;
             }
+            ++$weight;
         }
 
         $report->setState($state);

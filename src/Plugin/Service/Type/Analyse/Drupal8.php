@@ -3,10 +3,8 @@
 namespace App\Plugin\Service\Type\Analyse;
 
 use App\Entity\Plugin\Type\Analyse\Drupal8 as Drupal8Entity;
-use App\Entity\Project;
 use App\Form\Plugin\Type\Analyse\Drupal8 as Drupal8Form;
 use App\Plugin\Annotation\TypeInfo;
-use App\Plugin\Service\Analyse;
 use App\Repository\Plugin\Type\Analyse\Drupal8 as Drupal8Repository;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -21,11 +19,9 @@ use Symfony\Component\Translation\TranslatableMessage;
     dependencies: [
         'source' => '*',
         'build' => 'composer',
-    ]
+    ],
+    reportType: 'drupal'
 )]
-class Drupal8 extends Analyse
+class Drupal8 extends DrupalAbstract
 {
-    public function analyse(Project $project, mixed $analyse, string $path): mixed
-    {
-    }
 }

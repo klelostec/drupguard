@@ -1,23 +1,23 @@
 <?php
 
-namespace App\Repository;
+namespace App\Repository\Report;
 
-use App\Entity\ReportComposerAuditItem;
+use App\Entity\Report\Type\ReportDrupal;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<ReportComposerAuditItem>
+ * @extends ServiceEntityRepository<\App\Entity\Report\Type\ReportDrupal>
  */
-class ReportComposerAuditItemRepository extends ServiceEntityRepository
+class ReportDrupalRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ReportComposerAuditItem::class);
+        parent::__construct($registry, ReportDrupal::class);
     }
 
     //    /**
-    //     * @return ReportComposerAuditItem[] Returns an array of ReportComposerAuditItem objects
+    //     * @return ReportComposerAudit[] Returns an array of ReportComposerAudit objects
     //     */
     //    public function findByExampleField($value): array
     //    {
@@ -31,7 +31,7 @@ class ReportComposerAuditItemRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?ReportComposerAuditItem
+    //    public function findOneBySomeField($value): ?ReportComposerAudit
     //    {
     //        return $this->createQueryBuilder('r')
     //            ->andWhere('r.exampleField = :val')

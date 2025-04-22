@@ -11,6 +11,8 @@ use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+use function Symfony\Component\String\u;
+
 class AppFixtures extends Fixture
 {
     protected UserPasswordHasherInterface $userPasswordHasher;
@@ -91,6 +93,17 @@ class AppFixtures extends Fixture
                 'name' => 'project1',
                 'machine_name' => 'project1',
                 'isPublic' => true,
+                'source' => [
+                    [
+                        'type' => 'local',
+                        'path' => '/var/www',
+                    ],
+                ],
+                'analyse' => [
+                    [
+                        'type' => 'composer_audit',
+                    ],
+                ],
             ],
             [
                 'name' => 'project2',
@@ -115,6 +128,27 @@ class AppFixtures extends Fixture
             $project->setMachineName($currentProject['machine_name']);
             $project->setIsPublic($currentProject['isPublic']);
 
+            foreach (['source', 'build', 'analyse'] as $type) {
+                if (isset($currentProject[$type])) {
+                    foreach ($currentProject[$type] as $pluginDef) {
+                        $namespace = 'App\Entity\Plugin\\'.ucfirst($type);
+                        $pluginEntity = new $namespace();
+                        $pluginTypeCamel = mb_ucfirst(u($pluginDef['type'])->camel());
+                        $pluginTypeEntity = new ('App\Entity\Plugin\Type\\'.ucfirst($type).'\\'.$pluginTypeCamel)();
+                        foreach ($pluginDef as $property => $value) {
+                            if ('type' === $property) {
+                                $pluginEntity->setType($value);
+                                continue;
+                            }
+                            $pluginTypeEntity->{'set'.ucfirst($property)}($value);
+                        }
+                        $pluginEntity->{'set'.$pluginTypeCamel}($pluginTypeEntity);
+                        $project->{'add'.ucfirst($type).'Plugin'}($pluginEntity);
+                        $manager->persist($pluginTypeEntity);
+                        $manager->persist($pluginEntity);
+                    }
+                }
+            }
             $manager->persist($project);
             $projectsDef[$index] = $project;
         }

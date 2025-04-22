@@ -3,10 +3,8 @@
 namespace App\Plugin\Service\Type\Analyse;
 
 use App\Entity\Plugin\Type\Analyse\Drupal7 as Drupal7Entity;
-use App\Entity\Project;
 use App\Form\Plugin\Type\Analyse\Drupal7 as Drupal7Form;
 use App\Plugin\Annotation\TypeInfo;
-use App\Plugin\Service\Analyse;
 use App\Repository\Plugin\Type\Analyse\Drupal7 as Drupal7Repository;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -20,11 +18,9 @@ use Symfony\Component\Translation\TranslatableMessage;
     help: new TranslatableMessage('Drupal security releases happen between 16:00 UTC and 22:00 UTC every Wednesday, so the value <em>0 5 * * 4</em> is suggested.'),
     dependencies: [
         'source' => '*',
-    ]
+    ],
+    reportType: 'drupal'
 )]
-class Drupal7 extends Analyse
+class Drupal7 extends DrupalAbstract
 {
-    public function analyse(Project $project, mixed $analyse, string $path): mixed
-    {
-    }
 }

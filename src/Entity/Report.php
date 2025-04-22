@@ -3,7 +3,11 @@
 namespace App\Entity;
 
 use App\AnalyseLevelState;
+use App\Entity\Report\Type\ReportComposerAudit;
+use App\Entity\Report\Type\ReportDrupal;
 use App\Repository\ReportRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -21,8 +25,17 @@ class Report
     #[ORM\Column(nullable: true, enumType: AnalyseLevelState::class)]
     private ?AnalyseLevelState $state = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private ?ReportComposerAudit $composerAudit = null;
+    /**
+     * @var Collection<int, ReportComposerAudit>
+     */
+    #[ORM\OneToMany(targetEntity: ReportComposerAudit::class, mappedBy: 'report', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    protected Collection $composerAudit;
+
+    /**
+     * @var Collection<int, ReportDrupal>
+     */
+    #[ORM\OneToMany(targetEntity: ReportDrupal::class, mappedBy: 'report', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $drupal;
 
     #[ORM\ManyToOne(inversedBy: 'reports')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
@@ -30,6 +43,12 @@ class Report
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $detail = null;
+
+    public function __construct()
+    {
+        $this->composerAudit = new ArrayCollection();
+        $this->drupal = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -60,14 +79,62 @@ class Report
         return $this;
     }
 
-    public function getComposerAudit(): ?ReportComposerAudit
+    /**
+     * @return Collection<int, \App\Entity\Report\Type\ReportComposerAudit>
+     */
+    public function getComposerAudit(): Collection
     {
         return $this->composerAudit;
     }
 
-    public function setComposerAudit(?ReportComposerAudit $composerAudit): static
+    public function addComposerAudit(ReportComposerAudit $composerAudit): static
     {
-        $this->composerAudit = $composerAudit;
+        if (!$this->composerAudit->contains($composerAudit)) {
+            $this->composerAudit->add($composerAudit);
+            $composerAudit->setReport($this);
+        }
+
+        return $this;
+    }
+
+    public function removeComposerAudit(ReportComposerAudit $composerAudit): static
+    {
+        if ($this->composerAudit->removeElement($composerAudit)) {
+            // set the owning side to null (unless already changed)
+            if ($composerAudit->getReport() === $this) {
+                $composerAudit->setReport(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, \App\Entity\Report\Type\ReportDrupal>
+     */
+    public function getDrupal(): Collection
+    {
+        return $this->drupal;
+    }
+
+    public function addDrupal(ReportDrupal $drupal): static
+    {
+        if (!$this->drupal->contains($drupal)) {
+            $this->drupal->add($drupal);
+            $drupal->setReport($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDrupal(ReportDrupal $drupal): static
+    {
+        if ($this->drupal->removeElement($drupal)) {
+            // set the owning side to null (unless already changed)
+            if ($drupal->getReport() === $this) {
+                $drupal->setReport(null);
+            }
+        }
 
         return $this;
     }
