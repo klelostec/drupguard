@@ -62,9 +62,7 @@ class IndexController extends AbstractDashboardController
                         ->setAction(Action::DETAIL)
                         ->setEntityId($user->getId())
                         ->generateUrl()
-                ),
-                MenuItem::section(),
-                MenuItem::linkToLogout('Logout', 'fa fa-sign-out'),
+                )
             ]);
     }
 }
