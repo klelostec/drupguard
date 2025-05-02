@@ -1,0 +1,19 @@
+{% extends '@EasyAdmin/page/login.html.twig' %}
+
+{% block title %}{{ 'Login'|trans }}{% endblock %}
+{% block head_stylesheets %}
+    {{ parent() }}
+    {{ importmap('app') }}
+{% endblock %}
+
+{% block login_form_wrapper %}
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link disabled active" aria-current="page" href="#" aria-disabled="true">{{ 'Login'|trans }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ register_path|default('#') }}">{{ 'Register'|trans }}</a>
+        </li>
+    </ul>
+    {{ parent() }}
+{% endblock %}

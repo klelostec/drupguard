@@ -15,6 +15,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
@@ -49,6 +50,8 @@ class ResetPasswordController extends AbstractController
         }
 
         return $this->render('reset_password/request.html.twig', [
+            'login_path' => $this->generateUrl('app_login'),
+            'register_path' => $this->generateUrl('app_register'),
             'requestForm' => $form,
         ]);
     }
@@ -127,6 +130,8 @@ class ResetPasswordController extends AbstractController
         }
 
         return $this->render('reset_password/reset.html.twig', [
+            'login_path' => $this->generateUrl('app_login'),
+            'register_path' => $this->generateUrl('app_register'),
             'resetForm' => $form,
         ]);
     }
@@ -158,12 +163,14 @@ class ResetPasswordController extends AbstractController
             return $this->redirectToRoute('app_check_email');
         }
 
+        $uri = $this->generateUrl('app_reset_password', ['token' => $resetToken->getToken()], UrlGeneratorInterface::ABSOLUTE_URL);
         $email = (new TemplatedEmail())
             ->from(new Address('no-reply@drupguard.com', 'Drupguard'))
             ->to($user->getEmail())
             ->subject('Your password reset request')
             ->htmlTemplate('reset_password/email.html.twig')
             ->context([
+                'uri' => $uri,
                 'resetToken' => $resetToken,
             ])
         ;

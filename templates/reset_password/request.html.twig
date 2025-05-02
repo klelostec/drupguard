@@ -1,13 +1,15 @@
-{% extends 'base.html.twig' %}
+{% extends '@EasyAdmin/page/login.html.twig' %}
 
 {% block title %}Reset your password{% endblock %}
-
-{% block body %}
-    {% for flash_error in app.flashes('reset_password_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
-    <h1>Reset your password</h1>
-
+{% block login_form_wrapper %}
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ login_path|default('#') }}">{{ 'Login'|trans }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ register_path|default('#') }}">{{ 'Register'|trans }}</a>
+        </li>
+    </ul>
     {{ form_start(requestForm) }}
         {{ form_row(requestForm.email) }}
         <div>
@@ -19,4 +21,4 @@
 
         <button class="btn btn-primary">Send password reset email</button>
     {{ form_end(requestForm) }}
-{% endblock %}
+{% endblock login_form_wrapper %}

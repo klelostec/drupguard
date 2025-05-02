@@ -1,24 +1,24 @@
-{% extends 'base.html.twig' %}
+{% extends '@EasyAdmin/page/login.html.twig' %}
 
 {% block title %}Register{% endblock %}
-
-{% block body %}
-    {% for flash_error in app.flashes('verify_email_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
-
-    <h1>Register</h1>
-
+{% block login_form_wrapper %}
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ login_path|default('#') }}">{{ 'Login'|trans }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link disabled active" aria-current="page" href="#" aria-disabled="true">{{ 'Register'|trans }}</a>
+        </li>
+    </ul>
     {{ form_errors(registrationForm) }}
-
     {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.username) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+    {{ form_row(registrationForm.email) }}
+    {{ form_row(registrationForm.username) }}
+    {{ form_row(registrationForm.plainPassword, {
+        label: 'Password'
+    }) }}
+    {{ form_row(registrationForm.agreeTerms) }}
 
-        <button type="submit" class="btn">Register</button>
+    <button type="submit" class="btn">Register</button>
     {{ form_end(registrationForm) }}
-{% endblock %}
+{% endblock login_form_wrapper %}

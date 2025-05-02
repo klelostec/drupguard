@@ -1,12 +1,17 @@
-{% extends 'base.html.twig' %}
+{% extends '@EasyAdmin/page/login.html.twig' %}
 
 {% block title %}Reset your password{% endblock %}
-
-{% block body %}
-    <h1>Reset your password</h1>
-
+{% block login_form_wrapper %}
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link" href="{{ login_path|default('#') }}">{{ 'Login'|trans }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{{ register_path|default('#') }}">{{ 'Register'|trans }}</a>
+        </li>
+    </ul>
     {{ form_start(resetForm) }}
         {{ form_row(resetForm.plainPassword) }}
         <button class="btn btn-primary">Reset password</button>
     {{ form_end(resetForm) }}
-{% endblock %}
+{% endblock login_form_wrapper %}
