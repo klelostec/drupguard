@@ -2,7 +2,9 @@
 
 namespace App\Entity\Plugin\Type\Build;
 
-use App\Entity\Plugin\Type\PathTypeAbstract;
+use App\Entity\Plugin\Type\PathTypeInterface;
+use App\Entity\Plugin\Type\PathTypeTrait;
+use App\Entity\Plugin\Type\TypeAbstract;
 use App\Repository\Plugin\Type\Build\Composer as ComposerRepository;
 use App\Validator as AppAssert;
 use Doctrine\ORM\Mapping as ORM;
@@ -11,8 +13,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'build_composer')]
 #[ORM\Entity(repositoryClass: ComposerRepository::class)]
 #[AppAssert\Plugin\Path(checkPathFileSystem: false)]
-class Composer extends PathTypeAbstract
+class Composer extends TypeAbstract implements PathTypeInterface
 {
+    use PathTypeTrait {
+        PathTypeTrait::__toString as traitToString;
+    }
+
     #[ORM\Column(length: 255)]
     #[Assert\Choice(callback: 'getVersions')]
     #[Assert\NotBlank()]
@@ -42,6 +48,6 @@ class Composer extends PathTypeAbstract
     {
         $version = $this->getVersion() ? ' - '.array_flip(static::getVersions())[$this->version] : '';
 
-        return 'Composer'.$version.parent::__toString();
+        return 'Composer'.$version.$this->traitToString();
     }
 }

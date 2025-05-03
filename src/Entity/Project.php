@@ -338,7 +338,8 @@ class Project
 
     public function getLastReport(): ?Report
     {
-        return $this->reports->last();
+        $report = $this->reports->last();
+        return $report ? $report : null;
     }
 
     /**
@@ -373,7 +374,7 @@ class Project
 
     public function getLastReportState(): ?AnalyseLevelState
     {
-        $lastReport = $this->reports->last();
+        $lastReport = $this->getLastReport();
 
         return $lastReport ? $lastReport->getState() : null;
     }

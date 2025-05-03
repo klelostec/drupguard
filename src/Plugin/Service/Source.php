@@ -3,7 +3,7 @@
 namespace App\Plugin\Service;
 
 use App\Entity\Plugin\Source as SourceEntity;
-use App\Entity\Plugin\Type\PathTypeAbstract;
+use App\Entity\Plugin\Type\PathTypeInterface;
 use App\Entity\Project;
 use App\Form\Plugin\Source as SourceForm;
 use App\Plugin\Annotation\PluginInfo;
@@ -32,7 +32,7 @@ abstract class Source extends Plugin
 
     protected function getPath(Project $project, mixed $source): string
     {
-        if ($source instanceof PathTypeAbstract && !empty($source->getPath())) {
+        if ($source instanceof PathTypeInterface && !empty($source->getPath())) {
             return $source->getPath();
         }
 

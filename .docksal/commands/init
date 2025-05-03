@@ -14,6 +14,7 @@ fin db drop default
 fin db create default
 fin composer install
 fin rebuild-assets
+fin exec 'find /var/www/migrations -name "*.php" -delete'
 fin symfony console doctrine:schema:create
 fin symfony console doctrine:fixtures:load
 fin cache-clear

@@ -1,0 +1,35 @@
+{# @var project \App\Entity\Project #}
+{# @var report \App\Entity\Report\ReportAbstract #}
+
+{% if report.detail %}
+    <div>
+        {{ report.detail }}
+    </div>
+{% endif %}
+
+{% if report.items.count > 0 %}
+    <table class="table">
+        <thead>
+        {% block table_head %}
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Type</th>
+                <th scope="col">Current version</th>
+                <th scope="col">Detail</th>
+            </tr>
+        {% endblock table_head %}
+        </thead>
+        <tbody>
+        {% block table_body %}
+            {% for reportItem in report.items %}
+                <tr class="table-state-{{ reportItem.state.name | lower }}">
+                    <th scope="row">{{ reportItem.name }}</th>
+                    <td>{{ reportItem.type }}</td>
+                    <td>{{ reportItem.currentVersion }}</td>
+                    <td>{{ reportItem.detail }}</td>
+                </tr>
+            {% endfor %}
+        {% endblock table_body %}
+        </tbody>
+    </table>
+{% endif %}

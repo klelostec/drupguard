@@ -9,6 +9,7 @@ use App\Entity\Plugin\PluginAbstract;
 use App\Entity\Project;
 use App\Message\ProjectAnalysePending;
 use App\Plugin\Manager;
+use App\Repository\ReportRepository;
 use App\Security\Roles;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
@@ -22,13 +23,17 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\PaginatorDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Exception\ForbiddenActionException;
 use EasyCorp\Bundle\EasyAdminBundle\Exception\InsufficientEntityPermissionException;
+use EasyCorp\Bundle\EasyAdminBundle\Factory\PaginatorFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
@@ -36,6 +41,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityPaginator;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Security\Permission;
@@ -52,16 +58,22 @@ use function Symfony\Component\Translation\t;
 class ProjectCrudController extends AbstractCrudController
 {
     protected AdminUrlGeneratorInterface $adminUrlGenerator;
+    protected ReportRepository $reportRepository;
 
-    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    protected EntityPaginator $entityPaginator;
+
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, ReportRepository $reportRepository, EntityPaginator $entityPaginator)
     {
         $this->adminUrlGenerator = $adminUrlGenerator;
+        $this->reportRepository = $reportRepository;
+        $this->entityPaginator = $entityPaginator;
     }
 
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
             ->addFormTheme('form/types/custom.html.twig')
+            ->overrideTemplate('crud/detail', 'admin/project/crud/detail.html.twig')
             ->showEntityActionsInlined()
         ;
     }
@@ -82,6 +94,31 @@ class ProjectCrudController extends AbstractCrudController
             ->add(AnalyseLevelStateFilter::new('lastReportState', t('Last Report State'))
                 ->setFormTypeOption('mapped', false))
         ;
+    }
+
+    public function configureResponseParameters(KeyValueStore $responseParameters): KeyValueStore
+    {
+        if (Crud::PAGE_DETAIL === $responseParameters->get('pageName')) {
+            $entity = $responseParameters->get('entity');
+            $queryBuilder = $this->reportRepository->createQueryBuilder('report');
+            $queryBuilder
+                ->where('report.project = :id')
+                ->setParameter('id', $entity->getInstance()->getId())
+                ->orderBy('report.datetime', 'DESC');
+            $paginatorDto = new PaginatorDto(1, 5, 1, true, null);
+            $paginatorDto->setPageNumber((int) $this->getContext()->getRequest()->query->get('page', '1'));
+            $paginator = $this->entityPaginator->paginate($paginatorDto, $queryBuilder);
+            if ($paginator->isOutOfRange()) {
+                $report = null;
+            }
+            else {
+                $report = $paginator->getResults()->current();
+            }
+            $responseParameters->set('report', $report);
+            $responseParameters->set('paginator', $paginator);
+        }
+
+        return $responseParameters;
     }
 
     public static function getEntityFqcn(): string
@@ -105,7 +142,7 @@ class ProjectCrudController extends AbstractCrudController
                 return $action->setIcon('internal:delete');
             })
             ->add(Crud::PAGE_EDIT, Action::INDEX)
-            ->add(Crud::PAGE_INDEX, Action::DETAIL)
+            //->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_EDIT, Action::DELETE)
             ->add(Action::INDEX, $analyseAction)
             ->add(Action::DETAIL, $analyseAction)
@@ -229,6 +266,7 @@ class ProjectCrudController extends AbstractCrudController
         if (!$context->getEntity()->isAccessible()) {
             throw new InsufficientEntityPermissionException($context);
         }
+
         $entityInstance = $context->getEntity()->getInstance();
         $res = true;
         try {

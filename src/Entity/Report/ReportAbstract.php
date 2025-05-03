@@ -4,8 +4,10 @@ namespace App\Entity\Report;
 
 use App\AnalyseLevelState;
 use App\Entity\Report;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use function Symfony\Component\String\u;
 
 abstract class ReportAbstract implements ReportInterface
 {
@@ -19,6 +21,12 @@ abstract class ReportAbstract implements ReportInterface
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     protected ?string $detail = null;
+
+    #[ORM\Column(type: Types::STRING, nullable: true)]
+    protected ?string $name = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    protected ?string $path = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
     protected int $weight = 0;
@@ -56,6 +64,30 @@ abstract class ReportAbstract implements ReportInterface
         return $this;
     }
 
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
+
+        return $this;
+    }
+
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+    public function setPath(?string $path): static
+    {
+        $this->path = $path;
+
+        return $this;
+    }
+
     public function getWeight(): int
     {
         return $this->weight;
@@ -79,4 +111,10 @@ abstract class ReportAbstract implements ReportInterface
 
         return $this;
     }
+
+    public function getTemplateName(): string {
+        return u(get_class($this))->replace('App\Entity\Report\Type\Report', '')->snake();
+    }
+
+    abstract public function getItems(): Collection;
 }

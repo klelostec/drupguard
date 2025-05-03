@@ -103,6 +103,10 @@ class AppFixtures extends Fixture
                     [
                         'type' => 'composer_audit',
                     ],
+                    [
+                        'type' => 'drupal7',
+                        'name' => 'D7',
+                    ],
                 ],
             ],
             [

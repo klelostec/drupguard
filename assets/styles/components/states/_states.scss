@@ -17,6 +17,15 @@ $state-unknown: #f8f398;
 $state-types: ('failure', 'security', 'warning', 'success', 'none', 'unknown');
 $state-sizes: (25, 50, 75, 100);
 @each $type in $state-types {
+  .bg-state-#{$type} {
+    background-color: var(--state-#{$type});
+  }
+  .text-state-#{$type} {
+    color: var(--state-#{$type});
+  }
+  .table-state-#{$type} {
+    --bs-table-bg: var(--state-#{$type});
+  }
   @each $size in $state-sizes {
     .state-#{$type}-#{$size} {
       margin: 0;

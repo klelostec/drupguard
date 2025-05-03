@@ -4,7 +4,7 @@ namespace App\Entity\Plugin\Type;
 
 use Doctrine\ORM\Mapping as ORM;
 
-abstract class PathTypeAbstract extends TypeAbstract
+trait PathTypeTrait
 {
     #[ORM\Column(length: 255, nullable: true)]
     protected ?string $path = null;

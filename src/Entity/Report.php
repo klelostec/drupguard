@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\AnalyseLevelState;
+use App\Entity\Report\ReportInterface;
 use App\Entity\Report\Type\ReportComposerAudit;
 use App\Entity\Report\Type\ReportDrupal;
 use App\Repository\ReportRepository;
@@ -48,6 +49,8 @@ class Report
 
     #[ORM\Column]
     private ?bool $isLast = null;
+
+    private ?Collection $orderedReports = null;
 
     public function __construct()
     {
@@ -178,6 +181,25 @@ class Report
         $this->isLast = $isLast;
 
         return $this;
+    }
+
+    public function getOrderedReports(bool $reset = false): Collection
+    {
+        if ($reset || is_null($this->orderedReports)) {
+            $tmpArray = array_merge(
+                $this->drupal->toArray(),
+                $this->composerAudit->toArray(),
+            );
+            uasort($tmpArray, function (ReportInterface $a, ReportInterface $b) {
+                if ($a->getWeight() == $b->getWeight()) {
+                    return 0;
+                }
+                return $a->getWeight() < $b->getWeight() ? -1 : 1;
+            });
+            $this->orderedReports = new ArrayCollection($tmpArray);
+        }
+
+        return $this->orderedReports;
     }
 
     #[ORM\PostPersist]

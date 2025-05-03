@@ -136,6 +136,9 @@ class AnalyseService
              */
             $service = $this->serviceLocator->get($typeInfo->getServiceClass());
             $currentReport = $service->analyse($project, $analyseEntity, $path);
+            $currentReport->setName($analyseEntity->getName() ?? $typeInfo->getName());
+            $currentReport->setPath($analyseEntity->getPath());
+
             $currentReport->setWeight($weight);
             $pluginState = $currentReport->getState();
             $reportType = $typeInfo->getReportType() ?: $pluginType;

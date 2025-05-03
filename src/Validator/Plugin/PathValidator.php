@@ -2,7 +2,7 @@
 
 namespace App\Validator\Plugin;
 
-use App\Entity\Plugin\Type\PathTypeAbstract;
+use App\Entity\Plugin\Type\PathTypeInterface;
 use App\Plugin\Manager;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Validator\Constraint;
@@ -30,8 +30,8 @@ class PathValidator extends ConstraintValidator
             return;
         }
 
-        if (!($value instanceof PathTypeAbstract)) {
-            throw new UnexpectedValueException($value, 'PathTypeAbstract');
+        if (!($value instanceof PathTypeInterface)) {
+            throw new UnexpectedValueException($value, 'PathTypeInterface');
         }
 
         $path = $value->getPath();
