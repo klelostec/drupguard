@@ -1,0 +1,29 @@
+$state-failure: #e46161;
+$state-security: $state-failure;
+$state-warning: #f1b963;
+$state-success: #cbf078;
+$state-none: #d9dad7;
+$state-unknown: #f8f398;
+
+:root {
+  --state-failure: #{$state-failure};
+  --state-security: #{$state-security};
+  --state-warning: #{$state-warning};
+  --state-success: #{$state-success};
+  --state-none: #{$state-none};
+  --state-unknown: #{$state-unknown};
+}
+
+$state-types: ('failure', 'security', 'warning', 'success', 'none', 'unknown');
+$state-sizes: (25, 50, 75, 100);
+@each $type in $state-types {
+  @each $size in $state-sizes {
+    .state-#{$type}-#{$size} {
+      margin: 0;
+      width: #{$size}px;
+      height: #{$size}px;
+      border-radius: 50%;
+      background-color: var(--state-#{$type});
+    }
+  }
+}

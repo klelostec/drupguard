@@ -54,8 +54,9 @@ class ProjectRunning {
     #icon;
     #isRunning;
     constructor (link) {
+        console.log(link);
         this.#link = link;
-        this.#icon = link.querySelector('i.action-icon');
+        this.#icon = link.querySelector('span.action-icon i');
         const self = this;
         this.#link.addEventListener('click', function (e) {
             e.preventDefault();

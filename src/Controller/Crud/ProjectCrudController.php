@@ -2,7 +2,9 @@
 
 namespace App\Controller\Crud;
 
+use App\AnalyseLevelState;
 use App\EasyAdmin\Field\MachineNameField;
+use App\EasyAdmin\Filter\AnalyseLevelStateFilter;
 use App\Entity\Plugin\PluginAbstract;
 use App\Entity\Project;
 use App\Message\ProjectAnalysePending;
@@ -12,12 +14,14 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminAction;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -32,6 +36,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGeneratorInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Security\Permission;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -45,19 +51,36 @@ use function Symfony\Component\Translation\t;
 
 class ProjectCrudController extends AbstractCrudController
 {
+    protected AdminUrlGeneratorInterface $adminUrlGenerator;
+
+    public function __construct(AdminUrlGenerator $adminUrlGenerator)
+    {
+        $this->adminUrlGenerator = $adminUrlGenerator;
+    }
+
     public function configureCrud(Crud $crud): Crud
     {
         return $crud
             ->addFormTheme('form/types/custom.html.twig')
+            ->showEntityActionsInlined()
         ;
     }
 
     public function configureAssets(Assets $assets): Assets
     {
         return parent::configureAssets($assets)
+            ->addAssetMapperEntry('app')
             ->addAssetMapperEntry('machine_name')
             ->addAssetMapperEntry('plugin_settings')
             ->addAssetMapperEntry('project_running')
+        ;
+    }
+
+    public function configureFilters(Filters $filters): Filters
+    {
+        return $filters
+            ->add(AnalyseLevelStateFilter::new('lastReportState', t('Last Report State'))
+                ->setFormTypeOption('mapped', false))
         ;
     }
 
@@ -68,15 +91,19 @@ class ProjectCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $analyseAction = Action::new('analyse', t('Analyse'))
+        $analyseAction = Action::new('analyse', t('Analyse'), 'fa-solid fa-play')
             ->linkToCrudAction('analyse')
-            ->displayAsButton()
+            ->displayAsLink()
             ->setTemplatePath('admin/project/action/analyse.html.twig')
+            ->addCssClass('text-dark project-running-action visually-hidden')
             ->displayIf(static function (Project $entity) {
                 return !$entity->getAnalysePlugins()->isEmpty();
             });
 
         return $actions
+            ->update(Crud::PAGE_INDEX, Action::DELETE, function (Action $action) {
+                return $action->setIcon('internal:delete');
+            })
             ->add(Crud::PAGE_EDIT, Action::INDEX)
             ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_EDIT, Action::DELETE)
@@ -96,10 +123,24 @@ class ProjectCrudController extends AbstractCrudController
     {
         $fields = [
             FormField::addTab('General'),
-            IdField::new('id')->hideOnForm(),
-            TextField::new('name'),
+            IdField::new('id')
+                ->hideOnIndex()
+                ->hideOnForm(),
+            TextField::new('name')
+                ->hideOnIndex(),
+            TextField::new('name')
+                ->renderAsHtml()
+                ->formatValue(function ($value, $entityDto) {
+                    return '<a href="'.$this->adminUrlGenerator
+                        ->setController(self::class)
+                        ->setAction(Action::DETAIL)
+                        ->setEntityId($entityDto->getId()).'">'.$value.'</a>';
+                })
+                ->hideOnForm()
+                ->hideOnDetail(),
             MachineNameField::new('machine_name')
                 ->setFormTypeOption('source_field', 'name')
+                ->hideOnIndex()
                 ->hideWhenUpdating(),
             CollectionField::new('projectMembers')
                 ->useEntryCrudForm(ProjectMemberCrudController::class)
@@ -108,9 +149,17 @@ class ProjectCrudController extends AbstractCrudController
             // ->hideWhenCreating()
             ,
             BooleanField::new('isPublic')
-                ->hideOnIndex(),
+                ->hideOnIndex()
+                ->hideOnDetail(),
             BooleanField::new('isPublic')
                 ->renderAsSwitch(false)
+                ->hideOnForm()
+                ->hideOnIndex(),
+            ChoiceField::new('lastReportState')
+                ->setTemplatePath('admin/fields/report/state.html.twig')
+                ->formatValue(function (?AnalyseLevelState $value = null) {
+                    return 'state-'.strtolower($value?->name ?? 'none').'-25';
+                })
                 ->hideOnForm(),
             FormField::addTab('Plugins'),
         ];
@@ -164,6 +213,7 @@ class ProjectCrudController extends AbstractCrudController
         return $fields;
     }
 
+    #[AdminAction(routePath: '/{entityId}/analyse', routeName: 'analyse')]
     public function analyse(AdminContext $context, MessageBusInterface $bus)
     {
         $event = new BeforeCrudActionEvent($context);

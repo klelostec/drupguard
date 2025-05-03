@@ -8,6 +8,7 @@ use App\Entity\Project;
 use App\Entity\ProjectMember;
 use App\Entity\User;
 use App\Security\Roles;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -18,9 +19,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+#[AdminDashboard(routePath: '/', routeName: 'admin')]
 class IndexController extends AbstractDashboardController
 {
-    #[Route('/', name: 'app_home')]
+    #[Route(path: '/', name: 'app_home')]
     public function index(): Response
     {
         return $this->render('index/index.html.twig');
@@ -62,7 +64,7 @@ class IndexController extends AbstractDashboardController
                         ->setAction(Action::DETAIL)
                         ->setEntityId($user->getId())
                         ->generateUrl()
-                )
+                ),
             ]);
     }
 }

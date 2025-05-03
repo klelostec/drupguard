@@ -42,6 +42,7 @@ class AnalyseService
         $this->logger->debug('Process project '.$project->getId());
 
         $report = new Report();
+        $report->setIsLast(true);
         $report->setDatetime(new \DateTime());
 
         try {

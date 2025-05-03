@@ -370,4 +370,11 @@ class Project
 
         return $this;
     }
+
+    public function getLastReportState(): ?AnalyseLevelState
+    {
+        $lastReport = $this->reports->last();
+
+        return $lastReport ? $lastReport->getState() : null;
+    }
 }

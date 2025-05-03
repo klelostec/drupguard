@@ -9,9 +9,11 @@ use App\Repository\ReportRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Event\PostPersistEventArgs;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ReportRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Report
 {
     #[ORM\Id]
@@ -43,6 +45,9 @@ class Report
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $detail = null;
+
+    #[ORM\Column]
+    private ?bool $isLast = null;
 
     public function __construct()
     {
@@ -80,7 +85,7 @@ class Report
     }
 
     /**
-     * @return Collection<int, \App\Entity\Report\Type\ReportComposerAudit>
+     * @return Collection<int, ReportComposerAudit>
      */
     public function getComposerAudit(): Collection
     {
@@ -110,7 +115,7 @@ class Report
     }
 
     /**
-     * @return Collection<int, \App\Entity\Report\Type\ReportDrupal>
+     * @return Collection<int, ReportDrupal>
      */
     public function getDrupal(): Collection
     {
@@ -161,5 +166,33 @@ class Report
         $this->detail = $detail;
 
         return $this;
+    }
+
+    public function isLast(): ?bool
+    {
+        return $this->isLast;
+    }
+
+    public function setIsLast(bool $isLast): static
+    {
+        $this->isLast = $isLast;
+
+        return $this;
+    }
+
+    #[ORM\PostPersist]
+    public function updateLast(PostPersistEventArgs $event): void
+    {
+        if (!$this->isLast()) {
+            return;
+        }
+
+        $queryBuilder = $event->getObjectManager()->createQueryBuilder();
+        $query = $queryBuilder->update(self::class, 'report')
+            ->set('report.isLast', 0)
+            ->where('report.id != :id')
+            ->setParameter('id', $this->getId())
+            ->getQuery();
+        $query->execute();
     }
 }

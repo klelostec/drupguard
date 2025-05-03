@@ -17,7 +17,7 @@ class Manager
     protected CacheInterface $cache;
 
     /**
-     * @var \App\Plugin\Annotation\PluginInfo[]
+     * @var PluginInfo[]
      */
     protected array $plugins;
 
@@ -42,7 +42,7 @@ class Manager
             $mapClass = [];
 
             /**
-             * @var \App\Plugin\Annotation\TypeInfo[]
+             * @var TypeInfo[]
              */
             $types = [];
 
@@ -108,7 +108,7 @@ class Manager
     }
 
     /**
-     * @return \App\Plugin\Annotation\PluginInfo[]
+     * @return PluginInfo[]
      */
     public function getPlugins(): array
     {
