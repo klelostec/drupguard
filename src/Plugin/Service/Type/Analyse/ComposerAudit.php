@@ -50,7 +50,7 @@ class ComposerAudit extends Analyse
 
         $commandsDef = [
             'audit' => 'composer audit --no-scripts --no-plugins --no-cache --no-interaction --locked --format=json',
-            'outdated' => 'composer outdated --all --no-scripts --no-plugins --no-cache --no-interaction --locked --format=json',
+            'outdated' => 'composer outdated --ignore-platform-reqs --no-scripts --no-plugins --no-cache --no-interaction --locked --all --format=json',
         ];
         $commandsRes = [];
         foreach ($commandsDef as $commandType => $def) {
