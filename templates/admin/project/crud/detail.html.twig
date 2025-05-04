@@ -25,7 +25,9 @@
             <span class="me-2 state-{{ report.state.name | lower }}-50"></span>
             <span>{{ report.datetime | format_datetime('medium', 'medium') }}</span>
         </h2>
-
+        {%  if report.detail is not empty %}
+            <div class="container my-5">{{ report.detail | raw }}</div>
+        {% endif %}
         <div class="container my-5">
             <ul class="nav nav-tabs" role="tablist">
                 {% for currentReport in report.orderedReports %}

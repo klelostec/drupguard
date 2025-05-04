@@ -48,27 +48,32 @@ class ComposerAudit extends Analyse
             return $reportAnalyse;
         }
 
-        $composerCmd = explode(
-            ' ',
-            'composer audit --no-scripts --no-plugins --no-cache --no-interaction --locked --format=json'
-        );
+        $commandsDef = [
+            'audit' => 'composer audit --no-scripts --no-plugins --no-cache --no-interaction --locked --format=json',
+            'outdated' => 'composer outdated --all --no-scripts --no-plugins --no-cache --no-interaction --locked --format=json',
+        ];
+        $commandsRes = [];
+        foreach ($commandsDef as $commandType => $def) {
+            $realCommand = explode(
+                ' ',
+                $def
+            );
 
-        $composerAuditCmd = new Process($composerCmd, $path);
-        $composerAuditCmd->setTimeout(60 * 60);
-        $res = $composerAuditCmd->run();
-        $composerAudit = [];
-        if (0 !== $res) {
+            $composerCmd = new Process($realCommand, $path);
+            $composerCmd->setTimeout(60 * 60);
             try {
-                $output = $composerAuditCmd->getOutput();
-                $composerAudit = json_decode($output, true);
+                $composerCmd->run();
+                $output = $composerCmd->getOutput();
+                $commandsRes[$commandType] = json_decode($output, true);
             } catch (\Exception $e) {
                 $reportAnalyse->setState(AnalyseLevelState::FAILURE);
-                $reportAnalyse->setDetail($this->translator->trans('Composer audit failed. Detail: %detail%', ['detail' => $composerAuditCmd->getErrorOutput()]));
+                $reportAnalyse->setDetail($this->translator->trans('Composer %type% failed. Detail: %detail%', ['type' => $commandType, 'detail' => $composerCmd->getErrorOutput()]));
 
                 return $reportAnalyse;
             }
+            unset($composerCmd);
         }
-        unset($composerAuditCmd);
+        $commandsRes['outdated'] = array_combine(array_column($commandsRes['outdated']['locked'], 'name'), $commandsRes['outdated']['locked']);
 
         $composerLock = json_decode($fileSystem->readFile($path.'/composer.lock'), true) ?? [];
         $state = AnalyseLevelState::SUCCESS;
@@ -78,20 +83,43 @@ class ComposerAudit extends Analyse
             $item->setName($name);
             $item->setType($package['type'] ?? '');
             $item->setCurrentVersion($package['version']);
+            $item->setLatestVersion($commandsRes['outdated'][$name]['latest']);
 
             $itemState = AnalyseLevelState::SUCCESS;
-            if (isset($composerAudit['abandoned'][$name])) {
-                $itemState = AnalyseLevelState::WARNING;
-                $item->setDetail(t('Abandoned package.'));
-            } elseif (isset($composerAudit['advisories'][$name])) {
-                $itemState = AnalyseLevelState::SECURITY;
+            $detail = [];
+            if (isset($commandsRes['outdated'][$name]['latest-status'])) {
+                switch ($commandsRes['outdated'][$name]['latest-status']) {
+                    case 'update-possible':
+                        $itemState = $itemState->value > AnalyseLevelState::WARNING->value ? AnalyseLevelState::WARNING : $itemState;
+                        $detail[] = t('Major release available. Update possible.');
+                        break;
+                    case 'semver-safe-update':
+                        $itemState = $itemState->value > AnalyseLevelState::WARNING->value ? AnalyseLevelState::WARNING : $itemState;
+                        $detail[] = t('Patch or minor release available. Update recommended.');
+                        break;
+                    case 'up-to-date':
+                    default:
+                        break;
+                }
+            }
+            if (isset($commandsRes['audit']['abandoned'][$name])) {
+                $itemState = $itemState->value > (AnalyseLevelState::WARNING)->value ? AnalyseLevelState::WARNING : $itemState;
+                $detail[] = t('Abandoned package.');
+            }
+            if (isset($commandsRes['audit']['advisories'][$name])) {
+                $itemState = $itemState->value > AnalyseLevelState::SECURITY->value ? AnalyseLevelState::SECURITY : $itemState;
                 $advisories = [];
-                foreach ($composerAudit['advisories'][$name] as $advisory) {
+                foreach ($commandsRes['audit']['advisories'][$name] as $advisory) {
                     $advisories[] = $advisory['title'].'<br><a href="'.$advisory['link'].'" target="_blank">'.$advisory['cve'].'</a>';
                 }
-                $item->setDetail($this->translator->trans('Security advisories: %advisories%', ['advisories' => implode('<br><br>', $advisories)]));
+                $detail[] = $this->translator->trans('Security advisories: %advisories%', ['advisories' => implode('<br><br>', $advisories)]);
             }
+
             $item->setState($itemState);
+            if (!empty($detail)) {
+                $strDetail = implode('<br><br>', $detail);
+                $item->setDetail($strDetail);
+            }
             $reportAnalyse->addItem($item);
             if ($itemState->value < $state->value) {
                 $state = $itemState;

@@ -15,6 +15,7 @@
                 <th scope="col">Name</th>
                 <th scope="col">Type</th>
                 <th scope="col">Current version</th>
+                {% block table_head_extra %}{% endblock table_head_extra %}
                 <th scope="col">Detail</th>
             </tr>
         {% endblock table_head %}
@@ -26,6 +27,7 @@
                     <th scope="row">{{ reportItem.name }}</th>
                     <td>{{ reportItem.type }}</td>
                     <td>{{ reportItem.currentVersion }}</td>
+                    {% block table_body_extra %}{% endblock table_body_extra %}
                     <td>{{ reportItem.detail }}</td>
                 </tr>
             {% endfor %}

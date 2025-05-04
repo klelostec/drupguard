@@ -1,3 +1,11 @@
 {# @var project \App\Entity\Project #}
 {# @var report \App\Entity\Report\Type\ReportComposerAudit #}
 {% extends 'admin/project/reports/generique.html.twig' %}
+
+{% block table_head_extra %}
+    <th scope="col">Latest version</th>
+{% endblock table_head_extra %}
+
+{% block table_body_extra %}
+    <td>{{ reportItem.latestVersion }}</td>
+{% endblock table_body_extra %}
