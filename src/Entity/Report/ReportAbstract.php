@@ -7,6 +7,7 @@ use App\Entity\Report;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+
 use function Symfony\Component\String\u;
 
 abstract class ReportAbstract implements ReportInterface
@@ -112,7 +113,8 @@ abstract class ReportAbstract implements ReportInterface
         return $this;
     }
 
-    public function getTemplateName(): string {
+    public function getTemplateName(): string
+    {
         return u(get_class($this))->replace('App\Entity\Report\Type\Report', '')->snake();
     }
 

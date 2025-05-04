@@ -1,4 +1,12 @@
 {# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
 {# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
 {# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
-<div class="{{ field.formattedValue }}"></div>
+<div class="d-flex align-items-center">
+    {% if field.formattedValue %}
+        <span class="me-2 state-{{ field.formattedValue.state.name | lower }}-25"></span>
+        <span>{{ field.formattedValue.datetime | format_datetime('medium', 'medium') }}</span>
+    {% else %}
+        <span class="me-2 state-none-25"></span>
+        <span>None</span>
+    {% endif %}
+</div>

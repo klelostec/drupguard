@@ -1,0 +1,20 @@
+.project-logo img {
+  background: var(--white);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  max-block-size: 100px;
+  max-inline-size: 200px;
+  padding: 2px 4px;
+}
+
+.datagrid {
+  td.field-image[data-column=logo] {
+    max-width: 50px;
+  }
+
+
+  .project-logo img {
+    max-block-size: 50px;
+    max-inline-size: 100px;
+  }
+}

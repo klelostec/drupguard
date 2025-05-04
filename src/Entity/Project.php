@@ -88,6 +88,9 @@ class Project
     #[ORM\OneToMany(targetEntity: Report::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $reports;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    protected ?string $logo = null;
+
     public function __construct()
     {
         $this->projectMembers = new ArrayCollection();
@@ -339,6 +342,7 @@ class Project
     public function getLastReport(): ?Report
     {
         $report = $this->reports->last();
+
         return $report ? $report : null;
     }
 
@@ -377,5 +381,17 @@ class Project
         $lastReport = $this->getLastReport();
 
         return $lastReport ? $lastReport->getState() : null;
+    }
+
+    public function getLogo(): ?string
+    {
+        return $this->logo;
+    }
+
+    public function setLogo(?string $logo): static
+    {
+        $this->logo = $logo;
+
+        return $this;
     }
 }

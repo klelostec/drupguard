@@ -2,11 +2,11 @@
 
 namespace App\Controller\Crud;
 
-use App\AnalyseLevelState;
 use App\EasyAdmin\Field\MachineNameField;
 use App\EasyAdmin\Filter\AnalyseLevelStateFilter;
 use App\Entity\Plugin\PluginAbstract;
 use App\Entity\Project;
+use App\Entity\Report;
 use App\Message\ProjectAnalysePending;
 use App\Plugin\Manager;
 use App\Repository\ReportRepository;
@@ -24,7 +24,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
-use EasyCorp\Bundle\EasyAdminBundle\Config\Option\EA;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -33,12 +32,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Event\BeforeCrudActionEvent;
 use EasyCorp\Bundle\EasyAdminBundle\Exception\ForbiddenActionException;
 use EasyCorp\Bundle\EasyAdminBundle\Exception\InsufficientEntityPermissionException;
-use EasyCorp\Bundle\EasyAdminBundle\Factory\PaginatorFactory;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextareaField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Orm\EntityPaginator;
@@ -110,8 +110,7 @@ class ProjectCrudController extends AbstractCrudController
             $paginator = $this->entityPaginator->paginate($paginatorDto, $queryBuilder);
             if ($paginator->isOutOfRange()) {
                 $report = null;
-            }
-            else {
+            } else {
                 $report = $paginator->getResults()->current();
             }
             $responseParameters->set('report', $report);
@@ -142,7 +141,7 @@ class ProjectCrudController extends AbstractCrudController
                 return $action->setIcon('internal:delete');
             })
             ->add(Crud::PAGE_EDIT, Action::INDEX)
-            //->add(Crud::PAGE_INDEX, Action::DETAIL)
+            // ->add(Crud::PAGE_INDEX, Action::DETAIL)
             ->add(Crud::PAGE_EDIT, Action::DELETE)
             ->add(Action::INDEX, $analyseAction)
             ->add(Action::DETAIL, $analyseAction)
@@ -163,6 +162,10 @@ class ProjectCrudController extends AbstractCrudController
             IdField::new('id')
                 ->hideOnIndex()
                 ->hideOnForm(),
+            ImageField::new('logo')
+                ->setUploadDir('public/media/projects')
+                ->setBasePath('media/projects')
+                ->setTemplatePath('admin/fields/project/logo.html.twig'),
             TextField::new('name')
                 ->hideOnIndex(),
             TextField::new('name')
@@ -192,10 +195,10 @@ class ProjectCrudController extends AbstractCrudController
                 ->renderAsSwitch(false)
                 ->hideOnForm()
                 ->hideOnIndex(),
-            ChoiceField::new('lastReportState')
+            Field::new('lastReport', 'Last report')
                 ->setTemplatePath('admin/fields/report/state.html.twig')
-                ->formatValue(function (?AnalyseLevelState $value = null) {
-                    return 'state-'.strtolower($value?->name ?? 'none').'-25';
+                ->formatValue(function (?Report $report = null) {
+                    return $report;
                 })
                 ->hideOnForm(),
             FormField::addTab('Plugins'),

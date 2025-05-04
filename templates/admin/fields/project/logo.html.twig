@@ -1,0 +1,10 @@
+{# @var ea \EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext #}
+{# @var field \EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto #}
+{# @var entity \EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto #}
+{% set image = field.formattedValue %}
+{% if image %}
+    <div class="project-logo">
+        <img src="{{ asset(image) }}">
+    </div>
+{#    <img src="{{ asset(image) }}" class="img-fluid">#}
+{% endif %}

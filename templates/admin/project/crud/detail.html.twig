@@ -5,8 +5,19 @@
 {% trans_default_domain 'EasyAdminBundle' %}
 
 {% block content_title %}
-    {{ entity.instance.name }}
+    <span class="d-flex align-items-center">
+        {% set logo = entity.fields.byProperty('logo') %}
+        {{ include(logo.templatePath, { field: logo, entity: entity }, with_context = false) }}
+        <span>{{ entity.instance.name }}</span>
+    </span>
 {% endblock %}
+
+{% block head_javascript %}
+    {{ parent() }}
+    <script>
+        let project_running_reload_url = '{{ ea_url().unset('page') }}';
+    </script>
+{% endblock head_javascript %}
 
 {% block detail_fields %}
     {%- if report -%}
@@ -14,67 +25,70 @@
             <span class="me-2 state-{{ report.state.name | lower }}-50"></span>
             <span>{{ report.datetime | format_datetime('medium', 'medium') }}</span>
         </h2>
-    {%- endif -%}
 
-    <div class="container my-5">
-        <ul class="nav nav-tabs" role="tablist">
-            {% for currentReport in report.orderedReports %}
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link d-flex align-items-center{{ loop.first ? ' active' : '' }}" id="report-{{ loop.index }}" data-bs-toggle="tab" data-bs-target="#report-content-{{ loop.index }}" type="button" role="tab" aria-controls="report-content-{{ loop.index }}" aria-selected="{{ loop.first ? 'true' : 'false' }}">
-                        <span class="me-2 d-inline-block state-{{ currentReport.state.name | lower }}-25"></span>
-                        <span>{{ currentReport.name }}</span>
-                    </button>
-                </li>
-            {% endfor %}
-        </ul>
-        <div class="tab-content mt-3">
-            {% for currentReport in report.orderedReports %}
-                <div class="tab-pane fade show {{ loop.first ? ' active' : '' }}" id="report-content-{{ loop.index }}" role="tabpanel" aria-labelledby="report-{{ loop.index }}">
-                    {{ include('admin/project/reports/' ~ currentReport.templateName ~'.html.twig', { project: entity.instance, report: currentReport }) }}
-                </div>
-            {% endfor %}
+        <div class="container my-5">
+            <ul class="nav nav-tabs" role="tablist">
+                {% for currentReport in report.orderedReports %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link d-flex align-items-center{{ loop.first ? ' active' : '' }}" id="report-{{ loop.index }}" data-bs-toggle="tab" data-bs-target="#report-content-{{ loop.index }}" type="button" role="tab" aria-controls="report-content-{{ loop.index }}" aria-selected="{{ loop.first ? 'true' : 'false' }}">
+                            <span class="me-2 d-inline-block state-{{ currentReport.state.name | lower }}-25"></span>
+                            <span>{{ currentReport.name }}</span>
+                        </button>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="tab-content mt-3">
+                {% for currentReport in report.orderedReports %}
+                    <div class="tab-pane fade show {{ loop.first ? ' active' : '' }}" id="report-content-{{ loop.index }}" role="tabpanel" aria-labelledby="report-{{ loop.index }}">
+                        {{ include('admin/project/reports/' ~ currentReport.templateName ~'.html.twig', { project: entity.instance, report: currentReport }) }}
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-    </div>
 
-    <div class="content-panel-footer without-padding without-border">
-        <div class="list-pagination">
-            {% if paginator.hasPreviousPage or paginator.hasNextPage %}
-                <nav class="pager list-pagination-paginator {{ not paginator.hasPreviousPage ? 'first-page' }} {{ not paginator.hasNextPage ? 'last-page' }}">
-                    <ul class="pagination">
-                        <li class="page-item page-item-previous {{ not paginator.hasPreviousPage ? 'disabled' }}">
-                            <a class="page-link" href="{{ not paginator.hasPreviousPage ? '#' : paginator.generateUrlForPage(paginator.previousPage) }}">
-                                {% if 'rtl' == ea.i18n.textDirection %}
-                                    <twig:ea:Icon name="internal:chevron-right" class="mx-1" aria-hidden="true" />
-                                {% else %}
-                                    <twig:ea:Icon name="internal:chevron-left" class="mx-1" aria-hidden="true" />
-                                {% endif %}
+        <div class="content-panel-footer without-padding without-border">
+            <div class="list-pagination">
+                {% if paginator.hasPreviousPage or paginator.hasNextPage %}
+                    <nav class="pager list-pagination-paginator {{ not paginator.hasPreviousPage ? 'first-page' }} {{ not paginator.hasNextPage ? 'last-page' }}">
+                        <ul class="pagination">
+                            <li class="page-item page-item-previous {{ not paginator.hasPreviousPage ? 'disabled' }}">
+                                <a class="page-link" href="{{ not paginator.hasPreviousPage ? '#' : paginator.generateUrlForPage(paginator.previousPage) }}">
+                                    {% if 'rtl' == ea.i18n.textDirection %}
+                                        <twig:ea:Icon name="internal:chevron-right" class="mx-1" aria-hidden="true" />
+                                    {% else %}
+                                        <twig:ea:Icon name="internal:chevron-left" class="mx-1" aria-hidden="true" />
+                                    {% endif %}
 
-                                <span class="btn-label">{{ 'paginator.next'|trans }}</span>
-                            </a>
-                        </li>
-                        {% for page in paginator.pageRange %}
-                            <li class="page-item {{ page == paginator.currentPage ? 'active' }} {{ page is null ? 'disabled' }}">
-                                {% if page is null %}
-                                    <span class="page-link">&hellip;</span>
-                                {% else %}
-                                    <a class="page-link" href="{{ paginator.generateUrlForPage(page) }}">{{ page }}</a>
-                                {% endif %}
+                                    <span class="btn-label">{{ 'paginator.next'|trans }}</span>
+                                </a>
                             </li>
-                        {% endfor %}
-                        <li class="page-item page-item-next {{ not paginator.hasNextPage ? 'disabled' }}">
-                            <a class="page-link" href="{{ not paginator.hasNextPage ? '#' : paginator.generateUrlForPage(paginator.nextPage) }}">
-                                <span class="btn-label">{{ 'paginator.previous'|trans }}</span>
+                            {% for page in paginator.pageRange %}
+                                <li class="page-item {{ page == paginator.currentPage ? 'active' }} {{ page is null ? 'disabled' }}">
+                                    {% if page is null %}
+                                        <span class="page-link">&hellip;</span>
+                                    {% else %}
+                                        <a class="page-link" href="{{ paginator.generateUrlForPage(page) }}">{{ page }}</a>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                            <li class="page-item page-item-next {{ not paginator.hasNextPage ? 'disabled' }}">
+                                <a class="page-link" href="{{ not paginator.hasNextPage ? '#' : paginator.generateUrlForPage(paginator.nextPage) }}">
+                                    <span class="btn-label">{{ 'paginator.previous'|trans }}</span>
 
-                                {% if 'rtl' == ea.i18n.textDirection %}
-                                    <twig:ea:Icon name="internal:chevron-left" class="mx-1" aria-hidden="true" />
-                                {% else %}
-                                    <twig:ea:Icon name="internal:chevron-right" class="mx-1" aria-hidden="true" />
-                                {% endif %}
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            {% endif %}
+                                    {% if 'rtl' == ea.i18n.textDirection %}
+                                        <twig:ea:Icon name="internal:chevron-left" class="mx-1" aria-hidden="true" />
+                                    {% else %}
+                                        <twig:ea:Icon name="internal:chevron-right" class="mx-1" aria-hidden="true" />
+                                    {% endif %}
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
         </div>
-    </div>
+
+    {%- else -%}
+        <div>No report found.</div>
+    {%- endif -%}
 {% endblock detail_fields %}

@@ -28,6 +28,7 @@ const projectRunningHandler = function (event) {
     function intervalHandler() {
         const res = checkRunning();
         if (res !== false) {
+            let needReload = false;
             Object.keys(res).forEach(function (project) {
                 const running = res[project];
                 if (running === projectsRunningInstances[project].getIsRunning()) {
@@ -38,9 +39,19 @@ const projectRunningHandler = function (event) {
                     projectsRunningInstances[project].setRunningMode();
                 }
                 else {
+                    needReload = needReload || projectsRunningInstances[project].getNeedReload()
                     projectsRunningInstances[project].setIdleMode();
                 }
             });
+
+            if (needReload) {
+                if (typeof project_running_reload_url !== "undefined") {
+                    window.location.href = project_running_reload_url;
+                }
+                else {
+                    window.location.reload();
+                }
+            }
         }
     }
 
@@ -53,8 +64,8 @@ class ProjectRunning {
     #link;
     #icon;
     #isRunning;
+    #needReload = false;
     constructor (link) {
-        console.log(link);
         this.#link = link;
         this.#icon = link.querySelector('span.action-icon i');
         const self = this;
@@ -90,12 +101,22 @@ class ProjectRunning {
         return this.#isRunning;
     }
 
+    setNeedReload(needReload) {
+        this.#needReload = needReload;
+    }
+
+    getNeedReload() {
+        return this.#needReload;
+    }
+
     setIdleMode() {
+        this.setNeedReload(false);
         this.#icon.classList.add('fa-play');
         this.#icon.classList.remove('fa-spin', 'fa-spinner');
         this.#icon.setAttribute('style', '');
     }
     setRunningMode() {
+        this.setNeedReload(true);
         this.#icon.classList.add('fa-spin', 'fa-spinner');
         this.#icon.classList.remove('fa-play');
         this.#icon.setAttribute('style', '--fa-animation-duration: 2s;');

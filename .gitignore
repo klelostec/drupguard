@@ -30,3 +30,5 @@
 /.php-cs-fixer.cache
 ###< friendsofphp/php-cs-fixer ###
 /workspace
+/public/media/projects/*
+!/public/media/projects/.gitkeep

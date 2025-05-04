@@ -31,5 +31,11 @@ services:
     App\Service\SchedulerUpdateService:
         arguments:
             $dsn: '%env(resolve:DATABASE_URL)%'
+    app_service_scheduler_update_service:
+        alias: App\Service\SchedulerUpdateService
+
+    App\EventListener\ProjectEventListener:
+        arguments: [ '@app_service_scheduler_update_service', '@kernel' ]
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

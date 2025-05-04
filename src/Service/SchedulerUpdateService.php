@@ -5,18 +5,14 @@ namespace App\Service;
 use App\Entity\Project;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Cache\Adapter\DoctrineDbalAdapter;
-use Symfony\Component\Cache\Marshaller\DefaultMarshaller;
-use Symfony\Component\Cache\Marshaller\MarshallerInterface;
 
 class SchedulerUpdateService
 {
     private DoctrineDbalAdapter $cache;
     private EntityManagerInterface $em;
-    private MarshallerInterface $marshaller;
 
     public function __construct(EntityManagerInterface $em, string $dsn)
     {
-        $this->marshaller = new DefaultMarshaller();
         $this->em = $em;
         $this->cache = new DoctrineDbalAdapter(
             $dsn,

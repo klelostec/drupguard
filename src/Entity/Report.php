@@ -194,6 +194,7 @@ class Report
                 if ($a->getWeight() == $b->getWeight()) {
                     return 0;
                 }
+
                 return $a->getWeight() < $b->getWeight() ? -1 : 1;
             });
             $this->orderedReports = new ArrayCollection($tmpArray);
