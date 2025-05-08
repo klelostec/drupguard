@@ -118,5 +118,9 @@ abstract class ReportAbstract implements ReportInterface
         return u(get_class($this))->replace('App\Entity\Report\Type\Report', '')->snake();
     }
 
+    public function initFromAnalyse(): self {
+        return $this;
+    }
+
     abstract public function getItems(): Collection;
 }

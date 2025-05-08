@@ -12,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: ReportComposerAuditRepository::class)]
 class ReportComposerAudit extends ReportAbstract
 {
+
     #[ORM\ManyToOne(inversedBy: 'composerAudit')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     protected ?Report $report = null;
@@ -22,9 +23,39 @@ class ReportComposerAudit extends ReportAbstract
     #[ORM\OneToMany(targetEntity: ReportComposerAuditItem::class, mappedBy: 'reportComposerAudit', cascade: ['persist', 'remove'], orphanRemoval: true)]
     protected Collection $items;
 
+    #[ORM\Column]
+    private bool $withDevPackages = true;
+
+    #[ORM\Column]
+    private bool $withDependencies = true;
+
     public function __construct()
     {
         $this->items = new ArrayCollection();
+    }
+
+    public function withDevPackages(): bool
+    {
+        return $this->withDevPackages;
+    }
+
+    public function setWithDevPackages(bool $withDevPackages): static
+    {
+        $this->withDevPackages = $withDevPackages;
+
+        return $this;
+    }
+
+    public function withDependencies(): bool
+    {
+        return $this->withDependencies;
+    }
+
+    public function setWithDependencies(bool $withDependencies): static
+    {
+        $this->withDependencies = $withDependencies;
+
+        return $this;
     }
 
     /**

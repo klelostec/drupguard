@@ -64,6 +64,6 @@ abstract class PluginAbstract implements PluginInterface
 
     public function __toString()
     {
-        return $this->getTypeEntity() ?? '';
+        return $this->getTypeEntity()?->__toString() ?? '';
     }
 }

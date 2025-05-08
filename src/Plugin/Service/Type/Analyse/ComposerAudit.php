@@ -5,6 +5,7 @@ namespace App\Plugin\Service\Type\Analyse;
 use App\AnalyseLevelState;
 use App\Entity\Plugin\Type\Analyse\ComposerAudit as ComposerAuditEntity;
 use App\Entity\Project;
+use App\Entity\Report\ReportInterface;
 use App\Entity\Report\Type\ReportComposerAudit;
 use App\Entity\Report\Type\ReportComposerAuditItem;
 use App\Form\Plugin\Type\Analyse\ComposerAudit as ComposerAuditForm;
@@ -29,7 +30,7 @@ use function Symfony\Component\Translation\t;
 )]
 class ComposerAudit extends Analyse
 {
-    public function analyse(Project $project, mixed $analyse, string $path): mixed
+    public function processAnalyse(Project $project, mixed $analyse, string $path, TypeInfo $typeInfo): ReportInterface
     {
         $fileSystem = new Filesystem();
         $reportAnalyse = new ReportComposerAudit();
@@ -37,9 +38,8 @@ class ComposerAudit extends Analyse
         /**
          * @var ComposerAuditEntity $analyse
          */
-        if (!empty($analyse->getPath())) {
-            $path .= $analyse->getPath();
-        }
+        $reportAnalyse->setWithDependencies($analyse->withDependencies());
+        $reportAnalyse->setWithDevPackages($analyse->withDevPackages());
 
         if (!$fileSystem->exists($path.'/composer.lock')) {
             $reportAnalyse->setState(AnalyseLevelState::FAILURE);
@@ -77,11 +77,26 @@ class ComposerAudit extends Analyse
 
         $composerLock = json_decode($fileSystem->readFile($path.'/composer.lock'), true) ?? [];
         $state = AnalyseLevelState::SUCCESS;
-        foreach ($composerLock['packages'] as $package) {
-            $item = new ReportComposerAuditItem();
+
+        $packagesList = $composerLock['packages'];
+        if ($analyse->withDevPackages()) {
+            foreach ($composerLock['packages-dev'] as $key => $packageDev) {
+                $packagesList[] = $packageDev + ['package-dev' => true];
+            }
+            uasort($packagesList, function ($a, $b) {
+                return strnatcmp($a['name'],$b['name']);
+            });
+        }
+        foreach ($packagesList as $package) {
             $name = $package['name'];
+            if (!$analyse->withDependencies() && empty($commandsRes['outdated'][$name]['direct-dependency'])) {
+                continue;
+            }
+            $item = new ReportComposerAuditItem();
             $item->setName($name);
             $item->setType($package['type'] ?? '');
+            $item->setIsDirectDependency(!empty($commandsRes['outdated'][$name]['direct-dependency']));
+            $item->setIsDevPackage(!empty($package['package-dev']));
             $item->setCurrentVersion($package['version']);
             $item->setLatestVersion($commandsRes['outdated'][$name]['latest']);
 

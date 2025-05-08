@@ -12,11 +12,12 @@
         <thead>
         {% block table_head %}
             <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Type</th>
-                <th scope="col">Current version</th>
-                {% block table_head_extra %}{% endblock table_head_extra %}
-                <th scope="col">Detail</th>
+                {% block table_head_item %}
+                    <th scope="col">Name</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Current version</th>
+                    <th scope="col">Detail</th>
+                {% endblock table_head_item %}
             </tr>
         {% endblock table_head %}
         </thead>
@@ -24,11 +25,12 @@
         {% block table_body %}
             {% for reportItem in report.items %}
                 <tr class="table-state-{{ reportItem.state.name | lower }}">
-                    <th scope="row">{{ reportItem.name }}</th>
-                    <td>{{ reportItem.type }}</td>
-                    <td>{{ reportItem.currentVersion }}</td>
-                    {% block table_body_extra %}{% endblock table_body_extra %}
-                    <td>{{ reportItem.detail }}</td>
+                    {% block table_row_item %}
+                        <th scope="row">{{ reportItem.name }}</th>
+                        <td>{{ reportItem.type }}</td>
+                        <td>{{ reportItem.currentVersion }}</td>
+                        <td>{{ reportItem.detail }}</td>
+                    {% endblock table_row_item %}
                 </tr>
             {% endfor %}
         {% endblock table_body %}

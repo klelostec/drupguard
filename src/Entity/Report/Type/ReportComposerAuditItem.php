@@ -12,9 +12,40 @@ use Doctrine\ORM\Mapping as ORM;
 class ReportComposerAuditItem extends ReportItemAbstract implements ReportLatestVersionItemInterface
 {
     use ReportLatestVersionItemTrait;
+
+    #[ORM\Column]
+    protected ?bool $isDirectDependency;
+
+    #[ORM\Column]
+    protected ?bool $isDevPackage;
+
     #[ORM\ManyToOne(inversedBy: 'items')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     protected ?ReportComposerAudit $reportComposerAudit = null;
+
+    public function isDirectDependency(): ?bool
+    {
+        return $this->isDirectDependency;
+    }
+
+    public function setIsDirectDependency(?bool $isDirectDependency): static
+    {
+        $this->isDirectDependency = $isDirectDependency;
+
+        return $this;
+    }
+
+    public function isDevPackage(): ?bool
+    {
+        return $this->isDevPackage;
+    }
+
+    public function setIsDevPackage(?bool $isDevPackage): static
+    {
+        $this->isDevPackage = $isDevPackage;
+
+        return $this;
+    }
 
     public function getReportComposerAudit(): ?ReportComposerAudit
     {

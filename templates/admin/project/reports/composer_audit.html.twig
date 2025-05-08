@@ -1,11 +1,31 @@
 {# @var project \App\Entity\Project #}
 {# @var report \App\Entity\Report\Type\ReportComposerAudit #}
+{# @var reportItem \App\Entity\Report\Type\ReportComposerAuditItem #}
 {% extends 'admin/project/reports/generique.html.twig' %}
 
-{% block table_head_extra %}
+{% block table_head_item %}
+    <th scope="col">Name</th>
+    {% if report.withDevPackages %}
+        <th scope="col">Package type</th>
+    {% endif %}
+    <th scope="col">Type</th>
+    {% if report.withDependencies %}
+        <th scope="col">Dependency</th>
+    {% endif %}
+    <th scope="col">Current version</th>
     <th scope="col">Latest version</th>
-{% endblock table_head_extra %}
-
-{% block table_body_extra %}
+    <th scope="col">Detail</th>
+{% endblock table_head_item %}
+{% block table_row_item %}
+    <th scope="row">{{ reportItem.name }}</th>
+    {% if report.withDevPackages %}
+        <td>{% if reportItem.devPackage %}Dev package{% else %}Package{% endif %}</td>
+    {% endif %}
+    <td>{{ reportItem.type }}</td>
+    {% if report.withDependencies %}
+        <td>{% if reportItem.directDependency %}Direct{% endif %}</td>
+    {% endif %}
+    <td>{{ reportItem.currentVersion }}</td>
     <td>{{ reportItem.latestVersion }}</td>
-{% endblock table_body_extra %}
+    <td>{{ reportItem.detail }}</td>
+{% endblock table_row_item %}

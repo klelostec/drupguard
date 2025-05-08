@@ -29,11 +29,22 @@ abstract class TypeAbstract extends AbstractType
                 continue;
             }
 
-            $getter = 'get'.mb_ucfirst(u($property->getName())->camel());
-            if (
-                !$reflection->hasMethod($getter)
-                || !$reflection->getMethod($getter)->isPublic()
-            ) {
+            $testProperty = [
+                'get'.mb_ucfirst(u($property->getName())->camel()),
+                mb_lcfirst(u($property->getName())->camel())
+            ];
+            $foundProperty = false;
+            foreach ($testProperty as $currentTestProperty) {
+                if (
+                    !$reflection->hasMethod($currentTestProperty)
+                    || !$reflection->getMethod($currentTestProperty)->isPublic()
+                ) {
+                    continue;
+                }
+                $foundProperty = true;
+            }
+
+            if (!$foundProperty) {
                 continue;
             }
 

@@ -102,6 +102,8 @@ class AppFixtures extends Fixture
                 'analyse' => [
                     [
                         'type' => 'composer_audit',
+                        'withDevPackages' => true,
+                        'withDependencies' => true,
                     ],
                     [
                         'type' => 'drupal7',

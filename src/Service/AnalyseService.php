@@ -51,11 +51,12 @@ class AnalyseService
                 $this->build($project, $path);
                 $this->analyse($project, $report, $path);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $t) {
             $report->setState(AnalyseLevelState::FAILURE);
-            $report->setDetail($e->getMessage().PHP_EOL.$e->getTraceAsString());
-            $this->logger->debug('Error during process project '.$project->getId().':'.PHP_EOL.$e->getMessage());
+            $report->setDetail($t->getMessage().PHP_EOL.$t->getTraceAsString());
+            $this->logger->debug('Error during process project '.$project->getId().':'.PHP_EOL.$t->getMessage());
         }
+        restore_error_handler();
 
         $this->entityManager->persist($report);
         $this->entityManager->flush();
@@ -135,9 +136,7 @@ class AnalyseService
              * @var Analyse $service
              */
             $service = $this->serviceLocator->get($typeInfo->getServiceClass());
-            $currentReport = $service->analyse($project, $analyseEntity, $path);
-            $currentReport->setName($analyseEntity->getName() ?? $typeInfo->getName());
-            $currentReport->setPath($analyseEntity->getPath());
+            $currentReport = $service->analyse($project, $analyseEntity, $path, $typeInfo);
 
             $currentReport->setWeight($weight);
             $pluginState = $currentReport->getState();

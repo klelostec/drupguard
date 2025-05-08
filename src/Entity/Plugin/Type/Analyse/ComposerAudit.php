@@ -21,6 +21,36 @@ class ComposerAudit extends TypeAbstract implements PathTypeInterface, NameTypeI
         PathTypeTrait::__toString as traitToString;
     }
 
+    #[ORM\Column]
+    private bool $withDevPackages = true;
+
+    #[ORM\Column]
+    private bool $withDependencies = true;
+
+    public function withDevPackages(): bool
+    {
+        return $this->withDevPackages;
+    }
+
+    public function setWithDevPackages(bool $withDevPackages): static
+    {
+        $this->withDevPackages = $withDevPackages;
+
+        return $this;
+    }
+
+    public function withDependencies(): bool
+    {
+        return $this->withDependencies;
+    }
+
+    public function setWithDependencies(bool $withDependencies): static
+    {
+        $this->withDependencies = $withDependencies;
+
+        return $this;
+    }
+
     public function __toString()
     {
         return 'Composer audit'.$this->traitToString();
