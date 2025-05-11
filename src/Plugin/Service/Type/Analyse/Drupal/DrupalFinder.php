@@ -69,6 +69,9 @@ class DrupalFinder
                 $this->findDir($extraType, $path);
             }
         }
+        if (empty($this->directories['core'])) {
+            throw new Analyse($this->translator->trans('Cannot find Drupal in "{path}".', ['path' => $path]));
+        }
         $this->findCoreData();
         $this->findItems();
     }
