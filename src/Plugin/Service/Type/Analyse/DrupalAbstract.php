@@ -46,9 +46,9 @@ abstract class DrupalAbstract extends Analyse
         $this->drupalFinder->find($path, $typeInfo->getId());
         $this->updateProcessor->setCompat($this->drupalFinder->getCompat());
         $items = $this->drupalFinder->getItems();
+        $state = AnalyseLevelState::SUCCESS;
         foreach ($items as $itemType => $subItems) {
             $this->updateCompare->update_process_project_info($subItems);
-            $state = AnalyseLevelState::SUCCESS;
             foreach ($subItems as $name => $currentSubItem) {
                 $available = $this->updateProcessor->processFetchTask($currentSubItem);
                 $this->updateCompare->update_calculate_project_update_status(

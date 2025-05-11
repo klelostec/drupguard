@@ -69,7 +69,6 @@ class DrupalFinder
                 $this->findDir($extraType, $path);
             }
         }
-
         $this->findCoreData();
         $this->findItems();
     }
