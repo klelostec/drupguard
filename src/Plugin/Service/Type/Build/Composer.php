@@ -9,6 +9,7 @@ use App\Plugin\Annotation\TypeInfo;
 use App\Plugin\Exception\Build as BuildException;
 use App\Plugin\Service\Build;
 use App\Repository\Plugin\Type\Build\Composer as ComposerRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Process\Process;
 
@@ -25,6 +26,7 @@ use Symfony\Component\Process\Process;
 )]
 class Composer extends Build
 {
+
     public function build(Project $project, mixed $build, string $path)
     {
         $fileSystem = new Filesystem();
@@ -52,7 +54,7 @@ class Composer extends Build
 
         $composerCmd = explode(
             ' ',
-            $composerBinary.' install --ignore-platform-reqs --no-scripts --no-plugins --no-cache --no-autoloader --quiet --no-interaction'
+            $composerBinary.' install --ignore-platform-reqs --no-scripts --no-cache --no-autoloader --quiet --no-interaction'
         );
         $composerInstall = new Process($composerCmd, $path);
         $composerInstall->setTimeout(60 * 60);

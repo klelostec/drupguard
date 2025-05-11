@@ -1,0 +1,61 @@
+diff --git a/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php b/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php
+index 4f5bc7d..1a8d7a9 100644
+--- a/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php
++++ b/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php
+@@ -1,6 +1,6 @@
+ <?php
+ 
+-namespace Drupal\update;
++namespace App\Plugin\Service\Type\Analyse\Drupal;
+ 
+ /**
+  * Fetches project information from remote locations.
+@@ -32,7 +32,7 @@ interface UpdateFetcherInterface {
+    *
+    * @param array $project
+    *   The array of project information from
+-   *   \Drupal\update\UpdateManager::getProjects().
++   *   \App\Plugin\Service\Type\Analyse\Drupal\UpdateManager::getProjects().
+    *
+    * @return string
+    *   The base of the URL used for fetching available update data. This does
+@@ -46,14 +46,12 @@ interface UpdateFetcherInterface {
+    *
+    * @param array $project
+    *   The array of project information from
+-   *   \Drupal\update\UpdateManager::getProjects().
+-   * @param string $site_key
+-   *   (optional) The anonymous site key hash. Defaults to an empty string.
++   *   \App\Plugin\Service\Type\Analyse\Drupal\UpdateManager::getProjects().
+    *
+    * @return string
+    *   The project information fetched as string. Empty string upon failure.
+    */
+-  public function fetchProjectData(array $project, $site_key = '');
++  public function fetchProjectData(array $project);
+ 
+   /**
+    * Generates the URL to fetch information about project updates.
+@@ -64,17 +62,15 @@ interface UpdateFetcherInterface {
+    *
+    * @param array $project
+    *   The array of project information from
+-   *   \Drupal\update\UpdateManager::getProjects().
+-   * @param string $site_key
+-   *   (optional) The anonymous site key hash. Defaults to an empty string.
++   *   UpdateManager::getProjects().
+    *
+    * @return string
+    *   The URL for fetching information about updates to the specified project.
+    *
+-   * @see \Drupal\update\UpdateProcessor::fetchData()
+-   * @see \Drupal\update\UpdateProcessor::processFetchTask()
+-   * @see \Drupal\update\UpdateManager::getProjects()
++   * @see \App\Plugin\Service\Type\Analyse\Drupal\UpdateProcessor::fetchData()
++   * @see \App\Plugin\Service\Type\Analyse\Drupal\UpdateProcessor::processFetchTask()
++   * @see \App\Plugin\Service\Type\Analyse\Drupal\UpdateManager::getProjects()
+    */
+-  public function buildFetchUrl(array $project, $site_key = '');
++  public function buildFetchUrl(array $project);
+ 
+ }

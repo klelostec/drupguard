@@ -53,10 +53,9 @@ class AnalyseService
             }
         } catch (\Throwable $t) {
             $report->setState(AnalyseLevelState::FAILURE);
-            $report->setDetail($t->getMessage().PHP_EOL.$t->getTraceAsString());
+            $report->setDetail(nl2br($t->getMessage().PHP_EOL.$t->getTraceAsString()));
             $this->logger->debug('Error during process project '.$project->getId().':'.PHP_EOL.$t->getMessage());
         }
-        restore_error_handler();
 
         $this->entityManager->persist($report);
         $this->entityManager->flush();

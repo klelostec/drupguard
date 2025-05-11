@@ -29,7 +29,7 @@ class Local extends Source
         $fileSystem = new Filesystem();
         $path = $source->getPath();
         if (!empty($path) && !$fileSystem->exists($path)) {
-            throw new SourceException($this->translator->trans('Path "%path%" not found.', ['path' => $path]));
+            throw new SourceException($this->translator->trans('Path "{path}" not found.', ['path' => $path]));
         }
 
         return $this->getPath($project, $source);

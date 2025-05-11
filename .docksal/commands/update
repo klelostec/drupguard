@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-## Run project's symfony CLI.
+## Run project's update.
 ##
-## https://symfony.com/download
-## Usage: fin init
+## Usage: fin update
 ##
 
 # Abort if anything fails

@@ -20,13 +20,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 )]
 abstract class Source extends Plugin
 {
-    protected KernelInterface $appKernel;
-
-    public function __construct(TranslatorInterface $translator, KernelInterface $appKernel)
-    {
-        parent::__construct($translator);
-        $this->appKernel = $appKernel;
-    }
 
     abstract public function source(Project $project, mixed $source): string;
 

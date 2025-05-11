@@ -2,9 +2,8 @@
 
 #: exec_target = cli
 
-## Run project's symfony CLI.
+## Run project's cache clear.
 ##
-## https://symfony.com/download
 ## Usage: fin cache-clear
 ##
 

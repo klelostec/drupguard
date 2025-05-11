@@ -67,7 +67,7 @@ class ComposerAudit extends Analyse
                 $commandsRes[$commandType] = json_decode($output, true);
             } catch (\Exception $e) {
                 $reportAnalyse->setState(AnalyseLevelState::FAILURE);
-                $reportAnalyse->setDetail($this->translator->trans('Composer %type% failed. Detail: %detail%', ['type' => $commandType, 'detail' => $composerCmd->getErrorOutput()]));
+                $reportAnalyse->setDetail($this->translator->trans('Composer {type} failed. Detail: {detail}', ['type' => $commandType, 'detail' => $composerCmd->getErrorOutput()]));
 
                 return $reportAnalyse;
             }
@@ -127,7 +127,7 @@ class ComposerAudit extends Analyse
                 foreach ($commandsRes['audit']['advisories'][$name] as $advisory) {
                     $advisories[] = $advisory['title'].'<br><a href="'.$advisory['link'].'" target="_blank">'.$advisory['cve'].'</a>';
                 }
-                $detail[] = $this->translator->trans('Security advisories: %advisories%', ['advisories' => implode('<br><br>', $advisories)]);
+                $detail[] = $this->translator->trans('Security advisories: {advisories}', ['advisories' => implode('<br><br>', $advisories)]);
             }
 
             $item->setState($itemState);

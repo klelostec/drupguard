@@ -22,15 +22,6 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 )]
 abstract class Analyse extends Plugin
 {
-    protected LoggerInterface $logger;
-
-    public function __construct(
-        TranslatorInterface $translator,
-        LoggerInterface $logger,
-    ) {
-        parent::__construct($translator);
-        $this->logger = $logger;
-    }
     public function analyse(Project $project, mixed $analyse, string $path, TypeInfo $typeInfo): ReportInterface {
         if ($analyse instanceof PathTypeInterface && !empty($analyse->getPath())) {
             $path .= $analyse->getPath();

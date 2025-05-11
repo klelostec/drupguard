@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+
+#: exec_target = cli
+
+## Run project's drupal analyse services helpers.
+##
+## Usage: fin drupal-analyse-helper-update VERSION
+##
+
+check_parameters() {
+  while [ -n "$1" ]; do # while loop starts
+    case "$1" in
+      *) VERSION="$1" ;;
+    esac
+    shift
+  done
+}
+
+# Abort if anything fails
+set -e
+
+VERSION=""
+check_parameters $@
+
+if [ -z "$VERSION" ]; then
+  echo "Version is required."
+  exit 1
+fi
+
+cd /var/www
+mkdir -p /var/www/src/Plugin/Service/Type/Analyse/Drupal
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/ExtensionVersion.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/lib/Drupal/Core/Extension/ExtensionVersion.php?ref_type=heads&inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/ProjectRelease.php?inline=false"
+COMPARE_MODULE=$(curl "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/update.compare.inc?inline=false" --silent)
+COMPARE_MODULE_USE=$(echo "$COMPARE_MODULE" | sed -n '/^use /p')
+COMPARE_MODULE_REST=$(echo "$COMPARE_MODULE" | sed -n '/^use /!p' | sed -n '/^<?php/!p' | sed 's/^/  /')
+echo "<?php
+
+$COMPARE_MODULE_USE
+
+class UpdateCompare {
+$COMPARE_MODULE_REST
+}" > /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateFetcher.php?ref_type=heads&inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateFetcherInterface.php?ref_type=heads&inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateManagerInterface.php?inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateProcessor.php?ref_type=heads&inline=false"
+
+git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/extension_version.patch
+git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/project_release.patch
+git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_compare.patch
+git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher.patch
+git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher_interface.patch
+git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_manager_interface.patch
+git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_processor.patch

@@ -2,10 +2,9 @@
 
 #: exec_target = cli
 
-## Run project's symfony CLI.
+## Run project's rebuild assets.
 ##
-## https://symfony.com/download
-## Usage: fin symfony [arguments]
+## Usage: fin rebuild-assets
 ##
 
 # Abort if anything fails
