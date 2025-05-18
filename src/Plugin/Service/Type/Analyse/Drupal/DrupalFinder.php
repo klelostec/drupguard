@@ -105,10 +105,25 @@ class DrupalFinder
     protected function findCoreData() {
         if ($this->type === 'drupal8' && $this->filesystem->exists($this->directories['core'].'/lib/Drupal.php')) {
             $drupalClass = file_get_contents($this->directories['core'].'/lib/Drupal.php');
-            preg_match('/const CORE_COMPATIBILITY = \'([0-9a-z\.]+)\';/i', $drupalClass, $matches);
-            $this->compat = $matches[1];
             preg_match('/const VERSION = \'([0-9a-z\.\-]+)\';/i', $drupalClass, $matches);
-            $this->version = $matches[1];
+            $versionStr = $matches[1];
+            $version = ExtensionVersion::createFromVersionString($versionStr);
+            preg_match('/const CORE_COMPATIBILITY = \'([0-9a-z\.]+)\';/i', $drupalClass, $matches);
+            if (
+                $version->getMajorVersion() === 8 &&
+                $version->getMinorVersion() <= 8 &&
+                (
+                    $version->getMinorVersion() < 8 ||
+                    $version->getVersionExtra() === 3
+                )
+            ){
+                // Use compat found in classes for Drupal versions under 8.8.3.
+                $this->compat = $matches[1];
+            }
+            else {
+                $this->compat = 'current';
+            }
+            $this->version = $versionStr;
             $this->extension = '.info.yml';
         }
         elseif ($this->type === 'drupal7' && $this->filesystem->exists($this->directories['core'].'/includes/bootstrap.inc')) {
