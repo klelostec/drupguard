@@ -8,16 +8,42 @@
 {% endif %}
 
 {% if report.items.count > 0 %}
-    <table class="table">
+    <div id="filter">
+        <div class="filter-wrapper">
+            <input type="checkbox" class="filter-checkbox" value="Software Engineer"/> Software Engineer
+            <input type="checkbox" class="filter-checkbox" value="Accountant"/>  Accountant
+            <input type="checkbox" class="filter-checkbox" value="Sales Assistant"/>  Sales Assistant
+            <input type="checkbox" class="filter-checkbox" value="Developer"/>  Developer
+        </div>
+    </div>
+    <table class="table-responsive"
+           data-toggle="table"
+           data-search="true"
+           data-filter-control="true"
+           data-sort-reset="true"
+           data-search-align="left">
         <thead>
         {% block table_head %}
             <tr>
                 {% block table_head_item %}
-                    <th scope="col">Name</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Current version</th>
-                    <th scope="col">Detail</th>
+                    <th scope="col"
+                        data-field="name"
+                        data-sortable="true"
+                        data-filter-control="input">Name</th>
+                    <th scope="col"
+                        data-field="type"
+                        data-sortable="true"
+                        data-filter-control="select">Type</th>
+                    <th scope="col"
+                        data-field="current_version">Current version</th>
+                    <th scope="col"
+                        data-field="detail">Detail</th>
                 {% endblock table_head_item %}
+                <th scope="col"
+                    data-field="status"
+                    data-visible="false">
+                    Status
+                </th>
             </tr>
         {% endblock table_head %}
         </thead>
@@ -31,6 +57,7 @@
                         <td>{{ reportItem.currentVersion }}</td>
                         <td>{{ reportItem.detail }}</td>
                     {% endblock table_row_item %}
+                    <td>{{ reportItem.state.name | lower }}</td>
                 </tr>
             {% endfor %}
         {% endblock table_body %}

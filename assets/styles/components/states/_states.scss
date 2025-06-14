@@ -1,6 +1,7 @@
 $state-failure: #e46161;
 $state-security: $state-failure;
 $state-warning: #f1b963;
+$state-danger: $state-warning;
 $state-success: #cbf078;
 $state-none: #d9dad7;
 $state-unknown: #f8f398;
@@ -9,12 +10,13 @@ $state-unknown: #f8f398;
   --state-failure: #{$state-failure};
   --state-security: #{$state-security};
   --state-warning: #{$state-warning};
+  --state-danger: #{$state-danger};
   --state-success: #{$state-success};
   --state-none: #{$state-none};
   --state-unknown: #{$state-unknown};
 }
 
-$state-types: ('failure', 'security', 'warning', 'success', 'none', 'unknown');
+$state-types: ('failure', 'security', 'danger', 'warning', 'success', 'none', 'unknown');
 $state-sizes: (25, 50, 75, 100);
 @each $type in $state-types {
   .bg-state-#{$type} {

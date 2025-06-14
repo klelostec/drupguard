@@ -4,12 +4,22 @@
 {% extends 'admin/project/reports/generique.html.twig' %}
 
 {% block table_head_item %}
-    <th scope="col">Name</th>
-    <th scope="col">Type</th>
-    <th scope="col">Current version</th>
-    <th scope="col">Latest version</th>
-    <th scope="col">Recommanded version</th>
-    <th scope="col">Detail</th>
+    <th scope="col"
+        data-field="name"
+        data-sortable="true"
+        data-filter-control="input">Name</th>
+    <th scope="col"
+        data-field="type"
+        data-sortable="true"
+        data-filter-control="select">Type</th>
+    <th scope="col"
+        data-field="current_version">Current version</th>
+    <th scope="col"
+        data-field="latest_version">Latest version</th>
+    <th scope="col"
+        data-field="recommanded_version">Recommanded version</th>
+    <th scope="col"
+        data-field="detail">Detail</th>
 {% endblock table_head_item %}
 {% block table_row_item %}
     <th scope="row">{{ reportItem.name }}</th>

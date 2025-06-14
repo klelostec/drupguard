@@ -28,7 +28,36 @@ return [
         'path' => './assets/easyadmin/action/project_running/project_running.js',
         'entrypoint' => true,
     ],
+    'bootstrap-extends' => [
+        'path' => './assets/easyadmin/bootstrap_extends.js',
+        'entrypoint' => true,
+    ],
     'transliteration' => [
         'version' => '2.3.5',
+    ],
+    '@hotwired/stimulus' => [
+        'version' => '3.2.2',
+    ],
+    '@symfony/stimulus-bundle' => [
+        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
+    ],
+    'chart.js' => [
+        'version' => '4.4.9',
+    ],
+    '@kurkle/color' => [
+        'version' => '0.3.4',
+    ],
+    'jquery' => [
+        'version' => '3.7.1',
+    ],
+    'bootstrap-table' => [
+        'version' => '1.24.1',
+    ],
+    'bootstrap-table/dist/bootstrap-table.min.css' => [
+        'version' => '1.24.1',
+        'type' => 'css',
+    ],
+    'bootstrap-table/dist/extensions/filter-control/bootstrap-table-filter-control.min.js' => [
+        'version' => '1.24.1',
     ],
 ];

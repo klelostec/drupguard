@@ -4,17 +4,32 @@
 {% extends 'admin/project/reports/generique.html.twig' %}
 
 {% block table_head_item %}
-    <th scope="col">Name</th>
+    <th scope="col"
+        data-field="name"
+        data-sortable="true"
+        data-filter-control="input">Name</th>
     {% if report.withDevPackages %}
-        <th scope="col">Package type</th>
+        <th scope="col"
+            data-field="package_type"
+            data-sortable="true"
+            data-filter-control="select">Package type</th>
     {% endif %}
-    <th scope="col">Type</th>
+    <th scope="col"
+        data-field="type"
+        data-sortable="true"
+        data-filter-control="select">Type</th>
     {% if report.withDependencies %}
-        <th scope="col">Dependency</th>
+        <th scope="col"
+            data-field="dependency"
+            data-sortable="true"
+            data-filter-control="select">Dependency</th>
     {% endif %}
-    <th scope="col">Current version</th>
-    <th scope="col">Latest version</th>
-    <th scope="col">Detail</th>
+    <th scope="col"
+        data-field="current_version">Current version</th>
+    <th scope="col"
+        data-field="latest_version">Latest version</th>
+    <th scope="col"
+        data-field="detail">Detail</th>
 {% endblock table_head_item %}
 {% block table_row_item %}
     <th scope="row">{{ reportItem.name }}</th>
@@ -23,7 +38,7 @@
     {% endif %}
     <td>{{ reportItem.type }}</td>
     {% if report.withDependencies %}
-        <td>{% if reportItem.directDependency %}Direct{% endif %}</td>
+        <td>{% if reportItem.directDependency %}Direct{% else %}Dependency{% endif %}</td>
     {% endif %}
     <td>{{ reportItem.currentVersion }}</td>
     <td>{{ reportItem.latestVersion }}</td>

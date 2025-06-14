@@ -2,11 +2,13 @@
 
 namespace App\Controller\Crud;
 
+use App\AnalyseLevelState;
 use App\EasyAdmin\Field\MachineNameField;
 use App\EasyAdmin\Filter\AnalyseLevelStateFilter;
 use App\Entity\Plugin\PluginAbstract;
 use App\Entity\Project;
 use App\Entity\Report;
+use App\Entity\Report\ReportAbstract;
 use App\Message\ProjectAnalysePending;
 use App\Plugin\Manager;
 use App\Repository\ReportRepository;
@@ -52,6 +54,8 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints\Count;
 
+use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
+use Symfony\UX\Chartjs\Model\Chart;
 use function Symfony\Component\String\u;
 use function Symfony\Component\Translation\t;
 
@@ -59,14 +63,16 @@ class ProjectCrudController extends AbstractCrudController
 {
     protected AdminUrlGeneratorInterface $adminUrlGenerator;
     protected ReportRepository $reportRepository;
-
     protected EntityPaginator $entityPaginator;
 
-    public function __construct(AdminUrlGenerator $adminUrlGenerator, ReportRepository $reportRepository, EntityPaginator $entityPaginator)
+    protected ChartBuilderInterface $chartBuilder;
+
+    public function __construct(AdminUrlGenerator $adminUrlGenerator, ReportRepository $reportRepository, EntityPaginator $entityPaginator, ChartBuilderInterface $chartBuilder)
     {
         $this->adminUrlGenerator = $adminUrlGenerator;
         $this->reportRepository = $reportRepository;
         $this->entityPaginator = $entityPaginator;
+        $this->chartBuilder = $chartBuilder;
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -108,13 +114,54 @@ class ProjectCrudController extends AbstractCrudController
             $paginatorDto = new PaginatorDto(1, 5, 1, true, null);
             $paginatorDto->setPageNumber((int) $this->getContext()->getRequest()->query->get('page', '1'));
             $paginator = $this->entityPaginator->paginate($paginatorDto, $queryBuilder);
-            if ($paginator->isOutOfRange()) {
-                $report = null;
-            } else {
+            $report = $chart = null;
+            if (!$paginator->isOutOfRange()) {
+                /**
+                 * @var Report $report
+                 */
                 $report = $paginator->getResults()->current();
+                $chart = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+                $chartData = [
+                    'labels' => ['Success', 'Warning', 'Danger'],
+                    'datasets' => [],
+                ];
+
+                $colors = [
+                    AnalyseLevelState::getColor(AnalyseLevelState::SUCCESS),
+                    AnalyseLevelState::getColor(AnalyseLevelState::WARNING),
+                    AnalyseLevelState::getColor(AnalyseLevelState::DANGER),
+                    AnalyseLevelState::getColor(AnalyseLevelState::SECURITY),
+                ];
+                foreach ($report->getOrderedReports() as $currentReport) {
+                    /**
+                     * @var ReportAbstract $currentReport
+                     */
+                    $chartData['labels'][] = $currentReport->getName();
+                    $data = [];
+                    foreach ($currentReport->getItems() as $reportItem) {
+                        /**
+                         * @var Report\ReportItemAbstract $reportItem
+                         */
+                        if (!isset($data[$reportItem->getState()->value])) {
+                            $data[$reportItem->getState()->value] = 0;
+                        }
+                        $data[$reportItem->getState()->value]++;
+                    }
+
+                    $chartData['datasets'][] = [
+                        'backgroundColor' => $colors,
+                        'data' => array_values($data),
+                    ];
+                }
+                $chart->setData($chartData);
+
+                $chart->setOptions([
+                    'responsive' => TRUE,
+                ]);
             }
             $responseParameters->set('report', $report);
             $responseParameters->set('paginator', $paginator);
+            $responseParameters->set('chart', $chart);
         }
 
         return $responseParameters;
