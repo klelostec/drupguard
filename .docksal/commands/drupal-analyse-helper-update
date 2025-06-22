@@ -10,6 +10,7 @@
 check_parameters() {
   while [ -n "$1" ]; do # while loop starts
     case "$1" in
+      --review-patch) REVIEW_PATCH=true ;;
       *) VERSION="$1" ;;
     esac
     shift
@@ -20,6 +21,7 @@ check_parameters() {
 set -e
 
 VERSION=""
+REVIEW_PATCH=false
 check_parameters $@
 
 if [ -z "$VERSION" ]; then
@@ -27,10 +29,11 @@ if [ -z "$VERSION" ]; then
   exit 1
 fi
 
-cd /var/www
 mkdir -p /var/www/src/Plugin/Service/Type/Analyse/Drupal
-wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/ExtensionVersion.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/lib/Drupal/Core/Extension/ExtensionVersion.php?ref_type=heads&inline=false"
-wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/ProjectRelease.php?inline=false"
+rm -rf /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp
+mkdir -p /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ExtensionVersion.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/lib/Drupal/Core/Extension/ExtensionVersion.php?ref_type=heads&inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ProjectRelease.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/ProjectRelease.php?inline=false"
 COMPARE_MODULE=$(curl "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/update.compare.inc?inline=false" --silent)
 COMPARE_MODULE_USE=$(echo "$COMPARE_MODULE" | sed -n '/^use /p')
 COMPARE_MODULE_REST=$(echo "$COMPARE_MODULE" | sed -n '/^use /!p' | sed -n '/^<?php/!p' | sed 's/^/  /')
@@ -40,16 +43,70 @@ $COMPARE_MODULE_USE
 
 class UpdateCompare {
 $COMPARE_MODULE_REST
-}" > /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php
-wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateFetcher.php?ref_type=heads&inline=false"
-wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateFetcherInterface.php?ref_type=heads&inline=false"
-wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateManagerInterface.php?inline=false"
-wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateProcessor.php?ref_type=heads&inline=false"
+}" > /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateCompare.php
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcher.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateFetcher.php?ref_type=heads&inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcherInterface.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateFetcherInterface.php?ref_type=heads&inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateManagerInterface.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateManagerInterface.php?inline=false"
+wget -O /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateProcessor.php "https://git.drupalcode.org/project/drupal/-/raw/$VERSION/core/modules/update/src/UpdateProcessor.php?ref_type=heads&inline=false"
 
-git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/extension_version.patch
-git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/project_release.patch
-git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_compare.patch
-git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher.patch
-git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher_interface.patch
-git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_manager_interface.patch
-git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_processor.patch
+cd /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp
+git init
+git config user.email "test@test.fr"
+git config user.name "test"
+git add .
+git commit -m 'init'
+if [ $REVIEW_PATCH = false ] ; then
+  echo "Applying patches"
+  git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/extension_version.patch
+  git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/project_release.patch
+  git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_compare.patch
+  git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher.patch
+  git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher_interface.patch
+  git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_manager_interface.patch
+  git apply /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_processor.patch
+
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ExtensionVersion.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/ExtensionVersion.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ProjectRelease.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateCompare.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcher.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcherInterface.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateManagerInterface.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateProcessor.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php
+else
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/ExtensionVersion.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ExtensionVersion.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ProjectRelease.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateCompare.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcher.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcherInterface.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateManagerInterface.php
+  cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateProcessor.php
+
+  ANSWER="";
+  while [[ "$ANSWER" != "y" && "$ANSWER" != "Y" ]]
+  do
+    git diff > /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/diff.log
+    cat diff.log
+    printf 'Diff review is OK? (y/n)'
+    read ANSWER
+  done
+
+  echo "Cleaning"
+  if [[ "$ANSWER" = "y" || "$ANSWER" = "Y" ]]; then
+    git diff /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ExtensionVersion.php > /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/extension_version.patch
+    git diff /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ProjectRelease.php > /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/project_release.patch
+    git diff /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateCompare.php > /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_compare.patch
+    git diff /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcher.php > /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher.patch
+    git diff /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcherInterface.php > /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_fetcher_interface.patch
+    git diff /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateManagerInterface.php > /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_manager_interface.patch
+    git diff /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateProcessor.php > /var/www/src/Plugin/Service/Type/Analyse/Drupal/patches/update_processor.patch
+
+    cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ExtensionVersion.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/ExtensionVersion.php
+    cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/ProjectRelease.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php
+    cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateCompare.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php
+    cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcher.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php
+    cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateFetcherInterface.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcherInterface.php
+    cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateManagerInterface.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php
+    cp /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp/UpdateProcessor.php /var/www/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php
+  fi
+fi
+rm -rf /var/www/src/Plugin/Service/Type/Analyse/Drupal/tmp

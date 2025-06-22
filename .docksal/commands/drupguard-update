@@ -2,7 +2,7 @@
 
 ## Run project's update.
 ##
-## Usage: fin update
+## Usage: fin drupguard-update
 ##
 
 # Abort if anything fails
@@ -10,5 +10,5 @@ set -e
 
 fin composer install
 fin rebuild-assets
-fin symfony console doctrine:migrations:migrate
+fin symfony console doctrine:migrations:migrate || true
 fin cache-clear

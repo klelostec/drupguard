@@ -14,7 +14,7 @@ fin db create default
 fin exec 'cd /var/www && composer install'
 fin rebuild-assets
 fin exec 'find /var/www/migrations -name "*.php" -delete'
-fin exec 'find /var/www/workspace -mindepth 1 -maxdepth 1 -type d -name "*" -exec rm -rf {} \;'
+fin exec 'find /var/www/workspace -mindepth 1 -maxdepth 1 -type d -name "*" -exec rm -rf {} \; || true'
 fin symfony console doctrine:schema:create -n
 fin symfony console doctrine:fixtures:load -n
 fin cache-clear
