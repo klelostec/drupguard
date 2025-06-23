@@ -2,6 +2,8 @@
 
 namespace App\Plugin\Service\Type\Analyse\Drupal;
 
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
+
 /**
  * Provides an extension version value object.
  *
@@ -9,6 +11,7 @@ namespace App\Plugin\Service\Type\Analyse\Drupal;
  *
  * @see https://www.drupal.org/drupalorg/docs/apis/update-status-xml
  */
+#[Autoconfigure(autowire: false)]
 final class ExtensionVersion {
 
     /**

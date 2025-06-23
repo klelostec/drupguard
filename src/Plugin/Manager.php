@@ -95,6 +95,10 @@ class Manager
                 $plugins[$instance->getType()]->addType($instance);
             }
 
+            uasort($plugins, function (PluginInfo $a, PluginInfo $b) {
+                 return $a->getWeight() <=> $b->getWeight();
+            });
+
             return [
                 'plugins' => $plugins,
                 'types' => $types,

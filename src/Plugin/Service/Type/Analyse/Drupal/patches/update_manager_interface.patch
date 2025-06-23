@@ -1,7 +1,7 @@
-diff --git a/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php b/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php
+diff --git a/UpdateManagerInterface.php b/UpdateManagerInterface.php
 index 07dff36..91112b6 100644
---- a/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php
-+++ b/src/Plugin/Service/Type/Analyse/Drupal/UpdateManagerInterface.php
+--- a/UpdateManagerInterface.php
++++ b/UpdateManagerInterface.php
 @@ -1,6 +1,6 @@
  <?php
  

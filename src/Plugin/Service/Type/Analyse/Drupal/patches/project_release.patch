@@ -1,16 +1,26 @@
-diff --git a/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php b/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php
-index 899eb9b..4f85f5d 100644
---- a/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php
-+++ b/src/Plugin/Service/Type/Analyse/Drupal/ProjectRelease.php
-@@ -1,6 +1,6 @@
+diff --git a/ProjectRelease.php b/ProjectRelease.php
+index 899eb9b..2baf0aa 100644
+--- a/ProjectRelease.php
++++ b/ProjectRelease.php
+@@ -1,7 +1,8 @@
  <?php
  
 -namespace Drupal\update;
 +namespace App\Plugin\Service\Type\Analyse\Drupal;
  
++use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
  use Symfony\Component\Validator\Constraints\Choice;
  use Symfony\Component\Validator\Constraints\Collection;
-@@ -107,7 +107,7 @@ final class ProjectRelease {
+ use Symfony\Component\Validator\Constraints\NotBlank;
+@@ -12,6 +13,7 @@ use Symfony\Component\Validator\Validation;
+ /**
+  * Provides a project release value object.
+  */
++#[Autoconfigure(autowire: false)]
+ final class ProjectRelease {
+ 
+   /**
+@@ -107,7 +109,7 @@ final class ProjectRelease {
     * @param array $release_data
     *   The project release data as returned by update_get_available().
     *

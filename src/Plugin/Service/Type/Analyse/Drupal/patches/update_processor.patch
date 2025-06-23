@@ -1,7 +1,7 @@
-diff --git a/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php b/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php
+diff --git a/UpdateProcessor.php b/UpdateProcessor.php
 index a34adb3..35bbcbe 100644
---- a/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php
-+++ b/src/Plugin/Service/Type/Analyse/Drupal/UpdateProcessor.php
+--- a/UpdateProcessor.php
++++ b/UpdateProcessor.php
 @@ -1,291 +1,99 @@
  <?php
  

@@ -2,6 +2,7 @@
 
 namespace App\Plugin\Service\Type\Analyse\Drupal;
 
+use Symfony\Component\DependencyInjection\Attribute\Autoconfigure;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -12,6 +13,7 @@ use Symfony\Component\Validator\Validation;
 /**
  * Provides a project release value object.
  */
+#[Autoconfigure(autowire: false)]
 final class ProjectRelease {
 
   /**

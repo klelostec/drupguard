@@ -122,22 +122,21 @@ class ProjectCrudController extends AbstractCrudController
                 $report = $paginator->getResults()->current();
                 $chart = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
                 $chartData = [
-                    'labels' => ['Success', 'Warning', 'Danger'],
                     'datasets' => [],
                 ];
 
-                $colors = [
-                    AnalyseLevelState::getColor(AnalyseLevelState::SUCCESS),
-                    AnalyseLevelState::getColor(AnalyseLevelState::WARNING),
-                    AnalyseLevelState::getColor(AnalyseLevelState::DANGER),
-                    AnalyseLevelState::getColor(AnalyseLevelState::SECURITY),
-                ];
+                $colors = $labels = [];
+                foreach (AnalyseLevelState::cases() as $currentAnalyseLevelState) {
+                    $colors[$currentAnalyseLevelState->value] = $currentAnalyseLevelState->getColor();
+                    $labels[$currentAnalyseLevelState->value] = $currentAnalyseLevelState->getLabel();
+                }
+                krsort($colors, SORT_NUMERIC);
+                krsort($labels, SORT_NUMERIC);
+                $data = [];
                 foreach ($report->getOrderedReports() as $currentReport) {
                     /**
                      * @var ReportAbstract $currentReport
                      */
-                    $chartData['labels'][] = $currentReport->getName();
-                    $data = [];
                     foreach ($currentReport->getItems() as $reportItem) {
                         /**
                          * @var Report\ReportItemAbstract $reportItem
@@ -147,20 +146,31 @@ class ProjectCrudController extends AbstractCrudController
                         }
                         $data[$reportItem->getState()->value]++;
                     }
-
-                    $chartData['datasets'][] = [
-                        'backgroundColor' => $colors,
-                        'data' => array_values($data),
-                    ];
                 }
+                krsort($data, SORT_NUMERIC);
+                $reportColors = array_intersect_key($colors, $data);
+                $reportLabels = array_intersect_key($labels, $data);
+
+                $chartData['labels'] = array_values($reportLabels);
+                $chartData['datasets'][] = [
+                    'backgroundColor' => array_values($reportColors),
+                    'data' => array_values($data),
+                ];
                 $chart->setData($chartData);
 
                 $chart->setOptions([
                     'responsive' => TRUE,
+                    'plugins' => [
+                        'title' => [
+                            'display' => true,
+                            'text' => (string) t('Reports state'),
+                        ]
+                    ],
                 ]);
             }
             $responseParameters->set('report', $report);
             $responseParameters->set('paginator', $paginator);
+            $responseParameters->set('analyseLevelStates', AnalyseLevelState::cases());
             $responseParameters->set('chart', $chart);
         }
 

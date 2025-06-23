@@ -42,5 +42,5 @@
     {% endif %}
     <td>{{ reportItem.currentVersion }}</td>
     <td>{{ reportItem.latestVersion }}</td>
-    <td>{{ reportItem.detail }}</td>
+    <td>{{ reportItem.detail | raw }}</td>
 {% endblock table_row_item %}

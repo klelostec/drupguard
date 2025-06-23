@@ -2,6 +2,8 @@
 
 namespace App;
 
+use function Symfony\Component\Translation\t;
+
 enum AnalyseLevelState: int
 {
     case UNKNOWN = -1;
@@ -12,21 +14,25 @@ enum AnalyseLevelState: int
     case WARNING = 4;
     case SUCCESS = 5;
 
-    public static function getColor(self $state): string {
-        switch ($state) {
-            case self::NONE:
-                return '#d9dad7';
-            case self::FAILURE:
-            case self::SECURITY:
-                return '#e46161';
-            case self::DANGER:
-            case self::WARNING:
-                return '#f1b963';
-            case self::SUCCESS:
-                return '#cbf078';
-            default:
-            case self::UNKNOWN:
-                return '#f8f398';
-        }
+    public function getColor(): string {
+        return match($this) {
+            self::UNKNOWN => '#f8f398',
+            self::NONE => '#d9dad7',
+            self::FAILURE, self::SECURITY => '#e46161',
+            self::DANGER, self::WARNING => '#f1b963',
+            self::SUCCESS => '#cbf078',
+        };
+    }
+
+    public function getLabel(): string {
+        return match($this) {
+            self::UNKNOWN => t('Unknown'),
+            self::NONE => t('None'),
+            self::FAILURE => t('Failure'),
+            self::SECURITY => t('Security'),
+            self::DANGER => t('Danger'),
+            self::WARNING => t('Warning'),
+            self::SUCCESS => t('Success'),
+        };
     }
 }

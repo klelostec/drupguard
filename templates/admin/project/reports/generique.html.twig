@@ -8,20 +8,24 @@
 {% endif %}
 
 {% if report.items.count > 0 %}
-    <div id="filter">
-        <div class="filter-wrapper">
-            <input type="checkbox" class="filter-checkbox" value="Software Engineer"/> Software Engineer
-            <input type="checkbox" class="filter-checkbox" value="Accountant"/>  Accountant
-            <input type="checkbox" class="filter-checkbox" value="Sales Assistant"/>  Sales Assistant
-            <input type="checkbox" class="filter-checkbox" value="Developer"/>  Developer
-        </div>
+    {% set filterId = 'filter-' ~ report.id %}
+    {% set tableId = 'table-' ~ report.id %}
+    <div id="{{ filterId }}" class="filter-wrapper d-flex align-items-center my-3" data-table-id="{{ tableId }}">
+        <div class="d-inline-flex me-4 fw-bold">{{ 'State filters :' | trans }}</div>
+        {% for currentAnalyseLevelState in analyseLevelStates %}
+            <div class="d-inline-flex mx-2">
+                <input type="checkbox" for="filter-level-{{ report.id ~ '-' ~ currentAnalyseLevelState.name | lower }}" class="filter-checkbox" value="{{ currentAnalyseLevelState.name | lower }}"/>
+                <label id="filter-level-{{ report.id ~ '-' ~ currentAnalyseLevelState.name }}" class="ps-1">{{ currentAnalyseLevelState.label }}</label>
+            </div>
+        {% endfor %}
     </div>
-    <table class="table-responsive"
-           data-toggle="table"
-           data-search="true"
-           data-filter-control="true"
-           data-sort-reset="true"
-           data-search-align="left">
+    <table
+        id="{{ tableId }}"
+        class="table-responsive"
+        data-toggle="table"
+        data-filter-control="true"
+        data-sort-reset="true"
+        data-search-align="left">
         <thead>
         {% block table_head %}
             <tr>
@@ -29,20 +33,20 @@
                     <th scope="col"
                         data-field="name"
                         data-sortable="true"
-                        data-filter-control="input">Name</th>
+                        data-filter-control="input">{{ 'Name' | trans }}</th>
                     <th scope="col"
                         data-field="type"
                         data-sortable="true"
-                        data-filter-control="select">Type</th>
+                        data-filter-control="select">{{ 'Type' | trans }}</th>
                     <th scope="col"
-                        data-field="current_version">Current version</th>
+                        data-field="current_version">{{ 'Current version' | trans }}</th>
                     <th scope="col"
-                        data-field="detail">Detail</th>
+                        data-field="detail">{{ 'Detail' | trans }}</th>
                 {% endblock table_head_item %}
                 <th scope="col"
-                    data-field="status"
+                    data-field="state"
                     data-visible="false">
-                    Status
+                    {{ 'State' | trans }}
                 </th>
             </tr>
         {% endblock table_head %}

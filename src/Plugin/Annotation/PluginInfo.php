@@ -9,6 +9,13 @@ class PluginInfo extends Attribute
      * @var TypeInfo[]
      */
     protected array $types = [];
+    protected int $weight = 0;
+
+    public function __construct(?array $options = null, ?string $id = null, ?string $name = null, ?string $entityClass = null, ?string $formClass = null, ?string $repositoryClass = null, ?int $weight = 0)
+    {
+        parent::__construct($options, $id, $name, $entityClass, $formClass, $repositoryClass);
+        $this->weight = $weight ?? $this->weight;
+    }
 
     /**
      * @return TypeInfo[]
@@ -33,5 +40,9 @@ class PluginInfo extends Attribute
         }
 
         return $choices;
+    }
+
+    public function getWeight(): int {
+        return $this->weight;
     }
 }

@@ -16,7 +16,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
     name: 'Source',
     entityClass: SourceEntity::class,
     repositoryClass: SourceRepository::class,
-    formClass: SourceForm::class
+    formClass: SourceForm::class,
+    weight: -1
 )]
 abstract class Source extends Plugin
 {

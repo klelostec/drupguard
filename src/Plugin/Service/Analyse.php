@@ -18,7 +18,8 @@ use Symfony\Contracts\Translation\TranslatorInterface;
     name: 'Analyse',
     entityClass: AnalyseEntity::class,
     repositoryClass: AnalyseRepository::class,
-    formClass: AnalyseForm::class
+    formClass: AnalyseForm::class,
+    weight: 2
 )]
 abstract class Analyse extends Plugin
 {

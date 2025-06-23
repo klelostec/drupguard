@@ -1,7 +1,7 @@
-diff --git a/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php b/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php
+diff --git a/UpdateCompare.php b/UpdateCompare.php
 index 175d510..328c898 100644
---- a/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php
-+++ b/src/Plugin/Service/Type/Analyse/Drupal/UpdateCompare.php
+--- a/UpdateCompare.php
++++ b/UpdateCompare.php
 @@ -1,20 +1,9 @@
  <?php
  

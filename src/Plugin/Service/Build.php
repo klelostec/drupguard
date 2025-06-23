@@ -13,7 +13,8 @@ use App\Repository\Plugin\Build as BuildRepository;
     name: 'Build',
     entityClass: BuildEntity::class,
     repositoryClass: BuildRepository::class,
-    formClass: BuildForm::class
+    formClass: BuildForm::class,
+    weight: 1
 )]
 abstract class Build extends Plugin
 {

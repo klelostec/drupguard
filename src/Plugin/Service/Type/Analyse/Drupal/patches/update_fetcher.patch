@@ -1,7 +1,7 @@
-diff --git a/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php b/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php
+diff --git a/UpdateFetcher.php b/UpdateFetcher.php
 index 1ea6b3c..0d1e928 100644
---- a/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php
-+++ b/src/Plugin/Service/Type/Analyse/Drupal/UpdateFetcher.php
+--- a/UpdateFetcher.php
++++ b/UpdateFetcher.php
 @@ -1,160 +1,96 @@
  <?php
  
