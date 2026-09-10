@@ -35,7 +35,7 @@ cd ${PROJECT_ROOT}
 
 echo-lavender-bg "* Generate docksal .env-local file"
 
-cat << EOF > .env-local
+cat << EOF > .env.local
 APP_SECRET=$(< /dev/urandom  head -c 10 | md5sum | cut -d' ' -f1)
 DATABASE_URL=mysql://user:user@db:3306/default?serverVersion=5.7
 MAILER_DSN=smtp://mail:1025
@@ -44,5 +44,5 @@ COMPOSER_BINARY=/usr/local/bin/composer
 HOST=drupguard.docksal.site
 EOF
 
-fin drupguard/install --install $1
+fin drupguard/update --install $1
 #-------------------------- END: Execution --------------------------------

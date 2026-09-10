@@ -38,6 +38,8 @@ services:
         - CLI_IMAGE=${CLI_IMAGE:-docksal/cli:2.13-php7.4}
     environment:
       - XDEBUG_CONFIG=${XDEBUG_CONFIG:-discover_client_host=1}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # Mail
   mail:

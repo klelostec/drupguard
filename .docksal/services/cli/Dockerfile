@@ -4,7 +4,7 @@ FROM $CLI_IMAGE
 
 # Install the symfony CLI.
 RUN set -xe; \
-	echo "deb [trusted=yes] https://repo.symfony.com/apt/ /" | tee /etc/apt/sources.list.d/symfony-cli.list; \
+	curl -1sLf 'https://dl.cloudsmith.io/public/symfony/stable/setup.deb.sh' | sudo -E bash ; \
     apt-get update >/dev/null; \
     apt-get -y --no-install-recommends install >/dev/null symfony-cli; \
     apt-get clean; rm -rf /var/lib/apt/lists/*
